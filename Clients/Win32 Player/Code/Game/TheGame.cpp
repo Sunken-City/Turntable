@@ -30,6 +30,7 @@
 #include <Windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
+#include "Engine/Input/InputDevices/MouseInputDevice.hpp"
 
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
@@ -269,7 +270,7 @@ void TheGame::UpdateCamera(float deltaTime)
         m_camera->m_position -= Vector3::UP * (moveSpeed * deltaTime);
     }
 
-    InputSystem::instance->CaptureMouseCursor();
+    MouseInputDevice::CaptureMouseCursor();
     Vector2Int cursorDelta = InputSystem::instance->GetDeltaMouse();
 
     m_camera->m_orientation.yawDegreesAboutZ -= ((float)cursorDelta.x * 0.005f);
