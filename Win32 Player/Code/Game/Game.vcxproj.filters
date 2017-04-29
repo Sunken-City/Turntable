@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="General">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>
+      </Extensions>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{6020bdab-47da-4abb-bcde-69a2b2d8e66e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main_Win32.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="TheGame.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="TheApp.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera3D.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TheGame.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="TheApp.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera3D.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Run_Win32\Data\Shaders\fixedVertexFormat.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\fixedVertexFormat.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\uvDebug.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\normalDebug.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\basicLight.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\basicLight.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\passNormal.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\SkinDebug.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_Win32\Data\Shaders\SkinDebug.frag">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
