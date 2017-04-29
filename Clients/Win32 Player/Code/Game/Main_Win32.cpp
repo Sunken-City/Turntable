@@ -204,7 +204,7 @@ void Initialize(HINSTANCE applicationInstanceHandle)
 	Renderer::instance = new Renderer();
 	DebugRenderer::instance = new DebugRenderer();
 	AudioSystem::instance = new AudioSystem();
-	InputSystem::instance = new InputSystem(g_hWnd);
+	InputSystem::instance = new InputSystem(g_hWnd, 0, WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT);
 	Console::instance = new Console();
 	TheApp::instance = new TheApp(VIEW_RIGHT, VIEW_TOP);
 	TheGame::instance = new TheGame();
