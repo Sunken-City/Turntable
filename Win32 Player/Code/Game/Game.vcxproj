@@ -14,7 +14,7 @@
     <ProjectGuid>{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Protogame</RootNamespace>
-    <ProjectName>AnimImporter</ProjectName>
+    <ProjectName>MusicPlayer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -101,11 +101,6 @@
     <ClCompile Include="Main_Win32.cpp" />
     <ClCompile Include="TheApp.cpp" />
     <ClCompile Include="TheGame.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Engine\Code\Engine\Engine.vcxproj">
-      <Project>{adf625c9-96ec-4c9f-b6f0-235762d622ae}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera3D.hpp" />

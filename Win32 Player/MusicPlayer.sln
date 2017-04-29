@@ -3,25 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnimImporter", "Code\Game\Game.vcxproj", "{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MusicPlayer", "Code\Game\Game.vcxproj", "{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "..\..\Engine\Code\Engine\Engine.vcxproj", "{ADF625C9-96EC-4C9F-B6F0-235762D622AE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "..\Engine\Code\Engine\Engine.vcxproj", "{ADF625C9-96EC-4C9F-B6F0-235762D622AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		DebugInline|Win32 = DebugInline|Win32
 		Release|Win32 = Release|Win32
 		Tools Debug|Win32 = Tools Debug|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.Debug|Win32.ActiveCfg = Debug|Win32
 		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.Debug|Win32.Build.0 = Debug|Win32
+		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.DebugInline|Win32.ActiveCfg = Debug|Win32
+		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.DebugInline|Win32.Build.0 = Debug|Win32
 		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.Release|Win32.ActiveCfg = Release|Win32
 		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.Release|Win32.Build.0 = Release|Win32
 		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.Tools Debug|Win32.ActiveCfg = Debug|Win32
 		{68F1C8DB-4D46-45E3-9DDC-C9798E6C84A0}.Tools Debug|Win32.Build.0 = Debug|Win32
 		{ADF625C9-96EC-4C9F-B6F0-235762D622AE}.Debug|Win32.ActiveCfg = Debug|Win32
 		{ADF625C9-96EC-4C9F-B6F0-235762D622AE}.Debug|Win32.Build.0 = Debug|Win32
+		{ADF625C9-96EC-4C9F-B6F0-235762D622AE}.DebugInline|Win32.ActiveCfg = DebugInline|Win32
+		{ADF625C9-96EC-4C9F-B6F0-235762D622AE}.DebugInline|Win32.Build.0 = DebugInline|Win32
 		{ADF625C9-96EC-4C9F-B6F0-235762D622AE}.Release|Win32.ActiveCfg = Release|Win32
 		{ADF625C9-96EC-4C9F-B6F0-235762D622AE}.Release|Win32.Build.0 = Release|Win32
 		{ADF625C9-96EC-4C9F-B6F0-235762D622AE}.Tools Debug|Win32.ActiveCfg = Tools Debug|Win32
