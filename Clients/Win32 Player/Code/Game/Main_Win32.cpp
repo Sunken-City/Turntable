@@ -190,7 +190,6 @@ void Update()
     float deltaSeconds = (float)( timeNow - s_timeLastFrameStarted );
     s_timeLastFrameStarted = timeNow;
 
-    DebugRenderer::instance->Update(deltaSeconds);
     AudioSystem::instance->Update(deltaSeconds);
     InputSystem::instance->Update(deltaSeconds);
     Console::instance->Update(deltaSeconds);
@@ -231,7 +230,6 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     SetProcessDPIAware();
     CreateOpenGLWindow(applicationInstanceHandle);
     Renderer::instance = new Renderer();
-    DebugRenderer::instance = new DebugRenderer();
     AudioSystem::instance = new AudioSystem();
     InputSystem::instance = new InputSystem(g_hWnd, 0, WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT);
     Console::instance = new Console();
@@ -253,8 +251,6 @@ void Shutdown()
     InputSystem::instance = nullptr;
     delete AudioSystem::instance;
     AudioSystem::instance = nullptr;
-    delete DebugRenderer::instance;
-    DebugRenderer::instance = nullptr;
     delete Renderer::instance;
     Renderer::instance = nullptr;
 }

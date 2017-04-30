@@ -92,9 +92,6 @@ static float animTime = 0.0f;
 //-----------------------------------------------------------------------------------
 void TheGame::Update(float deltaTime)
 {
-    DebugRenderer::instance->Update(deltaTime);
-    m_camera->Update(deltaTime);
-
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
         Console::instance->ActivateConsole();
@@ -109,6 +106,8 @@ void TheGame::Update(float deltaTime)
         g_isQuitting = true;
         return;
     }
+
+    m_camera->Update(deltaTime);
 
     for (int i = 0; i < 16; i++)
     {
