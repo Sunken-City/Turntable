@@ -24,6 +24,7 @@
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Tools/fbx.hpp"
+#include "Engine/Core/BuildConfig.hpp"
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
@@ -101,6 +102,11 @@ void TheGame::Update(float deltaTime)
     {
         return; //Don't do anything involving input updates.
     }
+    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::ESC))
+    {
+        g_isQuitting = true;
+        return;
+    }
 
     UpdateCamera(deltaTime);
     for (int i = 0; i < 16; i++)
@@ -110,7 +116,7 @@ void TheGame::Update(float deltaTime)
         m_currentMaterial->m_shaderProgram->SetVec3Uniform(Stringf("gLightPosition[%i]", i).c_str(), m_lightPositions[i], 16);
     }
     
-    if (InputSystem::instance->WasKeyJustPressed('O'))
+    if (InputSystem::instance->WasKeyJustPressed('0'))
     {
         m_renderAxisLines = !m_renderAxisLines;
     }
@@ -529,7 +535,10 @@ void TheGame::SetUpShader()
     Matrix4x4 mat = Matrix4x4::IDENTITY;
     for (int i = 0; i < NUM_BONES; ++i)
     {
-        m_testMaterial->SetMatrix4x4Uniform(Stringf("gBoneMatrices[%i]", i).c_str(), mat, NUM_BONES);
+        int x = 4;
+        x++;
+        //Bones are suspended lmao
+        //m_testMaterial->SetMatrix4x4Uniform(Stringf("gBoneMatrices[%i]", i).c_str(), mat, NUM_BONES);
     }
 }
 
