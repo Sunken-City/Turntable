@@ -379,7 +379,7 @@ void TheGame::RenderAxisLines() const
 void TheGame::SetUpShader()
 {
     m_testMaterial = new Material(
-        new ShaderProgram("Data/Shaders/SkinDebug.vert", "Data/Shaders/SkinDebug.frag"), //fixedVertexFormat timeBased basicLight multiLight
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
 
@@ -392,7 +392,7 @@ void TheGame::SetUpShader()
         new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/normalDebug.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
-    m_testMaterial->SetDiffuseTexture("Data/Images/stone_diffuse.png");
+    m_testMaterial->SetDiffuseTexture("Data/Textures/Big_Vinyl_Sleeve/BV_Example_Sleeve.tga");
     m_testMaterial->SetNormalTexture("Data/Images/stone_normal.png");
     m_testMaterial->SetEmissiveTexture("Data/Images/pattern_81/maymay.tga");
     m_testMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
