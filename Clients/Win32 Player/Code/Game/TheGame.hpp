@@ -17,7 +17,6 @@ public:
     ~TheGame();
 
     void Update(float deltaTime);
-    void UpdateCamera(float deltaTime);
     void Render() const;
     void Begin3DPerspective() const;
     void End3DPerspective() const;

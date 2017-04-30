@@ -93,6 +93,8 @@ static float animTime = 0.0f;
 void TheGame::Update(float deltaTime)
 {
     DebugRenderer::instance->Update(deltaTime);
+    m_camera->Update(deltaTime);
+
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
         Console::instance->ActivateConsole();
@@ -108,7 +110,6 @@ void TheGame::Update(float deltaTime)
         return;
     }
 
-    UpdateCamera(deltaTime);
     for (int i = 0; i < 16; i++)
     {
         m_lightPositions[i] = Vector3(sinf(static_cast<float>(GetCurrentTimeSeconds() + i)) * 5.0f, cosf(static_cast<float>(GetCurrentTimeSeconds() + i) / 2.0f) * 3.0f, 0.5f);
@@ -234,57 +235,6 @@ void TheGame::Update(float deltaTime)
 }
 
 //-----------------------------------------------------------------------------------
-void TheGame::UpdateCamera(float deltaTime)
-{
-    const float BASE_MOVE_SPEED = 4.5f;
-    float moveSpeed;
-
-    if (InputSystem::instance->IsKeyDown(VK_SHIFT))
-    {
-        moveSpeed = BASE_MOVE_SPEED * 8.0f;
-    }
-    else
-    {
-        moveSpeed = BASE_MOVE_SPEED;
-    }
-    if (InputSystem::instance->IsKeyDown('W'))
-    {
-        Vector3 cameraForwardXY = m_camera->GetForwardTwoComponent();
-        m_camera->m_position += cameraForwardXY * (moveSpeed * deltaTime);
-    }
-    if (InputSystem::instance->IsKeyDown('S'))
-    {
-        Vector3 cameraForwardXY = m_camera->GetForwardTwoComponent();
-        m_camera->m_position -= cameraForwardXY * (moveSpeed * deltaTime);
-    }
-    if (InputSystem::instance->IsKeyDown('D'))
-    {
-        Vector3 cameraLeftXY = m_camera->GetLeft();
-        m_camera->m_position -= cameraLeftXY * (moveSpeed * deltaTime);
-    }
-    if (InputSystem::instance->IsKeyDown('A'))
-    {
-        Vector3 camreaLeftXY = m_camera->GetLeft();
-        m_camera->m_position += camreaLeftXY * (moveSpeed * deltaTime);
-    }
-    if (InputSystem::instance->IsKeyDown(' '))
-    {
-        m_camera->m_position += Vector3::UP * (moveSpeed * deltaTime);
-    }
-    if (InputSystem::instance->IsKeyDown('Z'))
-    {
-        m_camera->m_position -= Vector3::UP * (moveSpeed * deltaTime);
-    }
-
-    MouseInputDevice::CaptureMouseCursor();
-    Vector2Int cursorDelta = InputSystem::instance->GetDeltaMouse();
-
-    m_camera->m_orientation.yawDegreesAboutZ -= ((float)cursorDelta.x * 0.005f);
-    float proposedPitch = m_camera->m_orientation.pitchDegreesAboutY - ((float)cursorDelta.y * 0.005f);
-    m_camera->m_orientation.pitchDegreesAboutY = MathUtils::Clamp(proposedPitch, -3.14159f / 2.0f, 3.14159f / 2.0f);
-}
-
-//-----------------------------------------------------------------------------------
 void TheGame::Render() const
 {
     ENSURE_NO_MATRIX_STACK_SIDE_EFFECTS(Renderer::instance->m_viewStack);
@@ -339,13 +289,7 @@ void TheGame::Begin3DPerspective() const
     const float farDist = 1000.0f;
     const float fovY = 50.0f;
     Renderer::instance->BeginPerspective(fovY, aspect, nearDist, farDist);	
-    
-    //Set up view from camera
-    Matrix4x4 view;
-    Matrix4x4::MatrixMakeIdentity(&view);
-    Matrix4x4::MatrixMakeRotationEuler(&view, -m_camera->m_orientation.yawDegreesAboutZ, m_camera->m_orientation.pitchDegreesAboutY, m_camera->m_orientation.rollDegreesAboutX, m_camera->m_position);
-    Matrix4x4::MatrixInvertOrthogonal(&view);
-    Renderer::instance->PushView(view);
+    Renderer::instance->PushView(m_camera->GetViewMatrix());
 }
 
 //-----------------------------------------------------------------------------------

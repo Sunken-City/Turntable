@@ -1,19 +1,25 @@
 #pragma once
 #include "Engine/Math/Vector3.hpp"
 #include "Engine/Math/EulerAngles.hpp"
+#include "Engine/Math/Matrix4x4.hpp"
 
 class Camera3D
 {
 public:
+    //CONSTRUCTORS/////////////////////////////////////////////////////////////////////
+    Camera3D();
 
-	Camera3D();
-	void FixAndClampAngles(); //Prevents pitch from going above 89.9
-	Vector3 GetForward() const;
-	Vector3 GetForwardTwoComponent() const;
-	Vector3 GetLeft() const;
-	void UpdateViewFromCamera() const;
+    //FUNCTIONS/////////////////////////////////////////////////////////////////////
+    void Update(float deltaTime);
+    Vector3 GetForward() const;
+    Vector3 GetForwardTwoComponent() const;
+    Vector3 GetLeft() const;
+    Matrix4x4 GetViewMatrix();
 
-public:
-	Vector3 m_position;
-	EulerAngles m_orientation;
+    //CONSTANTS/////////////////////////////////////////////////////////////////////
+    static constexpr float BASE_MOVE_SPEED = 4.5f;
+
+    //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
+    Vector3 m_position;
+    EulerAngles m_orientation;
 };
