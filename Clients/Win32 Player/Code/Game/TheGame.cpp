@@ -155,6 +155,9 @@ static float animTime = 0.0f;
 //-----------------------------------------------------------------------------------
 void TheGame::Update(float deltaSeconds)
 {
+    UpdateVinylRotation(deltaSeconds);
+    UpdateVinylJacket();
+
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
         Console::instance->ActivateConsole();
@@ -171,9 +174,6 @@ void TheGame::Update(float deltaSeconds)
     }
 
     m_camera->Update(deltaSeconds);
-    UpdateVinylRotation(deltaSeconds);
-    UpdateVinylJacket();
-
     CheckForImportedMeshes();
     quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
 
@@ -326,7 +326,10 @@ void TheGame::CheckForImportedMeshes()
 //-----------------------------------------------------------------------------------
 void TheGame::UpdateVinylRotation(float deltaSeconds)
 {
-    float rotationThisFrame = m_currentRotationRate * deltaSeconds;
+    static float currentRotationRate = m_currentRotationRate;
+    
+    currentRotationRate = MathUtils::Lerp(0.1f, currentRotationRate, m_currentRotationRate);
+    float rotationThisFrame = currentRotationRate * deltaSeconds;
     Vector3 newRotation = m_45Vinyl->m_transform.GetWorldRotationDegrees();
     newRotation.y += rotationThisFrame;
     m_45Vinyl->m_transform.SetRotationDegrees(newRotation);
