@@ -45,6 +45,8 @@ public:
     SoundID m_currentlyPlayingSong;
     Framebuffer* m_fbo;
 
+    Renderable3D* m_33Vinyl = nullptr;
+    Renderable3D* m_33Sleeve = nullptr;
     Renderable3D* m_45Vinyl = nullptr;
     Renderable3D* m_45Sleeve = nullptr;
 

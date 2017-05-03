@@ -668,6 +668,9 @@ void TheGame::LoadDefaultScene()
     Mesh* inner45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
     Mesh* outer45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
     Mesh* sleeve45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
+    Mesh* inner33 = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_1.picomesh");
+    Mesh* outer33 = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_0.picomesh");
+    Mesh* sleeve33 = MeshBuilder::LoadMesh("data/fbx/vinyl/33sleeve_0.picomesh");
 
     Material* inner45Material = new Material(
         new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
@@ -681,15 +684,33 @@ void TheGame::LoadDefaultScene()
         new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
+    Material* inner33Material = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+    Material* outer33Material = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+    Material* sleeve33Material = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
 
-    //inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
-    inner45Material->SetDiffuseTexture("Data/Images/marth.png");
+    //inner45Material->SetDiffuseTexture("Data/Images/marth.png");
+    inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
     outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
     sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
+    inner33Material->SetDiffuseTexture("Data/Images/LabelTextures/33RPMLabel.tga");
+    outer33Material->SetDiffuseTexture("Data/Images/DiscTextures/33RPMBaseColor.png");
+    sleeve33Material->SetDiffuseTexture("Data/Images/SleeveTextures/33Sleeve.tga");
 
     Renderable3D* inner45Renderable = new Renderable3D(inner45, inner45Material);
     m_45Sleeve = new Renderable3D(sleeve45, sleeve45Material);
     m_45Vinyl = new Renderable3D(outer45, outer45Material);
+    Renderable3D* inner33Renderable = new Renderable3D(inner33, inner33Material);
+    m_33Sleeve = new Renderable3D(sleeve33, sleeve33Material);
+    m_33Vinyl = new Renderable3D(outer33, outer33Material);
 
     m_45Vinyl->m_transform.AddChild(&inner45Renderable->m_transform);
     m_45Vinyl->m_transform.AddChild(&m_45Sleeve->m_transform);
@@ -700,7 +721,19 @@ void TheGame::LoadDefaultScene()
     m_45Sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
     m_45Sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
 
+    m_33Vinyl->m_transform.AddChild(&inner33Renderable->m_transform);
+    m_33Vinyl->m_transform.AddChild(&m_33Sleeve->m_transform);
+    m_33Vinyl->m_transform.SetPosition(Vector3(-30.0f, 0.0f, -30.0f));
+
+    m_33Sleeve->m_transform.IgnoreParentRotation();
+    m_33Sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
+    m_33Sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
+    m_33Sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
+
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(inner45Renderable);
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Vinyl);
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Sleeve);
+    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(inner33Renderable);
+    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_33Vinyl);
+    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_33Sleeve);
 }
