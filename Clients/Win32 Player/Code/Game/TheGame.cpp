@@ -335,7 +335,8 @@ void TheGame::SetUpShader()
         new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/normalDebug.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
-    m_testMaterial->SetDiffuseTexture("Data/Textures/Disc_Textures/SV_Disc_Base_Color.png");
+    //m_testMaterial->SetDiffuseTexture("Data/Textures/Disc_Textures/SV_Disc_Base_Color.png");
+    m_testMaterial->SetDiffuseTexture("Data/Textures/Small_Vinyl_Sleeve/SV_Example_Sleeve.tga");
     m_testMaterial->SetNormalTexture("Data/Images/stone_normal.png");
     m_testMaterial->SetEmissiveTexture("Data/Images/pattern_81/maymay.tga");
     m_testMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
