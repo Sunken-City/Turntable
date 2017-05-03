@@ -47,6 +47,7 @@ public:
 
     Renderable3D* m_45Vinyl = nullptr;
     Renderable3D* m_45Sleeve = nullptr;
+
     float m_currentRotationRate = 0.0f;
 
 private:

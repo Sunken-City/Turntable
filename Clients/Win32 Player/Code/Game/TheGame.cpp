@@ -663,7 +663,8 @@ void TheGame::LoadDefaultScene()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
 
-    inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
+    //inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
+    inner45Material->SetDiffuseTexture("Data/Images/marth.png");
     outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
     sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
 
