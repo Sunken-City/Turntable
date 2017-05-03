@@ -85,6 +85,22 @@ CONSOLE_COMMAND(playsong)
     AudioSystem::instance->MultiplyCurrentFrequency(song, frequency);
 }
 
+CONSOLE_COMMAND(stopsong)
+{
+    AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
+    if (!channel || !AudioSystem::instance->IsPlaying(channel))
+    {
+        Console::instance->PrintLine("No song is currently playing. Play a song using playsong first.", RGBA::RED);
+        return;
+    }
+    else
+    {
+        Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
+        AudioSystem::instance->StopChannel(channel);
+        TheGame::instance->m_currentRotationRate = 0;
+    }
+}
+
 CONSOLE_COMMAND(setsongrpm)
 {
     if (!args.HasArgs(1))
