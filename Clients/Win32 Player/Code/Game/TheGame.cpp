@@ -38,6 +38,7 @@ extern MeshBuilder* g_loadedMeshBuilder;
 extern Skeleton* g_loadedSkeleton;
 extern AnimationMotion* g_loadedMotion;
 extern std::vector<AnimationMotion*>* g_loadedMotions;
+extern int g_numLoadedMeshes;
 
 CONSOLE_COMMAND(twah)
 {
@@ -193,10 +194,29 @@ void TheGame::Update(float deltaTime)
     {
         Console::instance->RunCommand("loadMesh saveFile.picomesh");
     }
-    if (g_loadedMesh != nullptr)
+
+    if (g_loadedMeshes.size() > 0)
     {
-        loadedMesh->m_mesh = g_loadedMesh;
+        if (g_loadedMeshes.size() > 1)
+        {
+            if (loadedMesh->m_mesh)
+            {
+                delete loadedMesh->m_mesh;
+            }
+            loadedMesh->m_mesh = g_loadedMeshes.front();
+            g_loadedMeshes.pop();
+        }
+        else
+        {
+            if (loadedMesh->m_mesh)
+            {
+                delete loadedMesh->m_mesh;
+            }
+            loadedMesh->m_mesh = g_loadedMeshes.front();
+            g_loadedMeshes.pop();
+        }
     }
+
     if (InputSystem::instance->WasKeyJustPressed('B'))
     {
         m_currentMaterial = m_testMaterial;
@@ -479,9 +499,7 @@ void TheGame::SetUpShader()
     Matrix4x4 mat = Matrix4x4::IDENTITY;
     for (int i = 0; i < NUM_BONES; ++i)
     {
-        int x = 4;
-        x++;
-        //Bones are suspended lmao
+        //TODO: Bones are pulled for a little while, please put these back in when materials/shaders are better.
         //m_testMaterial->SetMatrix4x4Uniform(Stringf("gBoneMatrices[%i]", i).c_str(), mat, NUM_BONES);
     }
 }

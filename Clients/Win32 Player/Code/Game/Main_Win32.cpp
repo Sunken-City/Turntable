@@ -12,6 +12,7 @@
 #include "Engine/Input/Console.hpp"
 #include "Game/TheApp.hpp"
 #include "Game/TheGame.hpp"
+#include "Engine/Core/BuildConfig.hpp"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
