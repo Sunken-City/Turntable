@@ -20,6 +20,9 @@ public:
 
     ////FUNCTIONS/////////////////////////////////////////////////////////////////////
     void Update(float deltaTime);
+    void UpdateVinylRotation(float deltaSeconds);
+    void UpdateVinylJacket();
+    void CheckForImportedMeshes();
     void Render() const;
     void Begin3DPerspective() const;
     void End3DPerspective() const;
@@ -40,8 +43,10 @@ public:
     SoundID m_twahSFX;
     Framebuffer* m_fbo;
 
-private:
     Renderable3D* m_45Vinyl = nullptr;
+    Renderable3D* m_45Sleeve = nullptr;
+
+private:
     bool m_showSkeleton;
     Texture* m_pauseTexture;
     RGBA* m_color;

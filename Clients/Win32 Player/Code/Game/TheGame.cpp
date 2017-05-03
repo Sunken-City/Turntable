@@ -113,97 +113,135 @@ void TheGame::Update(float deltaSeconds)
     }
 
     m_camera->Update(deltaSeconds);
+    UpdateVinylRotation(deltaSeconds);
+    UpdateVinylJacket();
 
-    float rotationThisFrame = RPS_45 * deltaSeconds;
-    Vector3 newRotation = m_45Vinyl->m_transform.GetWorldRotationDegrees();
-    newRotation.y += rotationThisFrame;
-    m_45Vinyl->m_transform.SetRotationDegrees(newRotation);
+    CheckForImportedMeshes();
+    quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
 
-    for (int i = 0; i < 16; i++)
+    if (InputSystem::instance->WasKeyJustPressed('B'))
     {
-        m_lightPositions[i] = Vector3(sinf(static_cast<float>(GetCurrentTimeSeconds() + i)) * 5.0f, cosf(static_cast<float>(GetCurrentTimeSeconds() + i) / 2.0f) * 3.0f, 0.5f);
-        m_lights[i].SetPosition(m_lightPositions[i]);
-        m_currentMaterial->m_shaderProgram->SetVec3Uniform(Stringf("gLightPosition[%i]", i).c_str(), m_lightPositions[i], 16);
+        m_currentMaterial = m_testMaterial;
     }
-    
-    if (InputSystem::instance->WasKeyJustPressed('0'))
+    else if (InputSystem::instance->WasKeyJustPressed('N'))
     {
-        m_renderAxisLines = !m_renderAxisLines;
+        m_currentMaterial = m_normalDebugMaterial;
     }
-    if (InputSystem::instance->WasKeyJustPressed('1'))
+    else if (InputSystem::instance->WasKeyJustPressed('U'))
     {
-        MeshBuilder builder;
-        MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
-        builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
-            [](const void* userData, float x, float y)
-        {
-            MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
-            Vector3 position = plane->initialPosition
-                + (plane->right * x)
-                + (plane->up * y);
-            return position;
-        }
-        , data);
-        builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
-        spinFactor = 0.0f;
-    }
-    if (InputSystem::instance->WasKeyJustPressed('2'))
-    {
-        MeshBuilder builder;
-        MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
-        builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
-            [](const void* userData, float x, float y)
-            {
-                MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
-                Vector3 position = plane->initialPosition
-                    + (plane->right * x)
-                    + (plane->up * y);
-                position.z = sin(x + y);
-                return position;
-            }
-        , data);
-        builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
-        spinFactor = 0.0f;
-    }
-    if (InputSystem::instance->WasKeyJustPressed('3'))
-    {
-        MeshBuilder builder;
-        MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
-        builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
-            [](const void* userData, float x, float y)
-        {
-            MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
-            Vector3 position = plane->initialPosition
-                + (plane->right * x)
-                + (plane->up * y);
-            position.z = .05f * -cos(((float)GetCurrentTimeSeconds() * 4.0f) + (Vector2(x, y).CalculateMagnitude() * 100.0f));
-            return position;
-        }
-        , data);
-        builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
-        spinFactor = 0.0f;
-    }
-    if (InputSystem::instance->WasKeyJustPressed('4'))
-    {
-        FbxListScene("Data/FBX/SampleBox.fbx");
-    }
-    if (InputSystem::instance->WasKeyJustPressed('5'))
-    {
-        Console::instance->RunCommand("fbxLoad Data/FBX/unitychan.fbx");
-    }
-    if (InputSystem::instance->WasKeyJustPressed('6'))
-    {
-        Console::instance->RunCommand("fbxLoad Data/FBX/samplebox.fbx");
-    }
-    if (InputSystem::instance->WasKeyJustPressed('7'))
-    {
-        Console::instance->RunCommand("saveMesh saveFile.picomesh");
-    }
-    if (InputSystem::instance->WasKeyJustPressed('8'))
-    {
-        Console::instance->RunCommand("loadMesh saveFile.picomesh");
+        m_currentMaterial = m_uvDebugMaterial;
     }
 
+/*     for (int i = 0; i < 16; i++)
+//     {
+//         m_lightPositions[i] = Vector3(sinf(static_cast<float>(GetCurrentTimeSeconds() + i)) * 5.0f, cosf(static_cast<float>(GetCurrentTimeSeconds() + i) / 2.0f) * 3.0f, 0.5f);
+//         m_lights[i].SetPosition(m_lightPositions[i]);
+//         m_currentMaterial->m_shaderProgram->SetVec3Uniform(Stringf("gLightPosition[%i]", i).c_str(), m_lightPositions[i], 16);
+//     }
+//     
+//     if (InputSystem::instance->WasKeyJustPressed('0'))
+//     {
+//         m_renderAxisLines = !m_renderAxisLines;
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('1'))
+//     {
+//         MeshBuilder builder;
+//         MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
+//         builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
+//             [](const void* userData, float x, float y)
+//         {
+//             MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
+//             Vector3 position = plane->initialPosition
+//                 + (plane->right * x)
+//                 + (plane->up * y);
+//             return position;
+//         }
+//         , data);
+//         builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
+//         spinFactor = 0.0f;
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('2'))
+//     {
+//         MeshBuilder builder;
+//         MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
+//         builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
+//             [](const void* userData, float x, float y)
+//             {
+//                 MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
+//                 Vector3 position = plane->initialPosition
+//                     + (plane->right * x)
+//                     + (plane->up * y);
+//                 position.z = sin(x + y);
+//                 return position;
+//             }
+//         , data);
+//         builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
+//         spinFactor = 0.0f;
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('3'))
+//     {
+//         MeshBuilder builder;
+//         MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
+//         builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
+//             [](const void* userData, float x, float y)
+//         {
+//             MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
+//             Vector3 position = plane->initialPosition
+//                 + (plane->right * x)
+//                 + (plane->up * y);
+//             position.z = .05f * -cos(((float)GetCurrentTimeSeconds() * 4.0f) + (Vector2(x, y).CalculateMagnitude() * 100.0f));
+//             return position;
+//         }
+//         , data);
+//         builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
+//         spinFactor = 0.0f;
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('4'))
+//     {
+//         FbxListScene("Data/FBX/SampleBox.fbx");
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('5'))
+//     {
+//         Console::instance->RunCommand("fbxLoad Data/FBX/unitychan.fbx");
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('6'))
+//     {
+//         Console::instance->RunCommand("fbxLoad Data/FBX/samplebox.fbx");
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('7'))
+//     {
+//         Console::instance->RunCommand("saveMesh saveFile.picomesh");
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('8'))
+//     {
+//         Console::instance->RunCommand("loadMesh saveFile.picomesh");
+//     }
+//     if(InputSystem::instance->WasKeyJustPressed('K'))
+//     {
+//         m_showSkeleton = !m_showSkeleton;
+//     }
+//     if (InputSystem::instance->WasKeyJustPressed('I'))
+//     {
+//         g_loadedMotion->m_playbackMode = AnimationMotion::CLAMP;
+//     }
+//     else if (InputSystem::instance->WasKeyJustPressed('L'))
+//     {
+//         g_loadedMotion->m_playbackMode = AnimationMotion::LOOP;
+//     }
+//     else if (InputSystem::instance->WasKeyJustPressed('P'))
+//     {
+//         g_loadedMotion->m_playbackMode = AnimationMotion::PING_PONG;
+//     }
+//     else if (InputSystem::instance->WasKeyJustPressed('O'))
+//     {
+//         g_loadedMotion->m_playbackMode = AnimationMotion::PAUSED;
+//     }
+*/
+}
+
+//-----------------------------------------------------------------------------------
+void TheGame::CheckForImportedMeshes()
+{
     if (g_loadedMeshes.size() > 0)
     {
         if (g_loadedMeshes.size() > 1)
@@ -225,41 +263,31 @@ void TheGame::Update(float deltaSeconds)
             g_loadedMeshes.pop();
         }
     }
+}
 
-    if (InputSystem::instance->WasKeyJustPressed('B'))
+//-----------------------------------------------------------------------------------
+void TheGame::UpdateVinylRotation(float deltaSeconds)
+{
+    float rotationThisFrame = RPS_45 * deltaSeconds;
+    Vector3 newRotation = m_45Vinyl->m_transform.GetWorldRotationDegrees();
+    newRotation.y += rotationThisFrame;
+    m_45Vinyl->m_transform.SetRotationDegrees(newRotation);
+}
+
+//-----------------------------------------------------------------------------------
+void TheGame::UpdateVinylJacket()
+{
+    static bool jacketOn = true;
+    static Vector3 desiredJacketPosition = Vector3(0.0f, 0.5f, 0.0f);
+    if (InputSystem::instance->WasKeyJustPressed('J'))
     {
-        m_currentMaterial = m_testMaterial;
-    }
-    else if (InputSystem::instance->WasKeyJustPressed('N'))
-    {
-        m_currentMaterial = m_normalDebugMaterial;
-    }
-    else if (InputSystem::instance->WasKeyJustPressed('U'))
-    {
-        m_currentMaterial = m_uvDebugMaterial;
-    }
-    if(InputSystem::instance->WasKeyJustPressed('K'))
-    {
-        m_showSkeleton = !m_showSkeleton;
-    }
-    if (InputSystem::instance->WasKeyJustPressed('I'))
-    {
-        g_loadedMotion->m_playbackMode = AnimationMotion::CLAMP;
-    }
-    else if (InputSystem::instance->WasKeyJustPressed('L'))
-    {
-        g_loadedMotion->m_playbackMode = AnimationMotion::LOOP;
-    }
-    else if (InputSystem::instance->WasKeyJustPressed('P'))
-    {
-        g_loadedMotion->m_playbackMode = AnimationMotion::PING_PONG;
-    }
-    else if (InputSystem::instance->WasKeyJustPressed('O'))
-    {
-        g_loadedMotion->m_playbackMode = AnimationMotion::PAUSED;
+        jacketOn = !jacketOn;
+
+        desiredJacketPosition.x = jacketOn ? 0.0f : -100.0f;
     }
 
-    quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
+    Vector3 currentPosition = MathUtils::Lerp(0.1f, m_45Sleeve->m_transform.GetLocalPosition(), desiredJacketPosition);
+    m_45Sleeve->m_transform.SetPosition(currentPosition);
 }
 
 //-----------------------------------------------------------------------------------
@@ -364,10 +392,8 @@ void TheGame::SetUpShader()
         new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/normalDebug.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
-    //m_testMaterial->SetDiffuseTexture("Data/Textures/Disc_Textures/SV_Disc_Base_Color.png");
-    m_testMaterial->SetDiffuseTexture("Data/Textures/Small_Vinyl_Sleeve/SV_Example_Sleeve.tga");
+    m_testMaterial->SetDiffuseTexture("Data/Images/marth.png");
     m_testMaterial->SetNormalTexture("Data/Images/stone_normal.png");
-    m_testMaterial->SetEmissiveTexture("Data/Images/pattern_81/maymay.tga");
     m_testMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
     m_testMaterial->SetVec4Uniform("gDissolveColor", Vector4(0.0f, 1.0f, 0.3f, 1.0f));
     m_testMaterial->SetVec4Uniform("gColor", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -450,7 +476,6 @@ void TheGame::SetUpShader()
 
     m_uvDebugMaterial->SetDiffuseTexture(Renderer::instance->m_defaultTexture);
     m_uvDebugMaterial->SetNormalTexture(Renderer::instance->m_defaultTexture);
-    m_uvDebugMaterial->SetEmissiveTexture("Data/Images/pattern_81/maymay.tga");
     m_uvDebugMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
     m_uvDebugMaterial->SetVec4Uniform("gDissolveColor", Vector4(0.0f, 1.0f, 0.3f, 1.0f));
     m_uvDebugMaterial->SetVec4Uniform("gColor", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -478,7 +503,6 @@ void TheGame::SetUpShader()
 
     m_normalDebugMaterial->SetDiffuseTexture("Data/Images/stone_diffuse.png");
     m_normalDebugMaterial->SetNormalTexture("Data/Images/stone_normal.png");
-    m_normalDebugMaterial->SetEmissiveTexture("Data/Images/pattern_81/maymay.tga");
     m_normalDebugMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
     m_normalDebugMaterial->SetVec4Uniform("gDissolveColor", Vector4(0.0f, 1.0f, 0.3f, 1.0f));
     m_normalDebugMaterial->SetVec4Uniform("gColor", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -566,6 +590,7 @@ void TheGame::LoadDefaultScene()
 {
     Mesh* inner45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
     Mesh* outer45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
+    Mesh* sleeve45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
 
     Material* inner45Material = new Material(
         new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
@@ -575,15 +600,27 @@ void TheGame::LoadDefaultScene()
         new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
+    Material* sleeve45Material = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
 
-    inner45Material->SetDiffuseTexture("Data/Textures/Small_Vinyl_Label/Label/SV_Label_Example_BaseColor.tga");
-    outer45Material->SetDiffuseTexture("Data/Textures/Disc_Textures/SV_Disc_Base_Color.png");
+    inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
+    outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
+    sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/45Sleeve.tga");
 
     Renderable3D* inner45Renderable = new Renderable3D(inner45, inner45Material);
+    m_45Sleeve = new Renderable3D(sleeve45, sleeve45Material);
     m_45Vinyl = new Renderable3D(outer45, outer45Material);
+
     m_45Vinyl->m_transform.AddChild(&inner45Renderable->m_transform);
-    m_45Vinyl->m_transform.SetPosition(Vector3(10.0f, 0.0f, 10.0f));
+    m_45Vinyl->m_transform.AddChild(&m_45Sleeve->m_transform);
+    m_45Vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
+
+    m_45Sleeve->m_transform.IgnoreParentRotation();
+    m_45Sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
 
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(inner45Renderable);
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Vinyl);
+    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Sleeve);
 }
