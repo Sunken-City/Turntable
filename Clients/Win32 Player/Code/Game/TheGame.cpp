@@ -48,6 +48,64 @@ CONSOLE_COMMAND(twah)
     AudioSystem::instance->PlaySound(TheGame::instance->m_twahSFX);
 }
 
+CONSOLE_COMMAND(playsong)
+{
+    if (!(args.HasArgs(1) || args.HasArgs(2)))
+    {
+        Console::instance->PrintLine("playsound <filename> (rpm)", RGBA::RED);
+        return;
+    }
+    std::string filepath = args.GetStringArgument(0);
+    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
+    if (song == MISSING_SOUND_ID)
+    {
+        Console::instance->PrintLine("Could not find file.", RGBA::RED);
+        return;
+    }
+
+    float frequency = 1.0f;
+    if (args.HasArgs(2))
+    {
+        float rpm = args.GetFloatArgument(1);
+        frequency = rpm / 45.0f;
+        TheGame::instance->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
+    }
+    else
+    {
+        TheGame::instance->m_currentRotationRate = TheGame::RPS_45;
+    }
+
+    AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
+    if (AudioSystem::instance->IsPlaying(channel))
+    {
+        AudioSystem::instance->StopChannel(channel);
+    }
+    TheGame::instance->m_currentlyPlayingSong = song;
+    AudioSystem::instance->PlaySound(song);
+    AudioSystem::instance->MultiplyCurrentFrequency(song, frequency);
+}
+
+CONSOLE_COMMAND(setsongrpm)
+{
+    if (!args.HasArgs(1))
+    {
+        Console::instance->PrintLine("setsongrpm <rpm>", RGBA::RED);
+        return;
+    }
+
+    AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
+    if (!channel || !AudioSystem::instance->IsPlaying(channel))
+    {
+        Console::instance->PrintLine("No song is currently playing. Play a song using playsong first.", RGBA::RED);
+        return;
+    }
+
+    float rpm = args.GetFloatArgument(0);
+    float frequency = rpm / 45.0f;
+    TheGame::instance->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
+    AudioSystem::instance->MultiplyCurrentFrequency(TheGame::instance->m_currentlyPlayingSong, frequency);
+}
+
 MeshRenderer* quadForFBO;
 unsigned int samplerID;
 unsigned int diffuseID;
@@ -268,7 +326,7 @@ void TheGame::CheckForImportedMeshes()
 //-----------------------------------------------------------------------------------
 void TheGame::UpdateVinylRotation(float deltaSeconds)
 {
-    float rotationThisFrame = RPS_45 * deltaSeconds;
+    float rotationThisFrame = m_currentRotationRate * deltaSeconds;
     Vector3 newRotation = m_45Vinyl->m_transform.GetWorldRotationDegrees();
     newRotation.y += rotationThisFrame;
     m_45Vinyl->m_transform.SetRotationDegrees(newRotation);
@@ -278,7 +336,7 @@ void TheGame::UpdateVinylRotation(float deltaSeconds)
 void TheGame::UpdateVinylJacket()
 {
     static bool jacketOn = true;
-    static Vector3 desiredJacketPosition = Vector3(0.0f, 0.5f, 0.0f);
+    static Vector3 desiredJacketPosition = m_45Sleeve->m_transform.GetLocalPosition();
     if (InputSystem::instance->WasKeyJustPressed('J'))
     {
         jacketOn = !jacketOn;
@@ -607,7 +665,7 @@ void TheGame::LoadDefaultScene()
 
     inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
     outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
-    sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/45Sleeve.tga");
+    sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
 
     Renderable3D* inner45Renderable = new Renderable3D(inner45, inner45Material);
     m_45Sleeve = new Renderable3D(sleeve45, sleeve45Material);
@@ -619,6 +677,8 @@ void TheGame::LoadDefaultScene()
 
     m_45Sleeve->m_transform.IgnoreParentRotation();
     m_45Sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
+    m_45Sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
+    m_45Sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
 
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(inner45Renderable);
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Vinyl);

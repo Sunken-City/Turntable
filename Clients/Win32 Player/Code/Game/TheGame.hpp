@@ -31,6 +31,7 @@ public:
     void RenderCoolStuff() const;
     void RenderPostProcess() const;
     void LoadDefaultScene();
+    float CalculateRotationRateFromRPM(float RPM) { return (RPM * 360) / 60; }
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static TheGame* instance;
@@ -41,10 +42,12 @@ public:
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     SoundID m_twahSFX;
+    SoundID m_currentlyPlayingSong;
     Framebuffer* m_fbo;
 
     Renderable3D* m_45Vinyl = nullptr;
     Renderable3D* m_45Sleeve = nullptr;
+    float m_currentRotationRate = 0.0f;
 
 private:
     bool m_showSkeleton;
