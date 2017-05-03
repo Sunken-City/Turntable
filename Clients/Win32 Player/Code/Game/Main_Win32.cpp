@@ -13,6 +13,9 @@
 #include "Game/TheApp.hpp"
 #include "Game/TheGame.hpp"
 #include "Engine/Core/BuildConfig.hpp"
+#include "Engine/Renderer/Texture.hpp"
+#include "Engine/Renderer/Framebuffer.hpp"
+#include "Engine/Renderer/3D/ForwardRenderer.hpp"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -197,8 +200,6 @@ void Update()
     TheGame::instance->Update(deltaSeconds);
 }
 
-#include "Engine/Renderer/Texture.hpp"
-#include "Engine/Renderer/Framebuffer.hpp"
 //-----------------------------------------------------------------------------------------------
 void Render()
 {
@@ -231,6 +232,7 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     SetProcessDPIAware();
     CreateOpenGLWindow(applicationInstanceHandle);
     Renderer::instance = new Renderer();
+    ForwardRenderer::instance = new ForwardRenderer();
     AudioSystem::instance = new AudioSystem();
     InputSystem::instance = new InputSystem(g_hWnd, 0, WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT);
     Console::instance = new Console();
@@ -252,6 +254,8 @@ void Shutdown()
     InputSystem::instance = nullptr;
     delete AudioSystem::instance;
     AudioSystem::instance = nullptr;
+    delete ForwardRenderer::instance;
+    ForwardRenderer::instance = nullptr;
     delete Renderer::instance;
     Renderer::instance = nullptr;
 }

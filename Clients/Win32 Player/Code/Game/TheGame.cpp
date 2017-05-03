@@ -32,6 +32,8 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include "Engine/Input/InputDevices/MouseInputDevice.hpp"
+#include "Engine/Renderer/3D/ForwardRenderer.hpp"
+#include "Engine/Renderer/3D/Scene3D.hpp"
 
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
@@ -79,6 +81,8 @@ TheGame::TheGame()
     builder.CopyToMesh(quadForFBO->m_mesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
 
     quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
+    
+    LoadDefaultScene();
 }
 
 TheGame::~TheGame()
@@ -91,7 +95,7 @@ float spinFactor = 1.f;
 static float animTime = 0.0f;
 
 //-----------------------------------------------------------------------------------
-void TheGame::Update(float deltaTime)
+void TheGame::Update(float deltaSeconds)
 {
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
@@ -108,7 +112,12 @@ void TheGame::Update(float deltaTime)
         return;
     }
 
-    m_camera->Update(deltaTime);
+    m_camera->Update(deltaSeconds);
+
+    float rotationThisFrame = RPS_45 * deltaSeconds;
+    Vector3 newRotation = m_45Vinyl->m_transform.GetWorldRotationDegrees();
+    newRotation.y += rotationThisFrame;
+    m_45Vinyl->m_transform.SetRotationDegrees(newRotation);
 
     for (int i = 0; i < 16; i++)
     {
@@ -535,6 +544,7 @@ void TheGame::RenderCoolStuff() const
     GL_CHECK_ERROR();
     loadedMesh->m_material = m_currentMaterial;
     loadedMesh->Render();
+    ForwardRenderer::instance->Render();
 }
 
 //-----------------------------------------------------------------------------------
@@ -549,4 +559,31 @@ void TheGame::RenderPostProcess() const
     quadForFBO->m_material->SetMatrices(model, view, proj);
     quadForFBO->m_material->BindAvailableTextures();
     quadForFBO->Render();
+}
+
+//-----------------------------------------------------------------------------------
+void TheGame::LoadDefaultScene()
+{
+    Mesh* inner45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
+    Mesh* outer45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
+
+    Material* inner45Material = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+    Material* outer45Material = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+
+    inner45Material->SetDiffuseTexture("Data/Textures/Small_Vinyl_Label/Label/SV_Label_Example_BaseColor.tga");
+    outer45Material->SetDiffuseTexture("Data/Textures/Disc_Textures/SV_Disc_Base_Color.png");
+
+    Renderable3D* inner45Renderable = new Renderable3D(inner45, inner45Material);
+    m_45Vinyl = new Renderable3D(outer45, outer45Material);
+    m_45Vinyl->m_transform.AddChild(&inner45Renderable->m_transform);
+    m_45Vinyl->m_transform.SetPosition(Vector3(10.0f, 0.0f, 10.0f));
+
+    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(inner45Renderable);
+    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Vinyl);
 }
