@@ -196,14 +196,17 @@ void TheGame::Update(float deltaSeconds)
     if (InputSystem::instance->WasKeyJustPressed('B'))
     {
         m_currentMaterial = m_testMaterial;
+        m_45Vinyl->m_meshRenderer.m_material = m_testMaterial;
     }
     else if (InputSystem::instance->WasKeyJustPressed('N'))
     {
         m_currentMaterial = m_normalDebugMaterial;
+        m_45Vinyl->m_meshRenderer.m_material = m_normalDebugMaterial;
     }
     else if (InputSystem::instance->WasKeyJustPressed('U'))
     {
         m_currentMaterial = m_uvDebugMaterial;
+        m_45Vinyl->m_meshRenderer.m_material = m_uvDebugMaterial;
     }
 
 /*     for (int i = 0; i < 16; i++)
@@ -466,7 +469,7 @@ void TheGame::SetUpShader()
     );
 
     m_normalDebugMaterial = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/normalDebug.frag"),
+        new ShaderProgram("Data/Shaders/passNormal.vert", "Data/Shaders/justNormalDebug.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
     m_testMaterial->SetDiffuseTexture("Data/Images/marth.png");
@@ -682,8 +685,8 @@ void TheGame::LoadDefaultScene()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
 
-    inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
-    //inner45Material->SetDiffuseTexture("Data/Images/marth.png");
+    //inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
+    inner45Material->SetDiffuseTexture("Data/Images/marth.png");
     //inner45Material->SetDiffuseTexture("Data/Images/AlbumArt/p5.jpg");
     outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
     sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
