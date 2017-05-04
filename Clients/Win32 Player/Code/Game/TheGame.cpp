@@ -673,15 +673,15 @@ void TheGame::LoadDefaultScene()
     Mesh* sleeve45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
 
     Material* inner45Material = new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
     Material* outer45Material = new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/justNormalDebug.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
     Material* sleeve45Material = new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
 
