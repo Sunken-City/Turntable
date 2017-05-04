@@ -28,7 +28,7 @@ public:
     void End3DPerspective() const;
     void RenderAxisLines() const;
     void SetUpShader();
-    void RenderCoolStuff() const;
+    void RenderLoadedMesh() const;
     void RenderPostProcess() const;
     void LoadDefaultScene();
     float CalculateRotationRateFromRPM(float RPM) { return (RPM * 360) / 60; }

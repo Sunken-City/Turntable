@@ -17,7 +17,7 @@ void main(void)
 {
   passColor = inColor;
   passUV0 = inUV0;
-  passNormal = inNormal;
+  passNormal = (vec4(inNormal, 0.0f) * gModel).xyz;
 
   vec4 pos = vec4(inPosition, 1.0f);
   pos = pos * gModel * gView * gProj; //column major

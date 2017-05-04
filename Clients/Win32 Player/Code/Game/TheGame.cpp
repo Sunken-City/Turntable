@@ -376,42 +376,10 @@ void TheGame::Render() const
     ENSURE_NO_MATRIX_STACK_SIDE_EFFECTS(Renderer::instance->m_viewStack);
     ENSURE_NO_MATRIX_STACK_SIDE_EFFECTS(Renderer::instance->m_projStack);
     Begin3DPerspective();
-    RenderCoolStuff();
-    RenderAxisLines();
-    if (g_loadedSkeleton && m_showSkeleton)
     {
-        if (g_loadedMotions)
-        {
-            BoneMask upperHalfMask = BoneMask(g_loadedSkeleton->GetJointCount());
-            upperHalfMask.SetAllBonesTo(1.0f);
-            for (int i = 0; i < 9; ++i)
-            {
-                upperHalfMask.boneMasks[i] = 0.0f;
-            }
-            BoneMask lowerHalfMask = BoneMask(g_loadedSkeleton->GetJointCount());
-            lowerHalfMask.SetAllBonesTo(0.0f);
-            for (int i = 0; i < 9; ++i)
-            {
-                lowerHalfMask.boneMasks[i] = 1.0f;
-            }
-            g_loadedMotions->at(0)->ApplyMotionToSkeleton(g_loadedSkeleton, (float)GetCurrentTimeSeconds(), upperHalfMask);
-            g_loadedMotions->at(1)->ApplyMotionToSkeleton(g_loadedSkeleton, (float)GetCurrentTimeSeconds(), lowerHalfMask);
-            if (g_loadedSkeleton->m_joints)
-            {
-                delete g_loadedSkeleton->m_joints->m_mesh;
-                delete g_loadedSkeleton->m_joints->m_material;
-                delete g_loadedSkeleton->m_joints;
-                g_loadedSkeleton->m_joints = nullptr;
-            }
-            if (g_loadedSkeleton->m_bones)
-            {
-                delete g_loadedSkeleton->m_bones->m_mesh;
-                delete g_loadedSkeleton->m_bones->m_material;
-                delete g_loadedSkeleton->m_bones;
-                g_loadedSkeleton->m_bones = nullptr;
-            }
-        }
-        g_loadedSkeleton->Render();
+        RenderLoadedMesh();
+        ForwardRenderer::instance->Render();
+        RenderAxisLines();
     }
     End3DPerspective();
     Console::instance->Render();
@@ -473,182 +441,29 @@ void TheGame::SetUpShader()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
     m_testMaterial->SetDiffuseTexture("Data/Images/marth.png");
-    m_testMaterial->SetNormalTexture("Data/Images/stone_normal.png");
-    m_testMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
-    m_testMaterial->SetVec4Uniform("gDissolveColor", Vector4(0.0f, 1.0f, 0.3f, 1.0f));
-    m_testMaterial->SetVec4Uniform("gColor", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-    m_testMaterial->SetVec4Uniform("gAmbientLight", Vector4(1.0f, 1.0f, 1.0f, 0.0f));
-    m_testMaterial->SetFloatUniform("gSpecularPower", 16.0f);
-    m_testMaterial->SetFloatUniform("gSpecularIntensity", 0.5f); //0 to 1
-    m_testMaterial->SetVec4Uniform("gFogColor", Vector4(0.7f, 0.7f, 0.7f, 1.0f));
-    m_testMaterial->SetFloatUniform("gMinFogDistance", 10.0f);
-    m_testMaterial->SetFloatUniform("gMaxFogDistance", 20.0f);
-    m_testMaterial->SetIntUniform("gLightCount", NUM_LIGHTS);
-
-    lightMaterial = new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //fixedVertexFormat timeBased basicLight
-        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        );
-    lightMaterial->SetDiffuseTexture(Renderer::instance->m_defaultTexture);
-
-    //Set all attributes of the arrays to default values
-    for (int i = 0; i < 1; i++)
-    {
-        m_lightPositions[i] = Vector3::ZERO;
-        m_lightDirections[i] = Vector3::FORWARD;
-        m_lightDirectionFactor[i] = 0.0f;
-        m_nearPower[i] = 1.0f;
-        m_farPower[i] = 1.0f;
-        m_nearDistance[i] = 2.0f;
-        m_farDistance[i] = 6.0f;
-        m_innerPower[i] = 1.0f;
-        m_outerPower[i] = 1.0f;
-        m_innerAngle[i] = 1.0f;
-        m_outerAngle[i] = -1.0f;
-        m_lightColors[i] = RGBA::BLACK.ToVec4(); //i % 2 == 0 ? RGBA::RED.ToVec4() : RGBA::BLUE.ToVec4();// 
-    }
-
-
-    //Initialize the lights for the demo
-    m_lights[0] = Light(Vector3(10.0f), RGBA(RGBA::RED), lightMaterial);
-    m_lights[0].ConvertToLocalPointLight(2.0f, 60.0f, 100.0f, 0.0f);
-//     m_lights[1] = Light(Vector3(10.0f), RGBA(RGBA::GREEN), lightMaterial);
-//     m_lights[1].ConvertToGlobalDirectLight(-Vector3::UP, 2.0f, 60.0f);
-
-    //Initialize the arrays with our values
-    for (int i = 0; i < NUM_LIGHTS; i++)
-    {
-        m_lightColors[i] = m_lights[i].GetColor();
-        m_lightDirections[i] = m_lights[i].GetDirection();
-        m_lightDirectionFactor[i] = m_lights[i].IsDirectional() ? 1.0f : 0.0f;
-        m_nearPower[i] = m_lights[i].GetNearPower();
-        m_farPower[i] = m_lights[i].GetFarPower();
-        m_nearDistance[i] = m_lights[i].GetNearDistance();
-        m_farDistance[i] = m_lights[i].GetFarDistance();
-        m_innerPower[i] = m_lights[i].GetInnerPower();
-        m_outerPower[i] = m_lights[i].GetOuterPower();
-        m_innerAngle[i] = m_lights[i].GetInnerAngle();
-        m_outerAngle[i] = m_lights[i].GetOuterAngle();
-    }
-
-    for (int i = 0; i < NUM_LIGHTS; i++)
-    {
-        m_testMaterial->SetVec4Uniform(Stringf("gLightColor[%i]", i).c_str(), m_lightColors[i], 16);
-        m_testMaterial->SetVec3Uniform(Stringf("gLightDirection[%i]", i).c_str(), m_lightDirections[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gLightDirectionFactor[%i]", i).c_str(), m_lightDirectionFactor[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gNearPower[%i]", i).c_str(), m_nearPower[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gFarPower[%i]", i).c_str(), m_farPower[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gNearDistance[%i]", i).c_str(), m_nearDistance[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gFarDistance[%i]", i).c_str(), m_farDistance[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gInnerPower[%i]", i).c_str(), m_innerPower[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gOuterPower[%i]", i).c_str(), m_outerPower[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gInnerAngle[%i]", i).c_str(), m_innerAngle[i], 16);
-        m_testMaterial->SetFloatUniform(Stringf("gOuterAngle[%i]", i).c_str(), m_outerAngle[i], 16);
-    }
     m_currentMaterial = m_testMaterial;
-
-    MeshBuilder builder;
-    builder.AddCube(2.0f);
-    //Lol more blatant memory leaks fml
-    loadedMesh = new MeshRenderer(new Mesh(), m_currentMaterial);
-    builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
-    
-
-    m_uvDebugMaterial->SetDiffuseTexture(Renderer::instance->m_defaultTexture);
-    m_uvDebugMaterial->SetNormalTexture(Renderer::instance->m_defaultTexture);
-    m_uvDebugMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
-    m_uvDebugMaterial->SetVec4Uniform("gDissolveColor", Vector4(0.0f, 1.0f, 0.3f, 1.0f));
-    m_uvDebugMaterial->SetVec4Uniform("gColor", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-    m_uvDebugMaterial->SetVec4Uniform("gAmbientLight", Vector4(1.0f, 1.0f, 1.0f, 0.0f));
-    m_uvDebugMaterial->SetFloatUniform("gSpecularPower", 16.0f);
-    m_uvDebugMaterial->SetFloatUniform("gSpecularIntensity", 0.5f); //0 to 1
-    m_uvDebugMaterial->SetVec4Uniform("gFogColor", Vector4(0.7f, 0.7f, 0.7f, 1.0f));
-    m_uvDebugMaterial->SetFloatUniform("gMinFogDistance", 10.0f);
-    m_uvDebugMaterial->SetFloatUniform("gMaxFogDistance", 20.0f);
-    m_uvDebugMaterial->SetIntUniform("gLightCount", NUM_LIGHTS);
-    for (int i = 0; i < NUM_LIGHTS; i++)
-    {
-        m_uvDebugMaterial->SetVec4Uniform(Stringf("gLightColor[%i]", i).c_str(), m_lightColors[i], 16);
-        m_uvDebugMaterial->SetVec3Uniform(Stringf("gLightDirection[%i]", i).c_str(), m_lightDirections[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gLightDirectionFactor[%i]", i).c_str(), m_lightDirectionFactor[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gNearPower[%i]", i).c_str(), m_nearPower[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gFarPower[%i]", i).c_str(), m_farPower[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gNearDistance[%i]", i).c_str(), m_nearDistance[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gFarDistance[%i]", i).c_str(), m_farDistance[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gInnerPower[%i]", i).c_str(), m_innerPower[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gOuterPower[%i]", i).c_str(), m_outerPower[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gInnerAngle[%i]", i).c_str(), m_innerAngle[i], 16);
-        m_uvDebugMaterial->SetFloatUniform(Stringf("gOuterAngle[%i]", i).c_str(), m_outerAngle[i], 16);
-    }
-
-    m_normalDebugMaterial->SetDiffuseTexture("Data/Images/stone_diffuse.png");
-    m_normalDebugMaterial->SetNormalTexture("Data/Images/stone_normal.png");
-    m_normalDebugMaterial->SetNoiseTexture("Data/Images/perlinNoise.png");
-    m_normalDebugMaterial->SetVec4Uniform("gDissolveColor", Vector4(0.0f, 1.0f, 0.3f, 1.0f));
-    m_normalDebugMaterial->SetVec4Uniform("gColor", Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-    m_normalDebugMaterial->SetVec4Uniform("gAmbientLight", Vector4(1.0f, 1.0f, 1.0f, 0.0f));
-    m_normalDebugMaterial->SetFloatUniform("gSpecularPower", 16.0f);
-    m_normalDebugMaterial->SetFloatUniform("gSpecularIntensity", 0.5f); //0 to 1
-    m_normalDebugMaterial->SetVec4Uniform("gFogColor", Vector4(0.7f, 0.7f, 0.7f, 1.0f));
-    m_normalDebugMaterial->SetFloatUniform("gMinFogDistance", 10.0f);
-    m_normalDebugMaterial->SetFloatUniform("gMaxFogDistance", 20.0f);
-    m_normalDebugMaterial->SetIntUniform("gLightCount", NUM_LIGHTS);
-    for (int i = 0; i < NUM_LIGHTS; i++)
-    {
-        m_normalDebugMaterial->SetVec4Uniform(Stringf("gLightColor[%i]", i).c_str(), m_lightColors[i], 16);
-        m_normalDebugMaterial->SetVec3Uniform(Stringf("gLightDirection[%i]", i).c_str(), m_lightDirections[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gLightDirectionFactor[%i]", i).c_str(), m_lightDirectionFactor[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gNearPower[%i]", i).c_str(), m_nearPower[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gFarPower[%i]", i).c_str(), m_farPower[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gNearDistance[%i]", i).c_str(), m_nearDistance[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gFarDistance[%i]", i).c_str(), m_farDistance[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gInnerPower[%i]", i).c_str(), m_innerPower[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gOuterPower[%i]", i).c_str(), m_outerPower[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gInnerAngle[%i]", i).c_str(), m_innerAngle[i], 16);
-        m_normalDebugMaterial->SetFloatUniform(Stringf("gOuterAngle[%i]", i).c_str(), m_outerAngle[i], 16);
-    }
-
-    int NUM_BONES = 200;
-    Matrix4x4 mat = Matrix4x4::IDENTITY;
-    for (int i = 0; i < NUM_BONES; ++i)
-    {
-        //TODO: Bones are pulled for a little while, please put these back in when materials/shaders are better.
-        //m_testMaterial->SetMatrix4x4Uniform(Stringf("gBoneMatrices[%i]", i).c_str(), mat, NUM_BONES);
-    }
 }
 
 //-----------------------------------------------------------------------------------
-void TheGame::RenderCoolStuff() const
+void TheGame::RenderLoadedMesh() const
 {
+    if (!loadedMesh)
+    {
+        return;
+    }
     Matrix4x4 view = Renderer::instance->GetView();
     Matrix4x4 proj = Renderer::instance->GetProjection();
     Matrix4x4 translation;
     Matrix4x4 rotation;
     Matrix4x4 model;
 
-    m_currentMaterial->m_shaderProgram->SetVec3Uniform("gCameraPosition", m_camera->m_position);
-
     Matrix4x4::MatrixMakeTranslation(&translation, Vector3(0.0f, sin((float)GetCurrentTimeSeconds()) * spinFactor, 3.0f));
     Matrix4x4::MatrixMakeRotationAroundY(&rotation, (float)GetCurrentTimeSeconds() * spinFactor);
     Matrix4x4::MatrixMultiply(&model, &rotation, &translation);
 
-    if (g_loadedMotion && g_loadedSkeleton)
-    {
-        int NUM_BONES = 200;
-        for (int i = 0; i < g_loadedSkeleton->m_modelToBoneSpace.size(); ++i)
-        {
-            Matrix4x4 inverseWorld = g_loadedSkeleton->m_modelToBoneSpace[i];
-            Matrix4x4 mat = Matrix4x4::IDENTITY;
-            Matrix4x4::MatrixMultiply(&mat, &inverseWorld, &g_loadedSkeleton->m_boneToModelSpace[i]);
-            m_testMaterial->SetMatrix4x4Uniform(Stringf("gBoneMatrices[%i]", i).c_str(), mat, NUM_BONES);
-        }
-    }
-
     m_currentMaterial->SetMatrices(model, view, proj);
-    GL_CHECK_ERROR();
     loadedMesh->m_material = m_currentMaterial;
     loadedMesh->Render();
-    ForwardRenderer::instance->Render();
 }
 
 //-----------------------------------------------------------------------------------
