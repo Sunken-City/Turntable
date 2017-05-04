@@ -128,7 +128,7 @@ unsigned int diffuseID;
 unsigned int normalMapID;
 MeshRenderer* loadedMesh;
 Material* lightMaterial;
-const int NUM_LIGHTS = 2;
+const int NUM_LIGHTS = 1;
 
 TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
@@ -459,7 +459,7 @@ void TheGame::RenderAxisLines() const
 void TheGame::SetUpShader()
 {
     m_testMaterial = new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
 
@@ -492,7 +492,7 @@ void TheGame::SetUpShader()
     lightMaterial->SetDiffuseTexture(Renderer::instance->m_defaultTexture);
 
     //Set all attributes of the arrays to default values
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 1; i++)
     {
         m_lightPositions[i] = Vector3::ZERO;
         m_lightDirections[i] = Vector3::FORWARD;
@@ -510,10 +510,10 @@ void TheGame::SetUpShader()
 
 
     //Initialize the lights for the demo
-// 	m_lights[0] = Light(Vector3::ZERO, RGBA(RGBA::RED), lightMaterial);
-// 	m_lights[0].ConvertToLocalPointLight(2.0f, 6.0f, 1.0f, 0.0f);
-// 	m_lights[1] = Light(Vector3::ZERO, RGBA(RGBA::GREEN), lightMaterial);
-// 	m_lights[1].ConvertToGlobalDirectLight(Vector3::FORWARD, 2.0f, 6.0f);
+    m_lights[0] = Light(Vector3(10.0f), RGBA(RGBA::RED), lightMaterial);
+    m_lights[0].ConvertToLocalPointLight(2.0f, 60.0f, 100.0f, 0.0f);
+//     m_lights[1] = Light(Vector3(10.0f), RGBA(RGBA::GREEN), lightMaterial);
+//     m_lights[1].ConvertToGlobalDirectLight(-Vector3::UP, 2.0f, 60.0f);
 
     //Initialize the arrays with our values
     for (int i = 0; i < NUM_LIGHTS; i++)
@@ -677,7 +677,7 @@ void TheGame::LoadDefaultScene()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
     Material* outer45Material = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/justNormalDebug.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
     Material* sleeve45Material = new Material(

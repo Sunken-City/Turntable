@@ -26,8 +26,7 @@ uniform int gEffectState;
 in vec4 passColor;
 in vec2 passUV0;
 in vec3 passPosition;
-in vec3 passTangent;
-in vec3 passBitangent;
+in vec3 passNormal;
 
 out vec4 outColor;
 
@@ -75,41 +74,16 @@ vec3 CalculateSpecularFactor(vec3 normal)
   return color.rgb;
 }
 
-void DissolveOverTime(void)
-{
-  vec3 noise = texture(gNoiseTexture, passUV0).rgb;
-  float noiseMagnitude = sqrt(dot(noise, noise));
-  if(gDissolveAmount > noiseMagnitude)
-  {
-    discard;
-  }
-  if(gDissolveAmount + 0.05f > noiseMagnitude)
-  {
-    outColor = gDissolveColor;
-  }
-}
-
 void main(void)
 {
-  vec3 surfaceTangent = normalize(passTangent);
-  vec3 surfaceBitangent = normalize(passBitangent);
-  vec3 surfaceNormal = cross(surfaceBitangent, surfaceTangent);
-  surfaceBitangent = cross(surfaceTangent, surfaceNormal);
-
-  mat3 tbn = mat3(surfaceTangent, surfaceBitangent, surfaceNormal);
-  tbn = transpose(tbn);
+  vec3 normal = passNormal;
 
   vec4 diffuse = texture(gDiffuseTexture, passUV0);
-  vec3 normalMap = texture(gNormalTexture, passUV0).rgb;
-  vec4 emissive = texture(gEmissiveTexture, passUV0);
-
-  vec3 normal = normalize((normalMap * vec3(2.0f, 2.0f, 1.0f)) - vec3(1.0f, 1.0f, 0.0f));
-  normal = normal * tbn;
 
   vec3 light_intensity = CalculateLightFactor(normal);
   vec3 specularFactor = CalculateSpecularFactor(normal);
 
-  outColor = passColor * gColor * diffuse * vec4(light_intensity, 1.0f) + vec4(specularFactor, 1.0f) + vec4(emissive.rgb * emissive.a, 1.0f);
+  outColor = passColor * gColor * diffuse * vec4(light_intensity, 1.0f) + vec4(specularFactor, 1.0f);
   outColor = clamp(outColor, vec4(0.0f), vec4(1.0f));
   float distanceToPixel = distance(passPosition, gCameraPosition);
   if(distanceToPixel > gMaxFogDistance)
@@ -121,30 +95,8 @@ void main(void)
     float fogRatio = (distanceToPixel - gMinFogDistance) / (gMaxFogDistance - gMinFogDistance);
     float inverseFogRatio = 1.0f - fogRatio;
     outColor = vec4((gFogColor.rgb * fogRatio) + (outColor.rgb * inverseFogRatio), outColor.a);
-  }    
-  DissolveOverTime();
+  }
 }
-  //Debug line, output UV's as colors.
-  //outColor = vec4(passUV0, 0.0f, 1.0f);
-
-
-  //vec3 normal = vec3(0.0f, 0.0f, -1.0f); //Whatever is forward for your texture.
-  //ranges of a color (0-1, 0-1, 0-1, DON'T CARE)
-  //maps to a range (-1 - 1, -1 - 1, 0 - 1);
-
-  //DEBUG: See if both textures are loaded. Load half as one texture and half as the other.
-
-  /*
-  if(passUV0.x > .5f)
-  {
-    outColor = diffuse;
-  }
-  else
-  {
-    outColor = vec4(normalMap, 1.0f);
-  }
-  */
-
 
   //DEBUG: See the actual color of the light on a plain black/white texture.
   //outColor = vec4(light_intensity, 1.0f);
