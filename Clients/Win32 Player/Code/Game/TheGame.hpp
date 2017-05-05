@@ -10,6 +10,7 @@ class RGBA;
 class Camera3D;
 class Material;
 class Renderable3D;
+class VinylRecord;
 
 class TheGame
 {
@@ -20,8 +21,6 @@ public:
 
     ////FUNCTIONS/////////////////////////////////////////////////////////////////////
     void Update(float deltaTime);
-    void UpdateVinylRotation(float deltaSeconds);
-    void UpdateVinylJacket();
     void CheckForImportedMeshes();
     void Render() const;
     void Begin3DPerspective() const;
@@ -37,21 +36,14 @@ public:
     static TheGame* instance;
     
     //CONSTANTS/////////////////////////////////////////////////////////////////////
-    static constexpr float RPS_45 = (45 * 360) / 60;
-    static constexpr float RPS_33 = (33.333333333 * 360) / 60;
+    static constexpr float RPS_45 = (45.0f * 360.0f) / 60.0f;
+    static constexpr float RPS_33 = (33.333333333f * 360.0f) / 60.0f;
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     SoundID m_twahSFX;
     SoundID m_currentlyPlayingSong;
     Framebuffer* m_fbo;
-
-    Renderable3D* m_45Vinyl = nullptr;
-    Renderable3D* m_45VinylLabel = nullptr;
-    Renderable3D* m_45Sleeve = nullptr;
-    Material* m_inner45Material;
-    Material* m_outer45Material;
-
-    float m_currentRotationRate = 0.0f;
+    VinylRecord* m_currentRecord = nullptr;
 
 private:
     bool m_showSkeleton;

@@ -34,6 +34,7 @@
 #include "Engine/Input/InputDevices/MouseInputDevice.hpp"
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
 #include "Engine/Renderer/3D/Scene3D.hpp"
+#include "Renderables/VinylRecord.hpp"
 
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
@@ -68,11 +69,11 @@ CONSOLE_COMMAND(playsong)
     {
         float rpm = args.GetFloatArgument(1);
         frequency = rpm / 45.0f;
-        TheGame::instance->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
+        TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
     }
     else
     {
-        TheGame::instance->m_currentRotationRate = TheGame::RPS_45;
+        TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::RPS_45;
     }
 
     AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
@@ -87,6 +88,7 @@ CONSOLE_COMMAND(playsong)
 
 CONSOLE_COMMAND(stopsong)
 {
+    UNUSED(args)
     AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
     if (!channel || !AudioSystem::instance->IsPlaying(channel))
     {
@@ -97,7 +99,7 @@ CONSOLE_COMMAND(stopsong)
     {
         Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
         AudioSystem::instance->StopChannel(channel);
-        TheGame::instance->m_currentRotationRate = 0;
+        TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
     }
 }
 
@@ -118,7 +120,7 @@ CONSOLE_COMMAND(setsongrpm)
 
     float rpm = args.GetFloatArgument(0);
     float frequency = rpm / 45.0f;
-    TheGame::instance->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
+    TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
     AudioSystem::instance->MultiplyCurrentFrequency(TheGame::instance->m_currentlyPlayingSong, frequency);
 }
 
@@ -170,8 +172,7 @@ static float animTime = 0.0f;
 //-----------------------------------------------------------------------------------
 void TheGame::Update(float deltaSeconds)
 {
-    UpdateVinylRotation(deltaSeconds);
-    UpdateVinylJacket();
+    m_currentRecord->Update(deltaSeconds);
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
@@ -182,7 +183,7 @@ void TheGame::Update(float deltaSeconds)
     {
         return; //Don't do anything involving input updates.
     }
-    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::ESC))
+    else if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::ESC))
     {
         g_isQuitting = true;
         return;
@@ -191,47 +192,24 @@ void TheGame::Update(float deltaSeconds)
     ForwardRenderer::instance->Update(deltaSeconds);
     CheckForImportedMeshes();
     quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
-    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gColor"), RGBA::WHITE.ToVec4());
-    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gAmbientLight"), RGBA::BLACK.ToVec4());
-    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gLightColor"), RGBA::WHITE.ToVec4());
-    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::BLUE.ToVec4());
-    m_inner45Material->SetVec3Uniform(std::hash<std::string>{}("gLightPosition"), Vector3(30.0f, 10.0f, 30.0f));
-    m_inner45Material->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
-    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
-    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
-    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
-    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 100.0f);
-    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
-
-    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gColor"), RGBA::WHITE.ToVec4());
-    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gAmbientLight"), RGBA::BLACK.ToVec4());
-    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gLightColor"), RGBA::WHITE.ToVec4());
-    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::BLUE.ToVec4());
-    m_outer45Material->SetVec3Uniform(std::hash<std::string>{}("gLightPosition"), Vector3(30.0f, 10.0f, 30.0f));
-    m_outer45Material->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
-    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
-    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
-    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
-    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 100.0f);
-    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
 
     if (InputSystem::instance->WasKeyJustPressed('B'))
     {
         m_currentMaterial = m_testMaterial;
-        m_45Vinyl->m_meshRenderer.m_material = m_testMaterial;
-        m_45VinylLabel->m_meshRenderer.m_material = m_testMaterial;
+        m_currentRecord->m_vinyl->m_meshRenderer.m_material = m_testMaterial;
+        m_currentRecord->m_vinylLabel->m_meshRenderer.m_material = m_testMaterial;
     }
     else if (InputSystem::instance->WasKeyJustPressed('N'))
     {
         m_currentMaterial = m_normalDebugMaterial;
-        m_45Vinyl->m_meshRenderer.m_material = m_normalDebugMaterial;
-        m_45VinylLabel->m_meshRenderer.m_material = m_normalDebugMaterial;
+        m_currentRecord->m_vinyl->m_meshRenderer.m_material = m_normalDebugMaterial;
+        m_currentRecord->m_vinylLabel->m_meshRenderer.m_material = m_normalDebugMaterial;
     }
     else if (InputSystem::instance->WasKeyJustPressed('U'))
     {
         m_currentMaterial = m_uvDebugMaterial;
-        m_45Vinyl->m_meshRenderer.m_material = m_uvDebugMaterial;
-        m_45VinylLabel->m_meshRenderer.m_material = m_uvDebugMaterial;
+        m_currentRecord->m_vinyl->m_meshRenderer.m_material = m_uvDebugMaterial;
+        m_currentRecord->m_vinylLabel->m_meshRenderer.m_material = m_uvDebugMaterial;
     }
 
 /*     for (int i = 0; i < 16; i++)
@@ -368,34 +346,6 @@ void TheGame::CheckForImportedMeshes()
 }
 
 //-----------------------------------------------------------------------------------
-void TheGame::UpdateVinylRotation(float deltaSeconds)
-{
-    static float currentRotationRate = m_currentRotationRate;
-    
-    currentRotationRate = MathUtils::Lerp(0.1f, currentRotationRate, m_currentRotationRate);
-    float rotationThisFrame = currentRotationRate * deltaSeconds;
-    Vector3 newRotation = m_45Vinyl->m_transform.GetWorldRotationDegrees();
-    newRotation.y += rotationThisFrame;
-    m_45Vinyl->m_transform.SetRotationDegrees(newRotation);
-}
-
-//-----------------------------------------------------------------------------------
-void TheGame::UpdateVinylJacket()
-{
-    static bool jacketOn = true;
-    static Vector3 desiredJacketPosition = m_45Sleeve->m_transform.GetLocalPosition();
-    if (InputSystem::instance->WasKeyJustPressed('J'))
-    {
-        jacketOn = !jacketOn;
-
-        desiredJacketPosition.x = jacketOn ? 0.0f : -100.0f;
-    }
-
-    Vector3 currentPosition = MathUtils::Lerp(0.1f, m_45Sleeve->m_transform.GetLocalPosition(), desiredJacketPosition);
-    m_45Sleeve->m_transform.SetPosition(currentPosition);
-}
-
-//-----------------------------------------------------------------------------------
 void TheGame::Render() const
 {
     ENSURE_NO_MATRIX_STACK_SIDE_EFFECTS(Renderer::instance->m_viewStack);
@@ -508,44 +458,6 @@ void TheGame::RenderPostProcess() const
 //-----------------------------------------------------------------------------------
 void TheGame::LoadDefaultScene()
 {
-    Mesh* inner45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
-    Mesh* outer45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
-    Mesh* sleeve45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
-
-    m_inner45Material = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
-        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        );
-    m_outer45Material = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
-        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        );
-    Material* sleeve45Material = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
-        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        );
-
-    //m_inner45Material->SetDiffuseTexture("Data/Images/marth.png");
-    //m_inner45Material->SetDiffuseTexture("Data/Images/AlbumArt/p5.jpg");
-    m_inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
-    m_outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
-    m_outer45Material->SetNormalTexture("Data/Images/DiscTextures/45RPMSpec.png");
-    sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/FractalGeneric45Sleeve.tga");
-
-    m_45VinylLabel = new Renderable3D(inner45, m_inner45Material);
-    m_45Sleeve = new Renderable3D(sleeve45, sleeve45Material);
-    m_45Vinyl = new Renderable3D(outer45, m_outer45Material);
-
-    m_45Vinyl->m_transform.AddChild(&m_45VinylLabel->m_transform);
-    m_45Vinyl->m_transform.AddChild(&m_45Sleeve->m_transform);
-    m_45Vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
-
-    m_45Sleeve->m_transform.IgnoreParentRotation();
-    m_45Sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
-    m_45Sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
-    m_45Sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
-
-    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45VinylLabel);
-    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Vinyl);
-    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Sleeve);
+    m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_45);
+    m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
 }

@@ -6,9 +6,6 @@
       <Extensions>
       </Extensions>
     </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{6020bdab-47da-4abb-bcde-69a2b2d8e66e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Win32.cpp">
@@ -20,6 +17,7 @@
     <ClCompile Include="TheApp.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="Renderables\VinylRecord.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TheGame.hpp">
@@ -28,34 +26,6 @@
     <ClInclude Include="TheApp.hpp">
       <Filter>General</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Run_Win32\Data\Shaders\fixedVertexFormat.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\fixedVertexFormat.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\uvDebug.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\normalDebug.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\basicLight.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\basicLight.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\passNormal.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\SkinDebug.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Run_Win32\Data\Shaders\SkinDebug.frag">
-      <Filter>Shaders</Filter>
-    </None>
+    <ClInclude Include="Renderables\VinylRecord.hpp" />
   </ItemGroup>
 </Project>
