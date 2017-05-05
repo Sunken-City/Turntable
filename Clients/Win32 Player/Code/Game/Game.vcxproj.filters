@@ -20,18 +20,12 @@
     <ClCompile Include="TheApp.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="Camera3D.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TheGame.hpp">
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="TheApp.hpp">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera3D.hpp">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>

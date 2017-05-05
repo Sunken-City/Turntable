@@ -1,5 +1,4 @@
 #include "Game/TheGame.hpp"
-#include "Game/Camera3D.hpp"
 #include "Game/TheApp.hpp"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Input/InputSystem.hpp"
@@ -25,6 +24,7 @@
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Tools/fbx.hpp"
 #include "Engine/Core/BuildConfig.hpp"
+#include "Engine/Renderer/3D/Camera3D.hpp"
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
@@ -132,7 +132,6 @@ const int NUM_LIGHTS = 1;
 
 TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
-, m_camera(new Camera3D())
 , m_twahSFX(AudioSystem::instance->CreateOrGetSound("Data/SFX/Twah.wav"))
 , m_renderAxisLines(false)
 , m_showSkeleton(false)
@@ -189,7 +188,7 @@ void TheGame::Update(float deltaSeconds)
         return;
     }
 
-    m_camera->Update(deltaSeconds);
+    ForwardRenderer::instance->Update(deltaSeconds);
     CheckForImportedMeshes();
     quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
 
@@ -393,7 +392,7 @@ void TheGame::Begin3DPerspective() const
     const float farDist = 1000.0f;
     const float fovY = 50.0f;
     Renderer::instance->BeginPerspective(fovY, aspect, nearDist, farDist);	
-    Renderer::instance->PushView(m_camera->GetViewMatrix());
+    Renderer::instance->PushView(ForwardRenderer::instance->GetMainCamera()->GetViewMatrix());
 }
 
 //-----------------------------------------------------------------------------------
