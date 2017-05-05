@@ -2,15 +2,11 @@
 
 uniform sampler2D gDiffuseTexture;
 uniform sampler2D gNormalTexture;
-uniform sampler2D gEmissiveTexture;
-uniform sampler2D gNoiseTexture;
-uniform sampler2D gTexSpecular;
 
 uniform vec4 gColor;
 uniform vec4 gAmbientLight;
 uniform vec4 gLightColor;
 uniform vec4 gFogColor;
-uniform vec4 gDissolveColor;
 
 uniform vec3 gLightPosition;
 uniform vec3 gCameraPosition;
@@ -20,8 +16,6 @@ uniform float gSpecularPower;
 uniform float gMinFogDistance;
 uniform float gMaxFogDistance;
 uniform float gTime;
-uniform float gDissolveAmount;
-uniform int gEffectState;
 
 in vec4 passColor;
 in vec2 passUV0;
@@ -57,7 +51,7 @@ vec3 CalculateLightFactor(vec3 normal)
 
 vec3 CalculateSpecularFactor(vec3 normal)
 {
-  float specularIntensity = texture(gTexSpecular, passUV0).r;
+  float specularIntensity = texture(gNormalTexture, passUV0).r;
 
   vec3 vecToLight = normalize(gLightPosition - passPosition);
   vec3 vecToEye = normalize(gCameraPosition - passPosition);
@@ -83,8 +77,8 @@ void main(void)
   vec3 light_intensity = CalculateLightFactor(normal);
   vec3 specularFactor = CalculateSpecularFactor(normal);
 
-  outColor = passColor * gColor * diffuse * vec4(light_intensity, 1.0f) + vec4(specularFactor, 1.0f);
-  outColor = clamp(outColor, vec4(0.0f), vec4(1.0f));
+  outColor = passColor * diffuse * vec4(light_intensity, 1.0f) + vec4(specularFactor, 1.0f);
+  //outColor = clamp(outColor, vec4(0.0f), vec4(1.0f));
   float distanceToPixel = distance(passPosition, gCameraPosition);
   if(distanceToPixel > gMaxFogDistance)
   {
@@ -96,6 +90,8 @@ void main(void)
     float inverseFogRatio = 1.0f - fogRatio;
     outColor = vec4((gFogColor.rgb * fogRatio) + (outColor.rgb * inverseFogRatio), outColor.a);
   }
+
+  //outColor += vec4(light_intensity, 1.0f);
 }
 
   //DEBUG: See the actual color of the light on a plain black/white texture.

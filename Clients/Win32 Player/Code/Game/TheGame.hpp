@@ -46,7 +46,10 @@ public:
     Framebuffer* m_fbo;
 
     Renderable3D* m_45Vinyl = nullptr;
+    Renderable3D* m_45VinylLabel = nullptr;
     Renderable3D* m_45Sleeve = nullptr;
+    Material* m_inner45Material;
+    Material* m_outer45Material;
 
     float m_currentRotationRate = 0.0f;
 

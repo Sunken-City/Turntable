@@ -191,21 +191,47 @@ void TheGame::Update(float deltaSeconds)
     ForwardRenderer::instance->Update(deltaSeconds);
     CheckForImportedMeshes();
     quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
+    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gColor"), RGBA::WHITE.ToVec4());
+    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gAmbientLight"), RGBA::BLACK.ToVec4());
+    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gLightColor"), RGBA::WHITE.ToVec4());
+    m_inner45Material->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::BLUE.ToVec4());
+    m_inner45Material->SetVec3Uniform(std::hash<std::string>{}("gLightPosition"), Vector3(30.0f, 10.0f, 30.0f));
+    m_inner45Material->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
+    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
+    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
+    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
+    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 100.0f);
+    m_inner45Material->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
+
+    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gColor"), RGBA::WHITE.ToVec4());
+    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gAmbientLight"), RGBA::BLACK.ToVec4());
+    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gLightColor"), RGBA::WHITE.ToVec4());
+    m_outer45Material->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::BLUE.ToVec4());
+    m_outer45Material->SetVec3Uniform(std::hash<std::string>{}("gLightPosition"), Vector3(30.0f, 10.0f, 30.0f));
+    m_outer45Material->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
+    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
+    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
+    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
+    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 100.0f);
+    m_outer45Material->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
 
     if (InputSystem::instance->WasKeyJustPressed('B'))
     {
         m_currentMaterial = m_testMaterial;
         m_45Vinyl->m_meshRenderer.m_material = m_testMaterial;
+        m_45VinylLabel->m_meshRenderer.m_material = m_testMaterial;
     }
     else if (InputSystem::instance->WasKeyJustPressed('N'))
     {
         m_currentMaterial = m_normalDebugMaterial;
         m_45Vinyl->m_meshRenderer.m_material = m_normalDebugMaterial;
+        m_45VinylLabel->m_meshRenderer.m_material = m_normalDebugMaterial;
     }
     else if (InputSystem::instance->WasKeyJustPressed('U'))
     {
         m_currentMaterial = m_uvDebugMaterial;
         m_45Vinyl->m_meshRenderer.m_material = m_uvDebugMaterial;
+        m_45VinylLabel->m_meshRenderer.m_material = m_uvDebugMaterial;
     }
 
 /*     for (int i = 0; i < 16; i++)
@@ -426,7 +452,7 @@ void TheGame::RenderAxisLines() const
 void TheGame::SetUpShader()
 {
     m_testMaterial = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
     );
 
@@ -486,12 +512,12 @@ void TheGame::LoadDefaultScene()
     Mesh* outer45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
     Mesh* sleeve45 = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
 
-    Material* inner45Material = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+    m_inner45Material = new Material(
+        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
-    Material* outer45Material = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+    m_outer45Material = new Material(
+        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
     Material* sleeve45Material = new Material(
@@ -499,17 +525,18 @@ void TheGame::LoadDefaultScene()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
 
-    //inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
-    inner45Material->SetDiffuseTexture("Data/Images/marth.png");
-    //inner45Material->SetDiffuseTexture("Data/Images/AlbumArt/p5.jpg");
-    outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
+    //m_inner45Material->SetDiffuseTexture("Data/Images/marth.png");
+    //m_inner45Material->SetDiffuseTexture("Data/Images/AlbumArt/p5.jpg");
+    m_inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
+    m_outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
+    m_outer45Material->SetNormalTexture("Data/Images/DiscTextures/45RPMSpec.png");
     sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
 
-    Renderable3D* inner45Renderable = new Renderable3D(inner45, inner45Material);
+    m_45VinylLabel = new Renderable3D(inner45, m_inner45Material);
     m_45Sleeve = new Renderable3D(sleeve45, sleeve45Material);
-    m_45Vinyl = new Renderable3D(outer45, outer45Material);
+    m_45Vinyl = new Renderable3D(outer45, m_outer45Material);
 
-    m_45Vinyl->m_transform.AddChild(&inner45Renderable->m_transform);
+    m_45Vinyl->m_transform.AddChild(&m_45VinylLabel->m_transform);
     m_45Vinyl->m_transform.AddChild(&m_45Sleeve->m_transform);
     m_45Vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
 
@@ -518,7 +545,7 @@ void TheGame::LoadDefaultScene()
     m_45Sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
     m_45Sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
 
-    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(inner45Renderable);
+    ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45VinylLabel);
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Vinyl);
     ForwardRenderer::instance->GetMainScene()->RegisterRenderable(m_45Sleeve);
 }
