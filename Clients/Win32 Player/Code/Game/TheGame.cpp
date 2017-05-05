@@ -458,6 +458,6 @@ void TheGame::RenderPostProcess() const
 //-----------------------------------------------------------------------------------
 void TheGame::LoadDefaultScene()
 {
-    m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_45);
+    m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_33);
     m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
 }

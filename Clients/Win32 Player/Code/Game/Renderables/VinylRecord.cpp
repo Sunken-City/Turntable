@@ -72,40 +72,81 @@ void VinylRecord::AddToScene(Scene3D* scene)
 //-----------------------------------------------------------------------------------
 void VinylRecord::InitializeMeshes()
 {
-    Mesh* innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
-    Mesh* outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
-    Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
+    if (m_type == RPM_45)
+    {
+        Mesh* innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
+        Mesh* outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
+        Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
 
-    m_innerMaterial = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
-        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        );
-    m_outerMaterial = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
-        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        );
-    m_sleeveMaterial = new Material(
-        new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
-        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        );
+        m_innerMaterial = new Material(
+            new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+            RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+            );
+        m_outerMaterial = new Material(
+            new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+            RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+            );
+        m_sleeveMaterial = new Material(
+            new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+            RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+            );
 
-    m_innerMaterial->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
-    m_outerMaterial->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
-    m_outerMaterial->SetNormalTexture("Data/Images/DiscTextures/45RPMSpec.png");
-    m_sleeveMaterial->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
+        m_innerMaterial->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
+        m_outerMaterial->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
+        m_outerMaterial->SetNormalTexture("Data/Images/DiscTextures/45RPMSpec.png");
+        m_sleeveMaterial->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
 
-    m_vinylLabel = new Renderable3D(innerMesh, m_innerMaterial);
-    m_sleeve = new Renderable3D(sleeveMesh, m_sleeveMaterial);
-    m_vinyl = new Renderable3D(outerMesh, m_outerMaterial);
+        m_vinylLabel = new Renderable3D(innerMesh, m_innerMaterial);
+        m_sleeve = new Renderable3D(sleeveMesh, m_sleeveMaterial);
+        m_vinyl = new Renderable3D(outerMesh, m_outerMaterial);
 
-    m_vinyl->m_transform.AddChild(&m_vinylLabel->m_transform);
-    m_vinyl->m_transform.AddChild(&m_sleeve->m_transform);
-    m_vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
+        m_vinyl->m_transform.AddChild(&m_vinylLabel->m_transform);
+        m_vinyl->m_transform.AddChild(&m_sleeve->m_transform);
+        m_vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
 
-    m_sleeve->m_transform.IgnoreParentRotation();
-    m_sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
-    m_sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
-    m_sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
+        m_sleeve->m_transform.IgnoreParentRotation();
+        m_sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
+        m_sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
+        m_sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
+    }
+    else if(m_type == RPM_33)
+    {
+        Mesh* innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_1.picomesh");
+        Mesh* outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_0.picomesh");
+        Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33sleeve_0.picomesh");
+
+        m_innerMaterial = new Material(
+            new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+            RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+            );
+        m_outerMaterial = new Material(
+            new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+            RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+            );
+        m_sleeveMaterial = new Material(
+            new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
+            RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+            );
+
+        m_innerMaterial->SetDiffuseTexture("Data/Images/LabelTextures/33RPMLabel.tga");
+        m_outerMaterial->SetDiffuseTexture("Data/Images/DiscTextures/33RPMBaseColor.png");
+        m_outerMaterial->SetNormalTexture("Data/Images/DiscTextures/33RPMSpec.png");
+        m_sleeveMaterial->SetDiffuseTexture("Data/Images/SleeveTextures/Generic33Sleeve.tga");
+
+        m_vinylLabel = new Renderable3D(innerMesh, m_innerMaterial);
+        m_sleeve = new Renderable3D(sleeveMesh, m_sleeveMaterial);
+        m_vinyl = new Renderable3D(outerMesh, m_outerMaterial);
+
+        m_vinyl->m_transform.AddChild(&m_vinylLabel->m_transform);
+        m_vinyl->m_transform.AddChild(&m_sleeve->m_transform);
+        m_vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
+
+        m_sleeve->m_transform.IgnoreParentRotation();
+        m_sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
+        m_sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
+        m_sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
+    }
+    ERROR_AND_DIE("Invalid type set for VinylRecord");
 }
 
 //-----------------------------------------------------------------------------------
