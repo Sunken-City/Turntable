@@ -530,7 +530,7 @@ void TheGame::LoadDefaultScene()
     m_inner45Material->SetDiffuseTexture("Data/Images/LabelTextures/45RPMLabel.tga");
     m_outer45Material->SetDiffuseTexture("Data/Images/DiscTextures/45RPMBaseColor.png");
     m_outer45Material->SetNormalTexture("Data/Images/DiscTextures/45RPMSpec.png");
-    sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/Generic45Sleeve.tga");
+    sleeve45Material->SetDiffuseTexture("Data/Images/SleeveTextures/FractalGeneric45Sleeve.tga");
 
     m_45VinylLabel = new Renderable3D(inner45, m_inner45Material);
     m_45Sleeve = new Renderable3D(sleeve45, sleeve45Material);
