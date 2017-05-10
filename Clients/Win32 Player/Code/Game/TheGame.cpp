@@ -68,7 +68,7 @@ CONSOLE_COMMAND(playsong)
     if (args.HasArgs(2))
     {
         float rpm = args.GetFloatArgument(1);
-        frequency = rpm / 45.0f;
+        frequency = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
         TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
     }
     else
@@ -119,7 +119,7 @@ CONSOLE_COMMAND(setsongrpm)
     }
 
     float rpm = args.GetFloatArgument(0);
-    float frequency = rpm / 45.0f;
+    float frequency = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
     TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
     AudioSystem::instance->MultiplyCurrentFrequency(TheGame::instance->m_currentlyPlayingSong, frequency);
 }

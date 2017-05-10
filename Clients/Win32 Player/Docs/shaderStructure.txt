@@ -1,0 +1,39 @@
+Shader Inputs
+
+
+Renderer //RHI layer
+ForwardRenderer / SpriteGameRenderer //Renderer instance
+{
+  uniform float     iGlobalTime;           // shader playback time (in seconds)
+  uniform float     iTimeDelta;            // render time (in seconds)
+  uniform int       iFrame;                // shader playback frame
+  uniform vec4      iDate;                 // (year, month, day, time in seconds)
+}
+{
+  uniform struct lighting_data[MAX_LIGHTS];
+  uniform vec4 ambientLight; //alpha is intensity. 
+}
+
+Renderable/MeshRenderer:
+{
+  uniform mat4      iModelMatrix;          // model matrix
+}
+
+Material:
+{
+  uniform float     iChannelTime[4];       // channel playback time (in seconds)
+  uniform vec3      iChannelResolution[4]; // channel resolution (in pixels)
+  uniform sampler2D iChannel0..3;          // input channel. XX = 2D/Cube
+  uniform float     iSampleRate;           // sound sample rate (i.e., 44100)
+}
+
+Camera3D: //Controls what we're rendering to.
+{
+  uniform mat4      iViewMatrix;           // view matrix
+  uniform mat4      iProjectionMatrix;     // proj matrix
+  uniform vec3      iCameraPosition;       // The position of the camera in world space
+  uniform vec3      iResolution;           // viewport resolution (in pixels)
+  uniform vec4      iMouse;                // mouse pixel coords. xy: current (if MLB down), zw: click
+}
+
+Most group uniform buffers by topic, but you should group them by usage or how likely they are to be changed.

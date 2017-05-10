@@ -19,6 +19,7 @@ VinylRecord::VinylRecord()
 //-----------------------------------------------------------------------------------
 VinylRecord::VinylRecord(Type type)
     : m_type(type)
+    , m_baseRPM(GetRPMFromType(type))
 {
     InitializeMeshes();
 }
@@ -27,6 +28,24 @@ VinylRecord::VinylRecord(Type type)
 VinylRecord::~VinylRecord()
 {
 
+}
+
+//-----------------------------------------------------------------------------------
+float VinylRecord::GetRPMFromType(Type type)
+{
+    switch (type)
+    {
+    case Type::RPM_45:
+        return 45.0f;
+    case Type::RPM_33:
+        return 33.333333f;
+    case Type::RPM_45_FLAT:
+        return 45.0f;
+    case Type::RPM_33_FLAT:
+        return 33.333333f;
+    default:
+        break;
+    }
 }
 
 //-----------------------------------------------------------------------------------
@@ -72,10 +91,20 @@ void VinylRecord::AddToScene(Scene3D* scene)
 //-----------------------------------------------------------------------------------
 void VinylRecord::InitializeMeshes()
 {
-    if (m_type == RPM_45)
+    if (m_type == RPM_45 || m_type == RPM_45_FLAT)
     {
-        Mesh* innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
-        Mesh* outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
+        Mesh* innerMesh = nullptr;
+        Mesh* outerMesh = nullptr;
+        if (m_type == RPM_45_FLAT)
+        {
+            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpmflat_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpmflat_0.picomesh");
+        }
+        else
+        {
+            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
+        }
         Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
 
         m_innerMaterial = new Material(
@@ -109,10 +138,20 @@ void VinylRecord::InitializeMeshes()
         m_sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
         m_sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
     }
-    else if(m_type == RPM_33)
+    else if(m_type == RPM_33 || m_type == RPM_33_FLAT)
     {
-        Mesh* innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_1.picomesh");
-        Mesh* outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_0.picomesh");
+        Mesh* innerMesh = nullptr;
+        Mesh* outerMesh = nullptr;
+        if (m_type == RPM_33_FLAT)
+        {
+            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpmflat_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpmflat_0.picomesh");
+        }
+        else
+        {
+            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_0.picomesh");
+        }
         Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33sleeve_0.picomesh");
 
         m_innerMaterial = new Material(
@@ -146,7 +185,10 @@ void VinylRecord::InitializeMeshes()
         m_sleeve->m_transform.SetScale(Vector3(1.0f, 1.0f, 0.75f));
         m_sleeve->m_transform.SetPosition(Vector3(0.0f, 0.4f, 0.0f));
     }
-    ERROR_AND_DIE("Invalid type set for VinylRecord");
+    else
+    {
+        ERROR_AND_DIE("Invalid type set for VinylRecord");
+    }
 }
 
 //-----------------------------------------------------------------------------------

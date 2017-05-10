@@ -231,7 +231,7 @@ void Initialize(HINSTANCE applicationInstanceHandle)
 {
     SetProcessDPIAware();
     CreateOpenGLWindow(applicationInstanceHandle);
-    Renderer::instance = new Renderer();
+    Renderer::instance = new Renderer(Vector2Int(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT));
     ForwardRenderer::instance = new ForwardRenderer();
     AudioSystem::instance = new AudioSystem();
     InputSystem::instance = new InputSystem(g_hWnd, 0, WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT);
