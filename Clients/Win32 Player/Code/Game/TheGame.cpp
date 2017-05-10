@@ -43,6 +43,9 @@ extern AnimationMotion* g_loadedMotion;
 extern std::vector<AnimationMotion*>* g_loadedMotions;
 extern int g_numLoadedMeshes;
 
+//TODO: this is a hack fix, please refactor this.
+int g_currentSongFrequency = 0;
+
 CONSOLE_COMMAND(twah)
 {
     UNUSED(args);
@@ -64,11 +67,11 @@ CONSOLE_COMMAND(playsong)
         return;
     }
 
-    float frequency = 1.0f;
+    float frequencyMultiplier = 1.0f;
     if (args.HasArgs(2))
     {
         float rpm = args.GetFloatArgument(1);
-        frequency = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
+        frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
         TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
     }
     else
@@ -83,7 +86,8 @@ CONSOLE_COMMAND(playsong)
     }
     TheGame::instance->m_currentlyPlayingSong = song;
     AudioSystem::instance->PlaySound(song);
-    AudioSystem::instance->MultiplyCurrentFrequency(song, frequency);
+    g_currentSongFrequency = AudioSystem::instance->GetFrequency(song);
+    AudioSystem::instance->SetFrequency(song, g_currentSongFrequency * frequencyMultiplier);
 }
 
 CONSOLE_COMMAND(stopsong)
@@ -119,9 +123,9 @@ CONSOLE_COMMAND(setsongrpm)
     }
 
     float rpm = args.GetFloatArgument(0);
-    float frequency = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
-    TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
-    AudioSystem::instance->MultiplyCurrentFrequency(TheGame::instance->m_currentlyPlayingSong, frequency);
+    float frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
+    TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm); 
+    AudioSystem::instance->SetFrequency(TheGame::instance->m_currentlyPlayingSong, g_currentSongFrequency * frequencyMultiplier);
 }
 
 MeshRenderer* quadForFBO;
@@ -458,6 +462,6 @@ void TheGame::RenderPostProcess() const
 //-----------------------------------------------------------------------------------
 void TheGame::LoadDefaultScene()
 {
-    m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_33);
+    m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_45);
     m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
 }
