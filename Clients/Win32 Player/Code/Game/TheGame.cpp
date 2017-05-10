@@ -107,11 +107,11 @@ CONSOLE_COMMAND(stopsong)
     }
 }
 
-CONSOLE_COMMAND(setsongrpm)
+CONSOLE_COMMAND(setrpm)
 {
     if (!args.HasArgs(1))
     {
-        Console::instance->PrintLine("setsongrpm <rpm>", RGBA::RED);
+        Console::instance->PrintLine("setrpm <rpm>", RGBA::RED);
         return;
     }
 
