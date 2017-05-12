@@ -88,6 +88,39 @@ CONSOLE_COMMAND(playsong)
     AudioSystem::instance->PlaySound(song);
     g_currentSongFrequency = AudioSystem::instance->GetFrequency(song);
     AudioSystem::instance->SetFrequency(song, g_currentSongFrequency * frequencyMultiplier);
+
+    static const char* IdPicture = "APIC";
+    TagLib::MPEG::File audioFile(filepath.c_str());
+    TagLib::ID3v2::Tag* id3v2tag = audioFile.ID3v2Tag();
+    TagLib::ID3v2::FrameList Frame;
+    TagLib::ID3v2::AttachedPictureFrame* PicFrame;
+    unsigned long size;
+    unsigned char* srcImage = nullptr;
+
+    if (id3v2tag)
+    {
+        // picture frame
+        Frame = id3v2tag->frameListMap()[IdPicture];
+        if (!Frame.isEmpty())
+        {
+            for (TagLib::ID3v2::FrameList::ConstIterator it = Frame.begin(); it != Frame.end(); ++it)
+            {
+                PicFrame = (TagLib::ID3v2::AttachedPictureFrame *)(*it);
+                if ( PicFrame->type() == TagLib::ID3v2::AttachedPictureFrame::FrontCover)
+                {
+                    // extract image (in it’s compressed form)
+                    TagLib::ByteVector pictureData = PicFrame->picture();
+                    size = pictureData.size();
+                    srcImage = (unsigned char*)pictureData.data();
+                    if (srcImage)
+                    {
+                        TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(Texture::CreateUnregisteredTextureFromData(srcImage, size));
+                    }
+
+                }
+            }
+        }
+    }
 }
 
 CONSOLE_COMMAND(stopsong)
@@ -126,6 +159,18 @@ CONSOLE_COMMAND(setrpm)
     float frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
     TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm); 
     AudioSystem::instance->SetFrequency(TheGame::instance->m_currentlyPlayingSong, g_currentSongFrequency * frequencyMultiplier);
+}
+
+CONSOLE_COMMAND(use33)
+{
+    UNUSED(args);
+    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_33)
+    {
+        Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
+    }
+    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_33);
+    TheGame::instance->m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
+
 }
 
 MeshRenderer* quadForFBO;
