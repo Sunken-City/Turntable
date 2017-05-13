@@ -161,17 +161,17 @@ CONSOLE_COMMAND(setrpm)
     AudioSystem::instance->SetFrequency(TheGame::instance->m_currentlyPlayingSong, g_currentSongFrequency * frequencyMultiplier);
 }
 
-CONSOLE_COMMAND(use33)
-{
-    UNUSED(args);
-    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_33)
-    {
-        Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
-    }
-    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_33);
-    TheGame::instance->m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
-
-}
+// CONSOLE_COMMAND(use33)
+// {
+//     UNUSED(args);
+//     if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_33)
+//     {
+//         Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
+//     }
+//     VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_33);
+//     TheGame::instance->m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
+// 
+// }
 
 MeshRenderer* quadForFBO;
 unsigned int samplerID;
@@ -507,6 +507,6 @@ void TheGame::RenderPostProcess() const
 //-----------------------------------------------------------------------------------
 void TheGame::LoadDefaultScene()
 {
-    m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_45);
+    m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_33);
     m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
 }
