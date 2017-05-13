@@ -25,6 +25,7 @@
 #include "Engine/Tools/fbx.hpp"
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Renderer/3D/Camera3D.hpp"
+#include "Engine/Audio/AudioMetadataUtils.hpp"
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
@@ -89,38 +90,12 @@ CONSOLE_COMMAND(playsong)
     g_currentSongFrequency = AudioSystem::instance->GetFrequency(song);
     AudioSystem::instance->SetFrequency(song, g_currentSongFrequency * frequencyMultiplier);
 
-    static const char* IdPicture = "APIC";
-    TagLib::MPEG::File audioFile(filepath.c_str());
-    TagLib::ID3v2::Tag* id3v2tag = audioFile.ID3v2Tag();
-    TagLib::ID3v2::FrameList Frame;
-    TagLib::ID3v2::AttachedPictureFrame* PicFrame;
-    unsigned long size;
-    unsigned char* srcImage = nullptr;
-
-    if (id3v2tag)
-    {
-        // picture frame
-        Frame = id3v2tag->frameListMap()[IdPicture];
-        if (!Frame.isEmpty())
-        {
-            for (TagLib::ID3v2::FrameList::ConstIterator it = Frame.begin(); it != Frame.end(); ++it)
-            {
-                PicFrame = (TagLib::ID3v2::AttachedPictureFrame *)(*it);
-                if ( PicFrame->type() == TagLib::ID3v2::AttachedPictureFrame::FrontCover)
-                {
-                    // extract image (in it’s compressed form)
-                    TagLib::ByteVector pictureData = PicFrame->picture();
-                    size = pictureData.size();
-                    srcImage = (unsigned char*)pictureData.data();
-                    if (srcImage)
-                    {
-                        TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(Texture::CreateUnregisteredTextureFromData(srcImage, size));
-                    }
-
-                }
-            }
-        }
-    }
+	Texture* albumArtTexture = GetImageFromFileMetadata(filepath);
+	
+	if (albumArtTexture)
+	{
+		TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(albumArtTexture);
+	}
 }
 
 CONSOLE_COMMAND(stopsong)
