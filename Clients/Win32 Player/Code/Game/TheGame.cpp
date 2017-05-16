@@ -86,16 +86,16 @@ CONSOLE_COMMAND(playsong)
         AudioSystem::instance->StopChannel(channel);
     }
     TheGame::instance->m_currentlyPlayingSong = song;
-    AudioSystem::instance->PlaySound(song);
+    AudioSystem::instance->PlayLoopingSound(song);
     g_currentSongFrequency = AudioSystem::instance->GetFrequency(song);
     AudioSystem::instance->SetFrequency(song, g_currentSongFrequency * frequencyMultiplier);
 
-	Texture* albumArtTexture = GetImageFromFileMetadata(filepath);
-	
-	if (albumArtTexture)
-	{
-		TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(albumArtTexture);
-	}
+    Texture* albumArtTexture = GetImageFromFileMetadata(filepath);
+    
+    if (albumArtTexture)
+    {
+        TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(albumArtTexture);
+    }
 }
 
 CONSOLE_COMMAND(stopsong)
