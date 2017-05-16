@@ -41,7 +41,7 @@ public:
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     SoundID m_twahSFX;
-    SoundID m_currentlyPlayingSong;
+    SoundID m_currentlyPlayingSong = 0;
     Framebuffer* m_fbo;
     VinylRecord* m_currentRecord = nullptr;
 

@@ -112,6 +112,7 @@ CONSOLE_COMMAND(stopsong)
         Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
         AudioSystem::instance->StopChannel(channel);
         TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
+        TheGame::instance->m_currentlyPlayingSong = 0;
     }
 }
 
@@ -136,17 +137,45 @@ CONSOLE_COMMAND(setrpm)
     AudioSystem::instance->SetFrequency(TheGame::instance->m_currentlyPlayingSong, g_currentSongFrequency * frequencyMultiplier);
 }
 
-// CONSOLE_COMMAND(use33)
-// {
-//     UNUSED(args);
-//     if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_33)
-//     {
-//         Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
-//     }
-//     VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_33);
-//     TheGame::instance->m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
-// 
-// }
+CONSOLE_COMMAND(use33)
+{
+    UNUSED(args);
+    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_33)
+    {
+        Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
+        return;
+    }
+    if (TheGame::instance->m_currentlyPlayingSong)
+    {
+        Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
+        return;
+    }
+    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_33);
+    TheGame::instance->m_currentRecord->RemoveFromScene(ForwardRenderer::instance->GetMainScene());
+    record->AddToScene(ForwardRenderer::instance->GetMainScene());
+    delete TheGame::instance->m_currentRecord;
+    TheGame::instance->m_currentRecord = record;
+}
+
+CONSOLE_COMMAND(use45)
+{
+    UNUSED(args);
+    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_45)
+    {
+        Console::instance->PrintLine("Already using a 45RPM record", RGBA::RED);
+        return;
+    }
+    if (TheGame::instance->m_currentlyPlayingSong)
+    {
+        Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
+        return;
+    }
+    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_45);
+    TheGame::instance->m_currentRecord->RemoveFromScene(ForwardRenderer::instance->GetMainScene());
+    record->AddToScene(ForwardRenderer::instance->GetMainScene());
+    delete TheGame::instance->m_currentRecord;
+    TheGame::instance->m_currentRecord = record;
+}
 
 MeshRenderer* quadForFBO;
 unsigned int samplerID;

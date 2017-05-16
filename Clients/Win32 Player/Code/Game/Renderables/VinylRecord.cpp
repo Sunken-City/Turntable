@@ -89,6 +89,14 @@ void VinylRecord::AddToScene(Scene3D* scene)
 }
 
 //-----------------------------------------------------------------------------------
+void VinylRecord::RemoveFromScene(Scene3D* scene)
+{
+    scene->UnregisterRenderable(m_vinylLabel);
+    scene->UnregisterRenderable(m_vinyl);
+    scene->UnregisterRenderable(m_sleeve);
+}
+
+//-----------------------------------------------------------------------------------
 void VinylRecord::InitializeMeshes()
 {
     if (m_type == RPM_45 || m_type == RPM_45_FLAT)

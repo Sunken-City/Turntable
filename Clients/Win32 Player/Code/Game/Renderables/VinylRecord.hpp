@@ -26,6 +26,7 @@ public:
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     void Update(float deltaSeconds);
     void AddToScene(Scene3D* scene);
+    void RemoveFromScene(Scene3D* scene);
 
 private:
     void InitializeMeshes();
