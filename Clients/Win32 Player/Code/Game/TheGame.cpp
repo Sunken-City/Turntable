@@ -61,6 +61,8 @@ CONSOLE_COMMAND(play)
         return;
     }
     std::string filepath = args.GetStringArgument(0);
+    std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
+    filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
