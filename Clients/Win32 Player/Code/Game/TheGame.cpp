@@ -53,7 +53,7 @@ CONSOLE_COMMAND(twah)
     AudioSystem::instance->PlaySound(TheGame::instance->m_twahSFX);
 }
 
-CONSOLE_COMMAND(playsong)
+CONSOLE_COMMAND(play)
 {
     if (!(args.HasArgs(1) || args.HasArgs(2)))
     {
@@ -98,7 +98,7 @@ CONSOLE_COMMAND(playsong)
     }
 }
 
-CONSOLE_COMMAND(stopsong)
+CONSOLE_COMMAND(stop)
 {
     UNUSED(args)
     AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
@@ -114,6 +114,11 @@ CONSOLE_COMMAND(stopsong)
         TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
         TheGame::instance->m_currentlyPlayingSong = 0;
     }
+}
+
+CONSOLE_COMMAND(pause)
+{
+    Console::instance->RunCommand("setrpm 0");
 }
 
 CONSOLE_COMMAND(setrpm)
@@ -210,9 +215,20 @@ TheGame::TheGame()
 
     quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
     
-    LoadDefaultScene();
+    LoadDefaultScene(); 
+    InitializeMainCamera();
 }
 
+//-----------------------------------------------------------------------------------
+void TheGame::InitializeMainCamera()
+{
+    Camera3D* camera = ForwardRenderer::instance->GetMainCamera();
+    camera->m_updateFromInput = false;
+    camera->m_position = Vector3(30.0f, 30.0f, 0.0f);
+    camera->LookAt(m_currentRecord->GetPosition());
+}
+
+//-----------------------------------------------------------------------------------
 TheGame::~TheGame()
 {
 // 	delete m_shaderProgram;
@@ -240,6 +256,17 @@ void TheGame::Update(float deltaSeconds)
     {
         g_isQuitting = true;
         return;
+    }
+    if (InputSystem::instance->WasKeyJustPressed('L'))
+    {
+        Camera3D* camera = ForwardRenderer::instance->GetMainCamera();
+        camera->m_updateFromInput = !camera->m_updateFromInput;
+        if (!camera->m_updateFromInput)
+        {
+            MouseInputDevice::ReleaseMouseCursor();
+            MouseInputDevice::ShowMouseCursor();
+            camera->LookAt(m_currentRecord->GetPosition());
+        }
     }
 
     ForwardRenderer::instance->Update(deltaSeconds);

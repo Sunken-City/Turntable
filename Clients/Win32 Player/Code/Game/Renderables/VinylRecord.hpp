@@ -3,6 +3,7 @@
 class Renderable3D;
 class Material;
 class Scene3D;
+class Vector3;
 
 class VinylRecord
 {
@@ -27,6 +28,7 @@ public:
     void Update(float deltaSeconds);
     void AddToScene(Scene3D* scene);
     void RemoveFromScene(Scene3D* scene);
+    Vector3 GetPosition() const;
 
 private:
     void InitializeMeshes();
@@ -34,6 +36,9 @@ private:
     void UpdateVinylJacket();
 
 public:
+    //CONSTANTS///////////////////////////////////////////////////////////////////////////////
+    static const Vector3 VINYL_SPAWN_POSITION;
+
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     Renderable3D* m_vinyl = nullptr;
     Renderable3D* m_vinylLabel = nullptr;

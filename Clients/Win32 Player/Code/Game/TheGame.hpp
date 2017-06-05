@@ -19,7 +19,8 @@ public:
     TheGame();
     ~TheGame();
 
-    ////FUNCTIONS/////////////////////////////////////////////////////////////////////
+    //FUNCTIONS/////////////////////////////////////////////////////////////////////
+    void InitializeMainCamera();
     void Update(float deltaTime);
     void CheckForImportedMeshes();
     void Render() const;

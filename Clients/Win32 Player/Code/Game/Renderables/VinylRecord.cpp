@@ -10,6 +10,8 @@
 #include "Engine/Renderer/3D/Camera3D.hpp"
 #include "Engine/Time/Time.hpp"
 
+const Vector3 VinylRecord::VINYL_SPAWN_POSITION = Vector3(30.0f, 0.0f, 30.0f);
+
 //-----------------------------------------------------------------------------------
 VinylRecord::VinylRecord()
 {
@@ -97,6 +99,12 @@ void VinylRecord::RemoveFromScene(Scene3D* scene)
 }
 
 //-----------------------------------------------------------------------------------
+Vector3 VinylRecord::GetPosition() const
+{
+   return m_vinyl->m_transform.GetWorldPosition();
+}
+
+//-----------------------------------------------------------------------------------
 void VinylRecord::InitializeMeshes()
 {
     if (m_type == RPM_45 || m_type == RPM_45_FLAT)
@@ -139,7 +147,7 @@ void VinylRecord::InitializeMeshes()
 
         m_vinyl->m_transform.AddChild(&m_vinylLabel->m_transform);
         m_vinyl->m_transform.AddChild(&m_sleeve->m_transform);
-        m_vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
+        m_vinyl->m_transform.SetPosition(VINYL_SPAWN_POSITION);
 
         m_sleeve->m_transform.IgnoreParentRotation();
         m_sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
@@ -186,7 +194,7 @@ void VinylRecord::InitializeMeshes()
 
         m_vinyl->m_transform.AddChild(&m_vinylLabel->m_transform);
         m_vinyl->m_transform.AddChild(&m_sleeve->m_transform);
-        m_vinyl->m_transform.SetPosition(Vector3(30.0f, 0.0f, 30.0f));
+        m_vinyl->m_transform.SetPosition(VINYL_SPAWN_POSITION);
 
         m_sleeve->m_transform.IgnoreParentRotation();
         m_sleeve->m_transform.SetRotationDegrees(Vector3(90.0f, 180.0f, 0.0f));
