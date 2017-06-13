@@ -26,6 +26,7 @@
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Renderer/3D/Camera3D.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
+#include "Engine/Audio/Song.hpp"
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
@@ -57,14 +58,15 @@ CONSOLE_COMMAND(play)
 {
     if (!(args.HasArgs(1) || args.HasArgs(2)))
     {
-        Console::instance->PrintLine("playsound <filename> (rpm)", RGBA::RED);
+        Console::instance->PrintLine("play <filename> (rpm)", RGBA::RED);
         return;
     }
     std::string filepath = args.GetStringArgument(0);
     std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
     filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
-    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-    if (song == MISSING_SOUND_ID)
+	Song currentSong(filepath);
+    //SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
+    if (currentSong.m_fmodID == MISSING_SOUND_ID)
     {
         Console::instance->PrintLine("Could not find file.", RGBA::RED);
         return;
@@ -87,10 +89,12 @@ CONSOLE_COMMAND(play)
     {
         AudioSystem::instance->StopChannel(channel);
     }
-    TheGame::instance->m_currentlyPlayingSong = song;
-    AudioSystem::instance->PlayLoopingSound(song);
-    g_currentSongFrequency = AudioSystem::instance->GetFrequency(song);
-    AudioSystem::instance->SetFrequency(song, g_currentSongFrequency * frequencyMultiplier);
+    TheGame::instance->m_currentlyPlayingSong = currentSong.m_fmodID;
+    AudioSystem::instance->PlayLoopingSound(currentSong.m_fmodID);
+    g_currentSongFrequency = AudioSystem::instance->GetFrequency(currentSong.m_fmodID);
+    AudioSystem::instance->SetFrequency(currentSong.m_fmodID, g_currentSongFrequency * frequencyMultiplier);
+
+    IncrementPlaycount(filepath);
 
     Texture* albumArtTexture = GetImageFromFileMetadata(filepath);
     
@@ -182,6 +186,30 @@ CONSOLE_COMMAND(use45)
     record->AddToScene(ForwardRenderer::instance->GetMainScene());
     delete TheGame::instance->m_currentRecord;
     TheGame::instance->m_currentRecord = record;
+}
+
+CONSOLE_COMMAND(getsongmetadata)
+{
+	if (!args.HasArgs(1))
+	{
+		Console::instance->PrintLine("getsongmetadata <filename>", RGBA::RED);
+		return;
+	}
+	std::string filepath = args.GetStringArgument(0);
+	SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
+	if (song == MISSING_SOUND_ID)
+	{
+		Console::instance->PrintLine("Could not find file.", RGBA::RED);
+		return;
+	}
+
+	TagLib::FileRef audioFile(filepath.c_str());
+	TagLib::String artist = audioFile.tag()->artist();
+	TagLib::String album = audioFile.tag()->album();
+	int year = audioFile.tag()->year();
+	Console::instance->PrintLine(Stringf("Artist: %s\n", artist.toCString()));
+	Console::instance->PrintLine(Stringf("Album: %s\n", album.toCString()));
+	Console::instance->PrintLine(Stringf("Year: %i\n", year));
 }
 
 MeshRenderer* quadForFBO;
