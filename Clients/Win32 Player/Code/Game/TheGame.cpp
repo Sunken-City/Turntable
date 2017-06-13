@@ -70,8 +70,6 @@ CONSOLE_COMMAND(play)
         return;
     }
     std::string filepath = args.GetStringArgument(0);
-    std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-    filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
@@ -205,27 +203,27 @@ CONSOLE_COMMAND(use45)
 
 CONSOLE_COMMAND(getsongmetadata)
 {
-	if (!args.HasArgs(1))
-	{
-		Console::instance->PrintLine("getsongmetadata <filename>", RGBA::RED);
-		return;
-	}
-	std::string filepath = args.GetStringArgument(0);
-	SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-	if (song == MISSING_SOUND_ID)
-	{
-		Console::instance->PrintLine("Could not find file.", RGBA::RED);
-		return;
-	}
+    if (!args.HasArgs(1))
+    {
+        Console::instance->PrintLine("getsongmetadata <filename>", RGBA::RED);
+        return;
+    }
+    std::string filepath = args.GetStringArgument(0);
+    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
+    if (song == MISSING_SOUND_ID)
+    {
+        Console::instance->PrintLine("Could not find file.", RGBA::RED);
+        return;
+    }
 
     //Why isn't this working?
-	TagLib::FileRef audioFile(filepath.c_str());
-	TagLib::String artist = audioFile.tag()->artist();
-	TagLib::String album = audioFile.tag()->album();
-	int year = audioFile.tag()->year();
-	Console::instance->PrintLine(Stringf("Artist: %s\n", artist.toCString()));
-	Console::instance->PrintLine(Stringf("Album: %s\n", album.toCString()));
-	Console::instance->PrintLine(Stringf("Year: %i\n", year));
+    TagLib::FileRef audioFile(filepath.c_str());
+    TagLib::String artist = audioFile.tag()->artist();
+    TagLib::String album = audioFile.tag()->album();
+    int year = audioFile.tag()->year();
+    Console::instance->PrintLine(Stringf("Artist: %s\n", artist.toCString()));
+    Console::instance->PrintLine(Stringf("Album: %s\n", album.toCString()));
+    Console::instance->PrintLine(Stringf("Year: %i\n", year));
 }
 
 MeshRenderer* quadForFBO;
