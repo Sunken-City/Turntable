@@ -61,13 +61,19 @@ CONSOLE_COMMAND(play)
         return;
     }
     std::string filepath = args.GetStringArgument(0);
-    std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-    filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
-        Console::instance->PrintLine("Could not find file.", RGBA::RED);
-        return;
+        //Try again with the current working directory added to the path
+        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
+        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        song = AudioSystem::instance->CreateOrGetSound(filepath);
+
+        if (song == MISSING_SOUND_ID)
+        {
+            Console::instance->PrintLine("Could not find file.", RGBA::RED);
+            return;
+        }
     }
 
     float frequencyMultiplier = 1.0f;

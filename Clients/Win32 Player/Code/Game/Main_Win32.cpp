@@ -16,6 +16,8 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Framebuffer.hpp"
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
+#include <shellapi.h>
+#include "Engine/Core/StringUtils.hpp"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -36,6 +38,27 @@ HWND g_hWnd = nullptr;
 HDC g_displayDeviceContext = nullptr;
 HGLRC g_openGLRenderingContext = nullptr;
 const char* APP_NAME = "T W A H  B O Y S";
+
+//-----------------------------------------------------------------------------------
+void HandleFileDrop(WPARAM wParam)
+{
+    //Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb776408(v=vs.85).aspx
+    HDROP fileDrop = (HDROP)wParam;
+    UINT fileNumberToQuery = 0; //Pass 0xFFFFFFFF and DragQueryFile will return total number of files dropped. 
+
+    TCHAR tcharFilePath[MAX_PATH] = TEXT("");
+    DragQueryFile(fileDrop, fileNumberToQuery, tcharFilePath, MAX_PATH);
+    std::wstring filePath(tcharFilePath);
+    Console::instance->RunCommand(Stringf("play \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+    DragFinish(fileDrop);
+}
+
+//-----------------------------------------------------------------------------------
+void HandleMouseWheel(WPARAM wParam)
+{
+    short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+    InputSystem::instance->SetMouseWheelStatus(zDelta);
+}
 
 //-----------------------------------------------------------------------------------------------
 LRESULT CALLBACK WindowsMessageHandlingProcedure(HWND windowHandle, UINT wmMessageCode, WPARAM wParam, LPARAM lParam)
@@ -91,15 +114,16 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure(HWND windowHandle, UINT wmMessa
         break;
 
     case WM_MOUSEWHEEL:
-        short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-        InputSystem::instance->SetMouseWheelStatus(zDelta);
+        HandleMouseWheel(wParam);
+        break;
+
+    case WM_DROPFILES:
+        HandleFileDrop(wParam);
         break;
     }
 
     return DefWindowProc(windowHandle, wmMessageCode, wParam, lParam);
 }
-
-
 
 //-----------------------------------------------------------------------------------------------
 void CreateOpenGLWindow(HINSTANCE applicationInstanceHandle)
@@ -166,6 +190,8 @@ void CreateOpenGLWindow(HINSTANCE applicationInstanceHandle)
     SetPixelFormat(g_displayDeviceContext, pixelFormatCode, &pixelFormatDescriptor);
     g_openGLRenderingContext = wglCreateContext(g_displayDeviceContext);
     wglMakeCurrent(g_displayDeviceContext, g_openGLRenderingContext);
+
+    DragAcceptFiles(g_hWnd, TRUE);
 }
 
 
