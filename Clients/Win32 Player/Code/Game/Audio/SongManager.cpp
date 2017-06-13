@@ -23,7 +23,6 @@ SongManager::~SongManager()
 //-----------------------------------------------------------------------------------
 void SongManager::FlushSongQueue()
 {
-    Console::instance->RunCommand("stop");
     for (Song* song : m_songQueue)
     {
         delete song;
@@ -43,14 +42,9 @@ void SongManager::Update(float deltaSeconds)
 //-----------------------------------------------------------------------------------
 void SongManager::Play(Song* songToPlay)
 {
-    if (m_activeSong)
+    if (IsPlaying())
     {
-        AudioChannelHandle channel = AudioSystem::instance->GetChannel(m_activeSong->m_fmodID);
-        if (AudioSystem::instance->IsPlaying(channel))
-        {
-            AudioSystem::instance->StopChannel(channel);
-        }
-        FlushSongQueue();
+        Stop();
     }
     m_activeSong = songToPlay;
 
@@ -119,6 +113,7 @@ CONSOLE_COMMAND(play)
     }
 
     Song* newSong = new Song(filepath);
+    SongManager::instance->Play(newSong);
 
     float frequencyMultiplier = 1.0f;
     if (args.HasArgs(2))
@@ -131,9 +126,7 @@ CONSOLE_COMMAND(play)
     {
         TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::RPS_45;
     }
-
-    SongManager::instance->Play(newSong);
-
+    
     newSong->m_baseFrequency = AudioSystem::instance->GetFrequency(song);
     newSong->m_targetFrequency = newSong->m_baseFrequency * frequencyMultiplier;
     newSong->m_currentFrequency = newSong->m_targetFrequency;
