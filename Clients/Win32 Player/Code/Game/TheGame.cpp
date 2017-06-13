@@ -27,6 +27,14 @@
 #include "Engine/Renderer/3D/Camera3D.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
 #include "Engine/Audio/Song.hpp"
+#include "ThirdParty/taglib/include/taglib/tag.h"
+#include "ThirdParty/taglib/include/taglib/fileref.h"
+#include "ThirdParty/taglib/include/taglib/tfile.h"
+#include "ThirdParty/taglib/include/taglib/taglib.h"
+#include "ThirdParty/taglib/include/taglib/tstring.h"
+#include "ThirdParty/taglib/include/taglib/flacfile.h"
+#include "ThirdParty/taglib/include/taglib/wavfile.h"
+#include "ThirdParty/taglib/include/taglib/mpegfile.h"
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
@@ -64,12 +72,19 @@ CONSOLE_COMMAND(play)
     std::string filepath = args.GetStringArgument(0);
     std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
     filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
-	Song currentSong(filepath);
-    //SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-    if (currentSong.m_fmodID == MISSING_SOUND_ID)
+    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
+    if (song == MISSING_SOUND_ID)
     {
-        Console::instance->PrintLine("Could not find file.", RGBA::RED);
-        return;
+        //Try again with the current working directory added to the path
+        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
+        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        song = AudioSystem::instance->CreateOrGetSound(filepath);
+
+        if (song == MISSING_SOUND_ID)
+        {
+            Console::instance->PrintLine("Could not find file.", RGBA::RED);
+            return;
+        }
     }
 
     float frequencyMultiplier = 1.0f;
@@ -89,10 +104,10 @@ CONSOLE_COMMAND(play)
     {
         AudioSystem::instance->StopChannel(channel);
     }
-    TheGame::instance->m_currentlyPlayingSong = currentSong.m_fmodID;
-    AudioSystem::instance->PlayLoopingSound(currentSong.m_fmodID);
-    g_currentSongFrequency = AudioSystem::instance->GetFrequency(currentSong.m_fmodID);
-    AudioSystem::instance->SetFrequency(currentSong.m_fmodID, g_currentSongFrequency * frequencyMultiplier);
+    TheGame::instance->m_currentlyPlayingSong = song;
+    AudioSystem::instance->PlayLoopingSound(song);
+    g_currentSongFrequency = AudioSystem::instance->GetFrequency(song);
+    AudioSystem::instance->SetFrequency(song, g_currentSongFrequency * frequencyMultiplier);
 
     IncrementPlaycount(filepath);
 
@@ -203,6 +218,7 @@ CONSOLE_COMMAND(getsongmetadata)
 		return;
 	}
 
+    //Why isn't this working?
 	TagLib::FileRef audioFile(filepath.c_str());
 	TagLib::String artist = audioFile.tag()->artist();
 	TagLib::String album = audioFile.tag()->album();

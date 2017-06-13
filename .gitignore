@@ -3,6 +3,11 @@
 
 Clients/Win32 Player/Temporary/
 
+# Removing music files used for testing
+*.mp3
+*.wav
+*.flac
+
 # User-specific files
 *.suo
 *.user
