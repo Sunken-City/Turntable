@@ -26,7 +26,6 @@
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Renderer/3D/Camera3D.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
-#include "Engine/Audio/Song.hpp"
 #include "ThirdParty/taglib/include/taglib/tag.h"
 #include "ThirdParty/taglib/include/taglib/fileref.h"
 #include "ThirdParty/taglib/include/taglib/tfile.h"
@@ -45,6 +44,7 @@
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
 #include "Engine/Renderer/3D/Scene3D.hpp"
 #include "Renderables/VinylRecord.hpp"
+#include "Audio/SongManager.hpp"
 
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
@@ -53,112 +53,10 @@ extern AnimationMotion* g_loadedMotion;
 extern std::vector<AnimationMotion*>* g_loadedMotions;
 extern int g_numLoadedMeshes;
 
-//TODO: this is a hack fix, please refactor this.
-int g_currentSongFrequency = 0;
-
 CONSOLE_COMMAND(twah)
 {
     UNUSED(args);
     AudioSystem::instance->PlaySound(TheGame::instance->m_twahSFX);
-}
-
-CONSOLE_COMMAND(play)
-{
-    if (!(args.HasArgs(1) || args.HasArgs(2)))
-    {
-        Console::instance->PrintLine("play <filename> (rpm)", RGBA::RED);
-        return;
-    }
-    std::string filepath = args.GetStringArgument(0);
-    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-    if (song == MISSING_SOUND_ID)
-    {
-        //Try again with the current working directory added to the path
-        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
-        song = AudioSystem::instance->CreateOrGetSound(filepath);
-
-        if (song == MISSING_SOUND_ID)
-        {
-            Console::instance->PrintLine("Could not find file.", RGBA::RED);
-            return;
-        }
-    }
-
-    float frequencyMultiplier = 1.0f;
-    if (args.HasArgs(2))
-    {
-        float rpm = args.GetFloatArgument(1);
-        frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
-        TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
-    }
-    else
-    {
-        TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::RPS_45;
-    }
-
-    AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
-    if (AudioSystem::instance->IsPlaying(channel))
-    {
-        AudioSystem::instance->StopChannel(channel);
-    }
-    TheGame::instance->m_currentlyPlayingSong = song;
-    AudioSystem::instance->PlayLoopingSound(song);
-    g_currentSongFrequency = AudioSystem::instance->GetFrequency(song);
-    AudioSystem::instance->SetFrequency(song, g_currentSongFrequency * frequencyMultiplier);
-
-    IncrementPlaycount(filepath);
-
-    Texture* albumArtTexture = GetImageFromFileMetadata(filepath);
-    
-    if (albumArtTexture)
-    {
-        TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(albumArtTexture);
-    }
-}
-
-CONSOLE_COMMAND(stop)
-{
-    UNUSED(args)
-    AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
-    if (!channel || !AudioSystem::instance->IsPlaying(channel))
-    {
-        Console::instance->PrintLine("No song is currently playing. Play a song using playsong first.", RGBA::RED);
-        return;
-    }
-    else
-    {
-        Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
-        AudioSystem::instance->StopChannel(channel);
-        TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
-        TheGame::instance->m_currentlyPlayingSong = 0;
-    }
-}
-
-CONSOLE_COMMAND(pause)
-{
-    Console::instance->RunCommand("setrpm 0");
-}
-
-CONSOLE_COMMAND(setrpm)
-{
-    if (!args.HasArgs(1))
-    {
-        Console::instance->PrintLine("setrpm <rpm>", RGBA::RED);
-        return;
-    }
-
-    AudioChannelHandle channel = AudioSystem::instance->GetChannel(TheGame::instance->m_currentlyPlayingSong);
-    if (!channel || !AudioSystem::instance->IsPlaying(channel))
-    {
-        Console::instance->PrintLine("No song is currently playing. Play a song using playsong first.", RGBA::RED);
-        return;
-    }
-
-    float rpm = args.GetFloatArgument(0);
-    float frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
-    TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm); 
-    AudioSystem::instance->SetFrequency(TheGame::instance->m_currentlyPlayingSong, g_currentSongFrequency * frequencyMultiplier);
 }
 
 CONSOLE_COMMAND(use33)
@@ -169,7 +67,7 @@ CONSOLE_COMMAND(use33)
         Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
         return;
     }
-    if (TheGame::instance->m_currentlyPlayingSong)
+    if (SongManager::instance->IsPlaying())
     {
         Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
         return;
@@ -189,7 +87,7 @@ CONSOLE_COMMAND(use45)
         Console::instance->PrintLine("Already using a 45RPM record", RGBA::RED);
         return;
     }
-    if (TheGame::instance->m_currentlyPlayingSong)
+    if (SongManager::instance->IsPlaying())
     {
         Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
         return;
@@ -212,8 +110,16 @@ CONSOLE_COMMAND(getsongmetadata)
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
-        Console::instance->PrintLine("Could not find file.", RGBA::RED);
-        return;
+        //Try again with the current working directory added to the path
+        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
+        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        song = AudioSystem::instance->CreateOrGetSound(filepath);
+
+        if (song == MISSING_SOUND_ID)
+        {
+            Console::instance->PrintLine("Could not find file.", RGBA::RED);
+            return;
+        }
     }
 
     //Why isn't this working?
@@ -240,6 +146,8 @@ TheGame::TheGame()
 , m_renderAxisLines(false)
 , m_showSkeleton(false)
 {
+    SongManager::instance = new SongManager();
+
     SetUpShader();
 #pragma TODO("Fix this blatant memory leak")
     Texture* blankTex = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
@@ -275,6 +183,8 @@ void TheGame::InitializeMainCamera()
 //-----------------------------------------------------------------------------------
 TheGame::~TheGame()
 {
+    delete SongManager::instance;
+    SongManager::instance = nullptr;
 // 	delete m_shaderProgram;
 // 	glDeleteVertexArrays(1, &gVAO);
 // 	glDeleteBuffers(1, &gVBO);
@@ -286,6 +196,7 @@ static float animTime = 0.0f;
 void TheGame::Update(float deltaSeconds)
 {
     m_currentRecord->Update(deltaSeconds);
+    SongManager::instance->Update(deltaSeconds);
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {

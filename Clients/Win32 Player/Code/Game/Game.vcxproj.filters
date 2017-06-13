@@ -18,6 +18,8 @@
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="Renderables\VinylRecord.cpp" />
+    <ClCompile Include="Audio\Song.cpp" />
+    <ClCompile Include="Audio\SongManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TheGame.hpp">
@@ -27,5 +29,7 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="Renderables\VinylRecord.hpp" />
+    <ClInclude Include="Audio\Song.hpp" />
+    <ClInclude Include="Audio\SongManager.hpp" />
   </ItemGroup>
 </Project>
