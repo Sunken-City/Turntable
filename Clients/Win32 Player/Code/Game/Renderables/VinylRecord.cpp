@@ -9,6 +9,7 @@
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
 #include "Engine/Renderer/3D/Camera3D.hpp"
 #include "Engine/Time/Time.hpp"
+#include "Engine/Renderer/MeshRenderer.hpp"
 
 const Vector3 VinylRecord::VINYL_SPAWN_POSITION = Vector3(30.0f, 0.0f, 30.0f);
 
@@ -29,7 +30,18 @@ VinylRecord::VinylRecord(Type type)
 //-----------------------------------------------------------------------------------
 VinylRecord::~VinylRecord()
 {
-
+    delete m_innerMaterial->m_shaderProgram;
+    delete m_outerMaterial->m_shaderProgram;
+    delete m_sleeveMaterial->m_shaderProgram;
+    delete m_innerMaterial;
+    delete m_outerMaterial;
+    delete m_sleeveMaterial;
+    delete m_vinylLabel->m_meshRenderer.m_mesh;
+    delete m_vinyl->m_meshRenderer.m_mesh;
+    delete m_sleeve->m_meshRenderer.m_mesh;
+    delete m_vinyl;
+    delete m_vinylLabel;
+    delete m_sleeve;
 }
 
 //-----------------------------------------------------------------------------------
