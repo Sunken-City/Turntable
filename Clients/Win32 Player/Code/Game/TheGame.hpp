@@ -53,5 +53,6 @@ private:
     Material* m_testMaterial;
     Material* m_uvDebugMaterial;
     Material* m_normalDebugMaterial;
+    Material* m_fboMaterial;
     bool m_renderAxisLines;
 };

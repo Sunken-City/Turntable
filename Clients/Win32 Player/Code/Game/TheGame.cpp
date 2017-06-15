@@ -63,85 +63,6 @@ const int NUM_LIGHTS = 1;
 float spinFactor = 1.f;
 static float animTime = 0.0f;
 
-CONSOLE_COMMAND(twah)
-{
-    UNUSED(args);
-    AudioSystem::instance->PlaySound(TheGame::instance->m_twahSFX);
-}
-
-CONSOLE_COMMAND(use33)
-{
-    UNUSED(args);
-    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_33)
-    {
-        Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
-        return;
-    }
-    if (SongManager::instance->IsPlaying())
-    {
-        Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
-        return;
-    }
-    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_33);
-    TheGame::instance->m_currentRecord->RemoveFromScene(ForwardRenderer::instance->GetMainScene());
-    record->AddToScene(ForwardRenderer::instance->GetMainScene());
-    delete TheGame::instance->m_currentRecord;
-    TheGame::instance->m_currentRecord = record;
-}
-
-CONSOLE_COMMAND(use45)
-{
-    UNUSED(args);
-    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_45)
-    {
-        Console::instance->PrintLine("Already using a 45RPM record", RGBA::RED);
-        return;
-    }
-    if (SongManager::instance->IsPlaying())
-    {
-        Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
-        return;
-    }
-    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_45);
-    TheGame::instance->m_currentRecord->RemoveFromScene(ForwardRenderer::instance->GetMainScene());
-    record->AddToScene(ForwardRenderer::instance->GetMainScene());
-    delete TheGame::instance->m_currentRecord;
-    TheGame::instance->m_currentRecord = record;
-}
-
-CONSOLE_COMMAND(getsongmetadata)
-{
-    if (!args.HasArgs(1))
-    {
-        Console::instance->PrintLine("getsongmetadata <filename>", RGBA::RED);
-        return;
-    }
-    std::string filepath = args.GetStringArgument(0);
-    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-    if (song == MISSING_SOUND_ID)
-    {
-        //Try again with the current working directory added to the path
-        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
-        song = AudioSystem::instance->CreateOrGetSound(filepath);
-
-        if (song == MISSING_SOUND_ID)
-        {
-            Console::instance->PrintLine("Could not find file.", RGBA::RED);
-            return;
-        }
-    }
-
-    //Why isn't this working?
-    TagLib::FileRef audioFile(filepath.c_str());
-    TagLib::String artist = audioFile.tag()->artist();
-    TagLib::String album = audioFile.tag()->album();
-    int year = audioFile.tag()->year();
-    Console::instance->PrintLine(Stringf("Artist: %s\n", artist.toCString()));
-    Console::instance->PrintLine(Stringf("Album: %s\n", album.toCString()));
-    Console::instance->PrintLine(Stringf("Year: %i\n", year));
-}
-
 TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
 , m_twahSFX(AudioSystem::instance->CreateOrGetSound("Data/SFX/Twah.wav"))
@@ -156,14 +77,14 @@ TheGame::TheGame()
     m_fbo = Framebuffer::FramebufferCreate(1, &blankTex, depthTex);
 
 
-    Material* fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", "Data/Shaders/Post/post.frag"), //post_pixelation
+    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", "Data/Shaders/Post/post.frag"), //post_pixelation
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
-    fboMaterial->SetDiffuseTexture(blankTex);
-    fboMaterial->SetNormalTexture(depthTex);
+    m_fboMaterial->SetDiffuseTexture(blankTex);
+    m_fboMaterial->SetNormalTexture(depthTex);
 
     MeshBuilder builder;
     builder.AddQuad(Vector3(-1, -1, 0), Vector3::UP, 2.0f, Vector3::RIGHT, 2.0f);
-    quadForFBO = new MeshRenderer(new Mesh(), fboMaterial);
+    quadForFBO = new MeshRenderer(new Mesh(), m_fboMaterial);
     builder.CopyToMesh(quadForFBO->m_mesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
 
     quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
@@ -180,7 +101,6 @@ TheGame::~TheGame()
     delete m_currentRecord;
     delete m_fbo->m_colorTargets[0];
     delete m_fbo->m_depthStencilTarget;
-    delete quadForFBO->m_material;
     delete quadForFBO->m_mesh;
     delete quadForFBO;
     delete loadedMesh;
@@ -188,6 +108,8 @@ TheGame::~TheGame()
     delete m_testMaterial->m_shaderProgram;
     delete m_uvDebugMaterial->m_shaderProgram;
     delete m_normalDebugMaterial->m_shaderProgram;
+    delete m_fboMaterial->m_shaderProgram;
+    delete m_fboMaterial;
     delete m_testMaterial;
     delete m_uvDebugMaterial;
     delete m_normalDebugMaterial;
@@ -400,4 +322,88 @@ void TheGame::LoadDefaultScene()
 {
     m_currentRecord = new VinylRecord(VinylRecord::Type::RPM_45);
     m_currentRecord->AddToScene(ForwardRenderer::instance->GetMainScene());
+}
+
+//CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(twah)
+{
+    UNUSED(args);
+    AudioSystem::instance->PlaySound(TheGame::instance->m_twahSFX);
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(use33)
+{
+    UNUSED(args);
+    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_33)
+    {
+        Console::instance->PrintLine("Already using a 33RPM record", RGBA::RED);
+        return;
+    }
+    if (SongManager::instance->IsPlaying())
+    {
+        Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
+        return;
+    }
+    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_33);
+    TheGame::instance->m_currentRecord->RemoveFromScene(ForwardRenderer::instance->GetMainScene());
+    record->AddToScene(ForwardRenderer::instance->GetMainScene());
+    delete TheGame::instance->m_currentRecord;
+    TheGame::instance->m_currentRecord = record;
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(use45)
+{
+    UNUSED(args);
+    if (TheGame::instance->m_currentRecord->m_type == VinylRecord::RPM_45)
+    {
+        Console::instance->PrintLine("Already using a 45RPM record", RGBA::RED);
+        return;
+    }
+    if (SongManager::instance->IsPlaying())
+    {
+        Console::instance->PrintLine("Please stop the currently playing song", RGBA::RED);
+        return;
+    }
+    VinylRecord* record = new VinylRecord(VinylRecord::Type::RPM_45);
+    TheGame::instance->m_currentRecord->RemoveFromScene(ForwardRenderer::instance->GetMainScene());
+    record->AddToScene(ForwardRenderer::instance->GetMainScene());
+    delete TheGame::instance->m_currentRecord;
+    TheGame::instance->m_currentRecord = record;
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(getsongmetadata)
+{
+    if (!args.HasArgs(1))
+    {
+        Console::instance->PrintLine("getsongmetadata <filename>", RGBA::RED);
+        return;
+    }
+    std::string filepath = args.GetStringArgument(0);
+    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
+    if (song == MISSING_SOUND_ID)
+    {
+        //Try again with the current working directory added to the path
+        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
+        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        song = AudioSystem::instance->CreateOrGetSound(filepath);
+
+        if (song == MISSING_SOUND_ID)
+        {
+            Console::instance->PrintLine("Could not find file.", RGBA::RED);
+            return;
+        }
+    }
+
+    //Why isn't this working?
+    TagLib::FileRef audioFile(filepath.c_str());
+    TagLib::String artist = audioFile.tag()->artist();
+    TagLib::String album = audioFile.tag()->album();
+    int year = audioFile.tag()->year();
+    Console::instance->PrintLine(Stringf("Artist: %s\n", artist.toCString()));
+    Console::instance->PrintLine(Stringf("Album: %s\n", album.toCString()));
+    Console::instance->PrintLine(Stringf("Year: %i\n", year));
 }
