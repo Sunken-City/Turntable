@@ -19,6 +19,8 @@
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
 #include <shellapi.h>
 #include "Engine/Core/StringUtils.hpp"
+#include "Engine/Fonts/BitmapFont.hpp"
+#include "Engine/Core/Events/EventSystem.hpp"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -275,6 +277,13 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     TheGame::instance = new TheGame();
 }
 
+//-----------------------------------------------------------------------------------
+void EngineCleanup()
+{
+    Texture::CleanUpTextureRegistry();
+    BitmapFont::CleanUpBitmapFontRegistry();
+    EventSystem::CleanUpEventRegistry();
+}
 
 //-----------------------------------------------------------------------------------------------
 void Shutdown()
@@ -293,13 +302,14 @@ void Shutdown()
     ForwardRenderer::instance = nullptr;
     delete Renderer::instance;
     Renderer::instance = nullptr;
+    EngineCleanup();
 }
-
 
 //-----------------------------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, LPSTR commandLineString, int)
 {
     UNUSED(commandLineString);
+    MemoryAnalyticsStartup();
     Initialize(applicationInstanceHandle);
 
     while (!g_isQuitting)
@@ -308,5 +318,6 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, LPSTR command
     }
 
     Shutdown();
+    MemoryAnalyticsShutdown();
     return 0;
 }

@@ -53,6 +53,16 @@ extern AnimationMotion* g_loadedMotion;
 extern std::vector<AnimationMotion*>* g_loadedMotions;
 extern int g_numLoadedMeshes;
 
+MeshRenderer* quadForFBO;
+unsigned int samplerID;
+unsigned int diffuseID;
+unsigned int normalMapID;
+MeshRenderer* loadedMesh;
+Material* lightMaterial;
+const int NUM_LIGHTS = 1;
+float spinFactor = 1.f;
+static float animTime = 0.0f;
+
 CONSOLE_COMMAND(twah)
 {
     UNUSED(args);
@@ -132,14 +142,6 @@ CONSOLE_COMMAND(getsongmetadata)
     Console::instance->PrintLine(Stringf("Year: %i\n", year));
 }
 
-MeshRenderer* quadForFBO;
-unsigned int samplerID;
-unsigned int diffuseID;
-unsigned int normalMapID;
-MeshRenderer* loadedMesh;
-Material* lightMaterial;
-const int NUM_LIGHTS = 1;
-
 TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
 , m_twahSFX(AudioSystem::instance->CreateOrGetSound("Data/SFX/Twah.wav"))
@@ -149,7 +151,6 @@ TheGame::TheGame()
     SongManager::instance = new SongManager();
 
     SetUpShader();
-#pragma TODO("Fix this blatant memory leak")
     Texture* blankTex = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
     Texture* depthTex = new Texture(1600, 900, Texture::TextureFormat::D24S8);
     m_fbo = Framebuffer::FramebufferCreate(1, &blankTex, depthTex);
@@ -172,6 +173,28 @@ TheGame::TheGame()
 }
 
 //-----------------------------------------------------------------------------------
+TheGame::~TheGame()
+{
+    delete SongManager::instance;
+    SongManager::instance = nullptr;
+    delete m_currentRecord;
+    delete m_fbo->m_colorTargets[0];
+    delete m_fbo->m_depthStencilTarget;
+    delete quadForFBO->m_material;
+    delete quadForFBO->m_mesh;
+    delete quadForFBO;
+    delete loadedMesh;
+    delete lightMaterial;
+    delete m_testMaterial->m_shaderProgram;
+    delete m_uvDebugMaterial->m_shaderProgram;
+    delete m_normalDebugMaterial->m_shaderProgram;
+    delete m_testMaterial;
+    delete m_uvDebugMaterial;
+    delete m_normalDebugMaterial;
+    Framebuffer::FramebufferDelete(m_fbo);
+}
+
+//-----------------------------------------------------------------------------------
 void TheGame::InitializeMainCamera()
 {
     Camera3D* camera = ForwardRenderer::instance->GetMainCamera();
@@ -179,18 +202,6 @@ void TheGame::InitializeMainCamera()
     camera->m_position = Vector3(30.0f, 30.0f, 0.0f);
     camera->LookAt(m_currentRecord->GetPosition());
 }
-
-//-----------------------------------------------------------------------------------
-TheGame::~TheGame()
-{
-    delete SongManager::instance;
-    SongManager::instance = nullptr;
-// 	delete m_shaderProgram;
-// 	glDeleteVertexArrays(1, &gVAO);
-// 	glDeleteBuffers(1, &gVBO);
-}
-float spinFactor = 1.f;
-static float animTime = 0.0f;
 
 //-----------------------------------------------------------------------------------
 void TheGame::Update(float deltaSeconds)
@@ -246,112 +257,6 @@ void TheGame::Update(float deltaSeconds)
         m_currentRecord->m_vinyl->m_meshRenderer.m_material = m_uvDebugMaterial;
         m_currentRecord->m_vinylLabel->m_meshRenderer.m_material = m_uvDebugMaterial;
     }
-
-/*     for (int i = 0; i < 16; i++)
-//     {
-//         m_lightPositions[i] = Vector3(sinf(static_cast<float>(GetCurrentTimeSeconds() + i)) * 5.0f, cosf(static_cast<float>(GetCurrentTimeSeconds() + i) / 2.0f) * 3.0f, 0.5f);
-//         m_lights[i].SetPosition(m_lightPositions[i]);
-//         m_currentMaterial->m_shaderProgram->SetVec3Uniform(Stringf("gLightPosition[%i]", i).c_str(), m_lightPositions[i], 16);
-//     }
-//     
-//     if (InputSystem::instance->WasKeyJustPressed('0'))
-//     {
-//         m_renderAxisLines = !m_renderAxisLines;
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('1'))
-//     {
-//         MeshBuilder builder;
-//         MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
-//         builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
-//             [](const void* userData, float x, float y)
-//         {
-//             MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
-//             Vector3 position = plane->initialPosition
-//                 + (plane->right * x)
-//                 + (plane->up * y);
-//             return position;
-//         }
-//         , data);
-//         builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
-//         spinFactor = 0.0f;
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('2'))
-//     {
-//         MeshBuilder builder;
-//         MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
-//         builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
-//             [](const void* userData, float x, float y)
-//             {
-//                 MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
-//                 Vector3 position = plane->initialPosition
-//                     + (plane->right * x)
-//                     + (plane->up * y);
-//                 position.z = sin(x + y);
-//                 return position;
-//             }
-//         , data);
-//         builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
-//         spinFactor = 0.0f;
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('3'))
-//     {
-//         MeshBuilder builder;
-//         MeshBuilder::PlaneData* data = new MeshBuilder::PlaneData(Vector3::ZERO, Vector3::RIGHT, Vector3::UP);
-//         builder.BuildPatch(-5.0f, 5.0f, 50, -5.0f, 5.0f, 50,
-//             [](const void* userData, float x, float y)
-//         {
-//             MeshBuilder::PlaneData const *plane = (MeshBuilder::PlaneData const*)userData;
-//             Vector3 position = plane->initialPosition
-//                 + (plane->right * x)
-//                 + (plane->up * y);
-//             position.z = .05f * -cos(((float)GetCurrentTimeSeconds() * 4.0f) + (Vector2(x, y).CalculateMagnitude() * 100.0f));
-//             return position;
-//         }
-//         , data);
-//         builder.CopyToMesh(loadedMesh->m_mesh, &Vertex_SkinnedPCTN::Copy, sizeof(Vertex_SkinnedPCTN), &Vertex_SkinnedPCTN::BindMeshToVAO);
-//         spinFactor = 0.0f;
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('4'))
-//     {
-//         FbxListScene("Data/FBX/SampleBox.fbx");
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('5'))
-//     {
-//         Console::instance->RunCommand("fbxLoad Data/FBX/unitychan.fbx");
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('6'))
-//     {
-//         Console::instance->RunCommand("fbxLoad Data/FBX/samplebox.fbx");
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('7'))
-//     {
-//         Console::instance->RunCommand("saveMesh saveFile.picomesh");
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('8'))
-//     {
-//         Console::instance->RunCommand("loadMesh saveFile.picomesh");
-//     }
-//     if(InputSystem::instance->WasKeyJustPressed('K'))
-//     {
-//         m_showSkeleton = !m_showSkeleton;
-//     }
-//     if (InputSystem::instance->WasKeyJustPressed('I'))
-//     {
-//         g_loadedMotion->m_playbackMode = AnimationMotion::CLAMP;
-//     }
-//     else if (InputSystem::instance->WasKeyJustPressed('L'))
-//     {
-//         g_loadedMotion->m_playbackMode = AnimationMotion::LOOP;
-//     }
-//     else if (InputSystem::instance->WasKeyJustPressed('P'))
-//     {
-//         g_loadedMotion->m_playbackMode = AnimationMotion::PING_PONG;
-//     }
-//     else if (InputSystem::instance->WasKeyJustPressed('O'))
-//     {
-//         g_loadedMotion->m_playbackMode = AnimationMotion::PAUSED;
-//     }
-*/
 }
 
 //-----------------------------------------------------------------------------------
