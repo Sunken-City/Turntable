@@ -5,6 +5,7 @@
 #include "Engine/Input/Console.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
 #include "Engine/Renderer/Material.hpp"
+#include "Engine/Core/StringUtils.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -87,6 +88,18 @@ bool SongManager::IsPlaying()
     return (channel && AudioSystem::instance->IsPlaying(channel));
 }
 
+//-----------------------------------------------------------------------------------
+void SongManager::AddToQueue(Song* newSong)
+{
+    m_songQueue.push_back(newSong);
+}
+
+//-----------------------------------------------------------------------------------
+unsigned int SongManager::GetQueueLength()
+{
+    return m_songQueue.size();
+}
+
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(play)
@@ -130,6 +143,35 @@ CONSOLE_COMMAND(play)
     newSong->m_baseFrequency = AudioSystem::instance->GetFrequency(song);
     newSong->m_targetFrequency = newSong->m_baseFrequency * frequencyMultiplier;
     newSong->m_currentFrequency = newSong->m_targetFrequency;
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(addtoqueue)
+{
+    if (!(args.HasArgs(1) || args.HasArgs(2)))
+    {
+        Console::instance->PrintLine("play <filename> (rpm)", RGBA::RED);
+        return;
+    }
+    std::string filepath = args.GetStringArgument(0);
+    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
+    if (song == MISSING_SOUND_ID)
+    {
+        //Try again with the current working directory added to the path
+        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
+        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        song = AudioSystem::instance->CreateOrGetSound(filepath);
+
+        if (song == MISSING_SOUND_ID)
+        {
+            Console::instance->PrintLine("Could not find file.", RGBA::RED);
+            return;
+        }
+    }
+
+    Song* newSong = new Song(filepath);
+    SongManager::instance->AddToQueue(newSong);
+    Console::instance->PrintLine(Stringf("Added %s to the queue at position %i.", newSong->m_title.toCString(), SongManager::instance->GetQueueLength()));
 }
 
 //-----------------------------------------------------------------------------------

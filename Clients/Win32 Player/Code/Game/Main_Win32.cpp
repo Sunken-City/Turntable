@@ -44,12 +44,20 @@ void HandleFileDrop(WPARAM wParam)
 {
     //Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb776408(v=vs.85).aspx
     HDROP fileDrop = (HDROP)wParam;
-    UINT fileNumberToQuery = 0; //Pass 0xFFFFFFFF and DragQueryFile will return total number of files dropped. 
-
+    UINT fileNumberToQuery = 0;  
     TCHAR tcharFilePath[MAX_PATH] = TEXT("");
+    UINT numFilesInDrop = DragQueryFile(fileDrop, 0xFFFFFFFF, NULL, NULL); //Pass 0xFFFFFFFF and DragQueryFile will return total number of files dropped.
+
     DragQueryFile(fileDrop, fileNumberToQuery, tcharFilePath, MAX_PATH);
     std::wstring filePath(tcharFilePath);
     Console::instance->RunCommand(Stringf("play \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+
+    while (--numFilesInDrop > 0)
+    {
+        DragQueryFile(fileDrop, ++fileNumberToQuery, tcharFilePath, MAX_PATH);
+        std::wstring filePath(tcharFilePath);
+        Console::instance->RunCommand(Stringf("addtoqueue \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+    }
     DragFinish(fileDrop);
 }
 

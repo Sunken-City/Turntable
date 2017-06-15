@@ -16,7 +16,8 @@ public:
     void Play(Song* songToPlay);
     void Stop();
     bool IsPlaying();
-
+    void AddToQueue(Song* newSong);
+    unsigned int GetQueueLength();
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static SongManager* instance;
 
