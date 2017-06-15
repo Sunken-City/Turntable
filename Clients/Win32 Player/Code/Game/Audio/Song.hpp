@@ -34,8 +34,9 @@ public:
     int m_numChannels;
 
     //Variables
-    int m_baseFrequency;
-    int m_targetFrequency;
-    int m_currentFrequency;
-    SoundID m_fmodID;
+    float m_baseFrequency;
+    float m_targetFrequency;
+    float m_currentFrequency;
+    AudioChannelHandle m_fmodChannel = nullptr;
+    SoundID m_fmodID = MISSING_SOUND_ID;
 };

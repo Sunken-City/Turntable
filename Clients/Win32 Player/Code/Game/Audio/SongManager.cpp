@@ -6,6 +6,7 @@
 #include "Engine/Audio/AudioMetadataUtils.hpp"
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Core/StringUtils.hpp"
+#include "Engine/Audio/Audio.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -49,7 +50,11 @@ void SongManager::Play(Song* songToPlay)
     }
     m_activeSong = songToPlay;
 
-    AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID);
+    AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, 0.8f); //TODO: Find out why PlaySound causes a linker error here
+    if (m_loopMode != SONG_LOOP)
+    {
+        AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
+    }
     IncrementPlaycount(songToPlay->m_filePath);
 
     //Load album art
@@ -175,15 +180,32 @@ CONSOLE_COMMAND(addtoqueue)
 }
 
 //-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(loopoff)
+{
+    UNUSED(args);
+    SongManager::instance->SetLoopMode(SongManager::LoopMode::NO_LOOP);
+    Console::instance->PrintLine("Song Looping Disabled", RGBA::MUDKIP_ORANGE);
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(loopon)
+{
+    UNUSED(args);
+    SongManager::instance->SetLoopMode(SongManager::LoopMode::SONG_LOOP);
+    Console::instance->PrintLine("Song Looping Enabled", RGBA::MUDKIP_BLUE);
+}
+
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(stop)
 {
-    UNUSED(args)
+    UNUSED(args);
     SongManager::instance->Stop();
 }
 
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(pause)
 {
+    UNUSED(args);
     Console::instance->RunCommand("setrpm 0");
 }
 
