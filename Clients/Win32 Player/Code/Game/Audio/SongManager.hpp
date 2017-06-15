@@ -42,5 +42,8 @@ public:
     Event<> m_eventSongFinished;
     Event<> m_eventSongBeginPlay;
     Song* m_activeSong = nullptr;
+    float m_currentRPM = 0.0f;
     LoopMode m_loopMode = NO_LOOP;
+    bool m_wiggleRPM = false;
+    float m_wiggleDelta = 1.0f;
 };

@@ -38,6 +38,11 @@ void SongManager::Update(float deltaSeconds)
 {
     if (m_activeSong)
     {
+        if (m_wiggleRPM)
+        {
+            float wiggleAmount = MathUtils::GetRandomFloat(-m_wiggleDelta, m_wiggleDelta);
+            SetRPM(m_currentRPM + wiggleAmount);
+        }
         m_activeSong->Update(deltaSeconds);
     }
 }
@@ -138,11 +143,17 @@ void SongManager::OnSongBeginPlay()
 void SongManager::StopSong()
 {
     AudioSystem::instance->StopChannel(AudioSystem::instance->GetChannel(m_activeSong->m_fmodID));
+    if (m_activeSong)
+    {
+        delete m_activeSong;
+        m_activeSong = nullptr;
+    }
 }
 
 //-----------------------------------------------------------------------------------
 void SongManager::SetRPM(float rpm, bool changeInstantly /*= false*/)
 {
+    m_currentRPM = rpm;
     float frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
     TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
 
@@ -268,4 +279,31 @@ CONSOLE_COMMAND(setrpm)
 
     float rpm = args.GetFloatArgument(0);
     SongManager::instance->SetRPM(rpm);
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(wigglerpm)
+{
+    if (!(args.HasArgs(1) || args.HasArgs(0)))
+    {
+        Console::instance->PrintLine("wigglerpm <wiggleRate>", RGBA::RED);
+        return;
+    }
+
+    if (args.HasArgs(1))
+    {
+        SongManager::instance->m_wiggleDelta = args.GetFloatArgument(0);
+    }
+    else
+    {
+        SongManager::instance->m_wiggleRPM = !SongManager::instance->m_wiggleRPM;
+        if (SongManager::instance->m_wiggleRPM)
+        {
+            Console::instance->PrintLine("RPM wiggling enabled!", RGBA::VAPORWAVE);
+        }
+        else
+        {
+            Console::instance->PrintLine("RPM wiggling disabled!", RGBA::MAROON);
+        }
+    }
 }
