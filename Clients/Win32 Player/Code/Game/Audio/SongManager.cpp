@@ -20,7 +20,7 @@ SongManager::SongManager()
 //-----------------------------------------------------------------------------------
 SongManager::~SongManager()
 {
-
+    StopAll();
 }
 
 //-----------------------------------------------------------------------------------
@@ -75,7 +75,13 @@ void SongManager::StopAll()
         AudioSystem::instance->StopChannel(AudioSystem::instance->GetChannel(m_activeSong->m_fmodID));
     }
     TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
+
     FlushSongQueue();
+    if (m_activeSong)
+    {
+        delete m_activeSong;
+        m_activeSong = nullptr;
+    }
 }
 
 //-----------------------------------------------------------------------------------
@@ -212,7 +218,7 @@ CONSOLE_COMMAND(addtoqueue)
 
     Song* newSong = new Song(filepath);
     SongManager::instance->AddToQueue(newSong);
-    Console::instance->PrintLine(Stringf("Added %s to the queue at position %i.", newSong->m_title.toCString(), SongManager::instance->GetQueueLength()));
+    Console::instance->PrintLine(Stringf("Added %s to the queue at position %i.", newSong->m_title.c_str(), SongManager::instance->GetQueueLength()));
 }
 
 //-----------------------------------------------------------------------------------

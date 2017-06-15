@@ -20,10 +20,10 @@ public:
     std::string m_filePath;
     std::string m_fileName;
     std::string m_fileExtension;
-    TagLib::String m_artist;
-    TagLib::String m_album;
-    TagLib::String m_genre;
-    TagLib::String m_title;
+    std::string m_artist;
+    std::string m_album;
+    std::string m_genre;
+    std::string m_title;
     int m_trackNum;
     int m_year;
     int m_playcount;
