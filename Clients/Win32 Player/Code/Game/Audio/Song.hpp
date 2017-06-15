@@ -37,6 +37,7 @@ public:
     float m_baseFrequency;
     float m_targetFrequency;
     float m_currentFrequency;
+    unsigned int m_lastPlaybackPositionMS = 0;
     AudioChannelHandle m_fmodChannel = nullptr;
     SoundID m_fmodID = MISSING_SOUND_ID;
 };

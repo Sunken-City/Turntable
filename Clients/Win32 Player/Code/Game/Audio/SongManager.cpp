@@ -13,7 +13,8 @@ SongManager* SongManager::instance = nullptr;
 //-----------------------------------------------------------------------------------
 SongManager::SongManager()
 {
-
+    m_eventSongFinished.RegisterMethod(this, &SongManager::OnSongPlaybackFinished);
+    m_eventSongBeginPlay.RegisterMethod(this, &SongManager::OnSongBeginPlay);
 }
 
 //-----------------------------------------------------------------------------------
@@ -46,7 +47,7 @@ void SongManager::Play(Song* songToPlay)
 {
     if (IsPlaying())
     {
-        Stop();
+        StopSong();
     }
     m_activeSong = songToPlay;
 
@@ -55,7 +56,7 @@ void SongManager::Play(Song* songToPlay)
     {
         AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
     }
-    IncrementPlaycount(songToPlay->m_filePath);
+    m_activeSong->m_fmodChannel = AudioSystem::instance->GetChannel(m_activeSong->m_fmodID);
 
     //Load album art
     Texture* albumArtTexture = GetImageFromFileMetadata(songToPlay->m_filePath);
@@ -66,20 +67,15 @@ void SongManager::Play(Song* songToPlay)
 }
 
 //-----------------------------------------------------------------------------------
-void SongManager::Stop()
+void SongManager::StopAll()
 {
-    if (!IsPlaying())
+    Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
+    if (IsPlaying())
     {
-        Console::instance->PrintLine("No song is currently playing. Play a song using playsong first.", RGBA::RED);
-        return;
-    }
-    else
-    {
-        Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
         AudioSystem::instance->StopChannel(AudioSystem::instance->GetChannel(m_activeSong->m_fmodID));
-        TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
-        FlushSongQueue();
     }
+    TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
+    FlushSongQueue();
 }
 
 //-----------------------------------------------------------------------------------
@@ -103,6 +99,52 @@ void SongManager::AddToQueue(Song* newSong)
 unsigned int SongManager::GetQueueLength()
 {
     return m_songQueue.size();
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::OnSongPlaybackFinished()
+{
+    StopSong();
+    delete m_activeSong;
+    m_activeSong = nullptr;
+    if (m_songQueue.size() > 0)
+    {
+        m_activeSong = m_songQueue.front();
+        m_songQueue.pop_front();
+        if (m_activeSong)
+        {
+            Play(m_activeSong);
+        }
+    }
+    else
+    {
+        StopAll();
+    }
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::OnSongBeginPlay()
+{
+    IncrementPlaycount(m_activeSong->m_filePath);
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::StopSong()
+{
+    AudioSystem::instance->StopChannel(AudioSystem::instance->GetChannel(m_activeSong->m_fmodID));
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::SetRPM(float rpm, bool changeInstantly /*= false*/)
+{
+    float frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
+    TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
+
+    m_activeSong->m_targetFrequency = m_activeSong->m_baseFrequency * frequencyMultiplier;
+    if (changeInstantly)
+    {
+        m_activeSong->m_currentFrequency = m_activeSong->m_targetFrequency;
+    }
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
@@ -133,21 +175,15 @@ CONSOLE_COMMAND(play)
     Song* newSong = new Song(filepath);
     SongManager::instance->Play(newSong);
 
-    float frequencyMultiplier = 1.0f;
     if (args.HasArgs(2))
     {
         float rpm = args.GetFloatArgument(1);
-        frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
-        TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
+        SongManager::instance->SetRPM(rpm, true);
     }
     else
     {
-        TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::RPS_45;
+        SongManager::instance->SetRPM(TheGame::instance->m_currentRecord->m_baseRPM, true);
     }
-    
-    newSong->m_baseFrequency = AudioSystem::instance->GetFrequency(song);
-    newSong->m_targetFrequency = newSong->m_baseFrequency * frequencyMultiplier;
-    newSong->m_currentFrequency = newSong->m_targetFrequency;
 }
 
 //-----------------------------------------------------------------------------------
@@ -199,7 +235,7 @@ CONSOLE_COMMAND(loopon)
 CONSOLE_COMMAND(stop)
 {
     UNUSED(args);
-    SongManager::instance->Stop();
+    SongManager::instance->StopAll();
 }
 
 //-----------------------------------------------------------------------------------
@@ -225,7 +261,5 @@ CONSOLE_COMMAND(setrpm)
     }
 
     float rpm = args.GetFloatArgument(0);
-    float frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
-    TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
-    SongManager::instance->m_activeSong->m_targetFrequency = SongManager::instance->m_activeSong->m_baseFrequency * frequencyMultiplier;
+    SongManager::instance->SetRPM(rpm);
 }

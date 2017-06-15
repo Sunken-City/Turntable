@@ -13,6 +13,7 @@
 #include "ThirdParty/taglib/include/taglib/oggflacfile.h"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/StringUtils.hpp"
+#include "SongManager.hpp"
 
 //-----------------------------------------------------------------------------------
 Song::Song(const std::string& fullPathToFile)
@@ -23,6 +24,9 @@ Song::Song(const std::string& fullPathToFile)
     SetMetadataFromFile(fullPathToFile);
 
     m_fmodID = AudioSystem::instance->CreateOrGetSound(fullPathToFile);
+    m_baseFrequency = m_samplerate;
+    m_targetFrequency = m_samplerate;
+    m_currentFrequency = m_samplerate;
 }
 
 //-----------------------------------------------------------------------------------
@@ -114,4 +118,14 @@ void Song::Update(float deltaSeconds)
 {
     m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
     AudioSystem::instance->SetFrequency(m_fmodID, m_currentFrequency);
+    unsigned int currentPlaybackPositionMS = AudioSystem::instance->GetPlaybackPositionMS(m_fmodChannel);
+    if (currentPlaybackPositionMS < m_lastPlaybackPositionMS || !AudioSystem::instance->IsPlaying(m_fmodChannel))
+    {
+        m_lastPlaybackPositionMS = 0;
+        SongManager::instance->m_eventSongFinished.Trigger();
+    }
+    else
+    {
+        m_lastPlaybackPositionMS = currentPlaybackPositionMS;
+    }
 }

@@ -13,6 +13,7 @@
 #include "Game/TheApp.hpp"
 #include "Game/TheGame.hpp"
 #include "Engine/Core/BuildConfig.hpp"
+#include "Engine/Core/Memory/MemoryTracking.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Framebuffer.hpp"
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
