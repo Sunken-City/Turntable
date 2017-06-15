@@ -100,12 +100,12 @@ void Song::SetMetadataFromFile(const std::string& fileName)
 
     TagLib::FileRef file(fileName.c_str());
 
-    m_artist = file.tag()->artist();
-    m_album = file.tag()->album();
+    m_artist = file.tag()->artist().toCString();
+    m_album = file.tag()->album().toCString();
+    m_genre = file.tag()->genre().toCString();
+    m_title = file.tag()->title().toCString();
     m_year = file.tag()->year();
-    m_genre = file.tag()->genre();
     m_trackNum = file.tag()->track();
-    m_title = file.tag()->title();
 
     m_lengthInSeconds = file.audioProperties()->lengthInSeconds();
     m_samplerate = file.audioProperties()->sampleRate();
