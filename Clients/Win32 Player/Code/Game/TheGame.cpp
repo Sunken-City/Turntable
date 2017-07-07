@@ -64,9 +64,7 @@ static float animTime = 0.0f;
 
 TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
-, m_twahSFX(AudioSystem::instance->CreateOrGetSound("Data/SFX/Twah.wav"))
 , m_renderAxisLines(false)
-, m_showSkeleton(false)
 {
     SongManager::instance = new SongManager();
 
@@ -324,13 +322,6 @@ void TheGame::LoadDefaultScene()
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
-//-----------------------------------------------------------------------------------
-CONSOLE_COMMAND(twah)
-{
-    UNUSED(args);
-    AudioSystem::instance->PlaySound(TheGame::instance->m_twahSFX);
-}
-
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(use33)
 {

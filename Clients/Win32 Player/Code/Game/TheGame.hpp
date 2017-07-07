@@ -41,18 +41,16 @@ public:
     static constexpr float RPS_33 = (33.333333333f * 360.0f) / 60.0f;
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
-    SoundID m_twahSFX;
-    Framebuffer* m_fbo;
+    Framebuffer* m_fbo = nullptr;
     VinylRecord* m_currentRecord = nullptr;
 
 private:
-    bool m_showSkeleton;
-    Texture* m_pauseTexture;
-    RGBA* m_color;
-    Material* m_currentMaterial;
-    Material* m_testMaterial;
-    Material* m_uvDebugMaterial;
-    Material* m_normalDebugMaterial;
-    Material* m_fboMaterial;
-    bool m_renderAxisLines;
+    Texture* m_pauseTexture = nullptr;
+    Material* m_currentMaterial = nullptr;
+    Material* m_testMaterial = nullptr;
+    Material* m_uvDebugMaterial = nullptr;
+    Material* m_normalDebugMaterial = nullptr;
+    Material* m_fboMaterial = nullptr;
+    Material* m_backdropMaterial = nullptr;
+    bool m_renderAxisLines = true;
 };

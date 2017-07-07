@@ -1,0 +1,38 @@
+﻿v0.1 - Staccato
+
+
+The first formal milestone for the project. 
+With this release, users will be able to play music from the console's command line interface.
+Users can also drag and drop a song onto the music player to play it as well. The user interacts with the application using console commands as well as a few supported hotkeys. A few pieces of metadata will be visible on-screen as well, such as artist, album, genre, current playing time out of total time. Users will be able to add songs to the current song queue, which plays in order and works like an in-memory playlist. No playlist saving/loading will be supported yet.
+
+
+
+
+Feature List:
+
+
+* Users are able to play a song backwards, increasing it's PCNT field each loop 
+* Users are able to change a song's RPM playback speed in real time during playback 
+* Users are able to loop a song, increasing it's PCNT field each loop 
+* Users are able to play a song and increase it's PCNT field 
+* Pressing spacebar will toggle playing and pausing the current song
+* Pressing right arrow will start playing the next song in the queue
+* Pressing left arrow will start playing the previous song in the queue
+* Pressing shift+right arrow will seek forward in the song by X seconds
+* Pressing shift+left arrow will seek backward in the song by X seconds
+* Users will be able to add songs to the back of the current song queue using the “addtoqueue” command
+* Users will be able to add songs to play next in the current song queue using the “playnext” command
+* Users will be able to print out the current song queue via console command
+* Users will be able to use the mouse scroll wheel on the console to view previous console output
+* Display the song title from the song’s metadata on-screen, or the text “No Song Playing” if one wasn’t found
+* Display the current artist from the song’s metadata on-screen, or the text “No Artist” if one wasn’t found
+* Display the current album from the song’s metadata on-screen, or the text “No Album” if one wasn’t found
+* Display the current year from the song’s metadata on-screen, or the text “No Year” if one wasn’t found
+* Display the current genre from the song’s metadata on-screen, or the text “No Genre” if one wasn’t found
+* Display the current number of playcounts from the song’s metadata on-screen, or the text “Playcounts: 0” if not found
+* Display the current playing time from the song’s metadata on-screen, or the text “00:00/00:00” if one wasn’t found
+* The record player will have an “FBO Effect” background rendered behind the record
+* Create an installer that can put the program on a new machine that’s never run it before
+* Dragging and dropping files while there is already a queue adds to the end
+* Display the current RPM of the record, or the text “RPM: 0” if not playing
+* Set current song volume using the console command “setvolume”
