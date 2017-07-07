@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Audio/AudioMetadataUtils.hpp"
 #include "ThirdParty/taglib/include/taglib/fileref.h"
 #include <string>
 #include "Engine/Audio/Audio.hpp"
