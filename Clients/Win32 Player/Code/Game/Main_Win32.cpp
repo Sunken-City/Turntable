@@ -10,7 +10,6 @@
 #include "Engine/Audio/Audio.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Input/Console.hpp"
-#include "Game/TheApp.hpp"
 #include "Game/TheGame.hpp"
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Core/Memory/MemoryTracking.hpp"
@@ -273,7 +272,6 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     AudioSystem::instance = new AudioSystem();
     InputSystem::instance = new InputSystem(g_hWnd, 0, WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT);
     Console::instance = new Console();
-    TheApp::instance = new TheApp(VIEW_RIGHT, VIEW_TOP);
     TheGame::instance = new TheGame();
 }
 
@@ -290,8 +288,6 @@ void Shutdown()
 {
     delete TheGame::instance;
     TheGame::instance = nullptr;
-    delete TheApp::instance;
-    TheApp::instance = nullptr;
     delete Console::instance;
     Console::instance = nullptr;
     delete InputSystem::instance;
