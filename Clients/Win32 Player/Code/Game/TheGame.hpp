@@ -46,11 +46,11 @@ public:
 
 private:
     Texture* m_pauseTexture = nullptr;
+    Material* m_fboMaterial = nullptr;
     Material* m_currentMaterial = nullptr;
     Material* m_testMaterial = nullptr;
     Material* m_uvDebugMaterial = nullptr;
     Material* m_normalDebugMaterial = nullptr;
-    Material* m_fboMaterial = nullptr;
     Material* m_backdropMaterial = nullptr;
-    bool m_renderAxisLines = true;
+    bool m_renderAxisLines = false;
 };

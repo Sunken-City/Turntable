@@ -240,13 +240,14 @@ void Update()
 void Render()
 {
     Renderer::instance->ClearScreen(0.0f, 0.0f, 0.0f); //Clear screen for FBO
-    Renderer::instance->BindFramebuffer(TheGame::instance->m_fbo);
+
+    TheGame::instance->m_fbo->Bind();
     Renderer::instance->ClearScreen(0.3f, 0.3f, 0.3f);
+    TheGame::instance->RenderPostProcess();
+    Renderer::instance->FrameBufferCopyToBack(TheGame::instance->m_fbo, TheGame::instance->m_fbo->m_pixelWidth, TheGame::instance->m_fbo->m_pixelHeight);
+    TheGame::instance->m_fbo->Unbind();
 
     TheGame::instance->Render();
-    
-    Renderer::instance->BindFramebuffer(nullptr);
-    TheGame::instance->RenderPostProcess();
 
     SwapBuffers(g_displayDeviceContext);
 }

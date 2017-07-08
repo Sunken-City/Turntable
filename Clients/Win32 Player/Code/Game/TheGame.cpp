@@ -64,20 +64,18 @@ static float animTime = 0.0f;
 
 TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
-, m_renderAxisLines(false)
 {
     SongManager::instance = new SongManager();
 
     SetUpShader();
-    Texture* blankTex = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
-    Texture* depthTex = new Texture(1600, 900, Texture::TextureFormat::D24S8);
-    m_fbo = Framebuffer::FramebufferCreate(1, &blankTex, depthTex);
+    Texture* blankFBOTexture = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
+    Texture* depthTexture1 = new Texture(1600, 900, Texture::TextureFormat::D24S8);
+    m_fbo = Framebuffer::FramebufferCreate(1, &blankFBOTexture, depthTexture1);
 
-
-    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", "Data/Shaders/Post/post.frag"), //post_pixelation
+    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //post_pixelation
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
-    m_fboMaterial->SetDiffuseTexture(blankTex);
-    m_fboMaterial->SetNormalTexture(depthTex);
+    m_fboMaterial->SetDiffuseTexture(blankFBOTexture);
+    m_fboMaterial->SetNormalTexture(depthTexture1);
 
     MeshBuilder builder;
     builder.AddQuad(Vector3(-1, -1, 0), Vector3::UP, 2.0f, Vector3::RIGHT, 2.0f);
@@ -146,6 +144,7 @@ void TheGame::Update(float deltaSeconds)
     {
         Camera3D* camera = ForwardRenderer::instance->GetMainCamera();
         camera->m_updateFromInput = !camera->m_updateFromInput;
+        m_renderAxisLines = !m_renderAxisLines; //Show the axis lines when we're moving in 3D space for debugging purposes.
         if (!camera->m_updateFromInput)
         {
             MouseInputDevice::ReleaseMouseCursor();
@@ -241,6 +240,10 @@ void TheGame::End3DPerspective() const
 //-----------------------------------------------------------------------------------
 void TheGame::RenderAxisLines() const
 {
+    if (!m_renderAxisLines)
+    {
+        return;
+    }
     const float axisLineLength = 100.0f;
     Renderer::instance->EnableDepthTest(true);
 
