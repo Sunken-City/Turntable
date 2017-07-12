@@ -44,6 +44,7 @@
 #include "Engine/Renderer/3D/Scene3D.hpp"
 #include "Renderables/VinylRecord.hpp"
 #include "Audio/SongManager.hpp"
+#include "Engine/UI/UISystem.hpp"
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
 extern Skeleton* g_loadedSkeleton;
@@ -65,6 +66,7 @@ TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
 {
     SongManager::instance = new SongManager();
+    UISystem::instance->LoadAndParseUIXML("Data/UI/PlayerLayout.xml");
 
     SetUpShader();
     Texture* blankFBOTexture = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
@@ -138,6 +140,10 @@ void TheGame::Update(float deltaSeconds)
 {
     m_currentRecord->Update(deltaSeconds);
     SongManager::instance->Update(deltaSeconds);
+    if (InputSystem::instance->WasKeyJustPressed('R'))
+    {
+        UISystem::instance->ReloadUI("Data/UI/PlayerLayout.xml");
+    }
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {

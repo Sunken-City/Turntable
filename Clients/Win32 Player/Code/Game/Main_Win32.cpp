@@ -20,6 +20,7 @@
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Fonts/BitmapFont.hpp"
 #include "Engine/Core/Events/EventSystem.hpp"
+#include "Engine/UI/UISystem.hpp"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -39,7 +40,7 @@ bool g_isQuitting = false;
 HWND g_hWnd = nullptr;
 HDC g_displayDeviceContext = nullptr;
 HGLRC g_openGLRenderingContext = nullptr;
-const char* APP_NAME = "T W A H  B O Y S";
+const char* APP_NAME = "Turntable";
 
 //-----------------------------------------------------------------------------------
 void HandleFileDrop(WPARAM wParam)
@@ -234,6 +235,7 @@ void Update()
     InputSystem::instance->Update(deltaSeconds);
     Console::instance->Update(deltaSeconds);
     TheGame::instance->Update(deltaSeconds);
+    UISystem::instance->Update(deltaSeconds);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -248,6 +250,7 @@ void Render()
     TheGame::instance->m_fbo->Unbind();
 
     TheGame::instance->Render();
+    UISystem::instance->Render();
 
     SwapBuffers(g_displayDeviceContext);
 }
@@ -273,6 +276,7 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     AudioSystem::instance = new AudioSystem();
     InputSystem::instance = new InputSystem(g_hWnd, 0, WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT);
     Console::instance = new Console();
+    UISystem::instance = new UISystem();
     TheGame::instance = new TheGame();
 }
 
@@ -289,6 +293,8 @@ void Shutdown()
 {
     delete TheGame::instance;
     TheGame::instance = nullptr;
+    delete UISystem::instance;
+    UISystem::instance = nullptr;
     delete Console::instance;
     Console::instance = nullptr;
     delete InputSystem::instance;

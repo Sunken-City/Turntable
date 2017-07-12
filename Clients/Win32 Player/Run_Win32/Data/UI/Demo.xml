@@ -1,0 +1,34 @@
+<Root>
+  <Window Name="Window Widget"
+          BorderWidth="10.0f"
+          Offset="0,400"
+          Padding="20.0f, 20.0f"
+          Opacity="1.0f">
+    <Button Name="Start Button"
+        Text="PRESS ME, MAYBE >:I"
+        BackgroundColor="0x228F00FF"
+        BorderColor="0x225500FF"
+        BorderWidth="5.0f"
+        TextSize="2.0f"
+        TextColor="0xFF819CFF"
+        Offset="500, 300"
+        Opacity="1.0f"
+        TextOpacity="1.0f"
+        OnClick="StartGame">
+    </Button>
+    <Button Name="Other Button"
+            Text="I do nothing... :c"
+            BackgroundColor="0x00AAAAFF"
+            BorderColor="0x009999FF"
+            BorderWidth="5.0f"
+            TextSize="0.5f"
+            TextColor="0xFF819CFF"
+            HorizontalOffset="200"
+            VerticalOffset="200"/>
+    <Checkbox Text="Check Me"
+              DefaultState="Checked"
+              HorizontalOffset="200"
+              TextOffset="20.0f, 0.0f"
+              Padding="20.0f, 20.0f"/>
+  </Window>
+</Root>
