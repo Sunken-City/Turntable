@@ -17,4 +17,14 @@
       Offset="10, 10"
       TextOpacity="1.0f">
   </Label>
+
+  <Label Name="RPM"
+      Text="RPM: 0"
+      TextSize="2.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="1400, 10"
+      TextOpacity="1.0f">
+  </Label>
 </Root>

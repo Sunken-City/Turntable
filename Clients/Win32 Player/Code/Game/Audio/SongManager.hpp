@@ -35,7 +35,7 @@ public:
     void SetRPM(float rpm, bool changeInstantly = false);
     void CheckForHotkeys(); 
     void SetNowPlayingTextFromMetadata(Song* currentSong);
-
+    void UpdateUIWidgetText();
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static SongManager* instance;
 

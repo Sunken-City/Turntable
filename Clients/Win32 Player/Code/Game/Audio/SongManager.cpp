@@ -48,7 +48,10 @@ void SongManager::Update(float deltaSeconds)
         }
         m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
         AudioSystem::instance->SetFrequency(m_activeSong->m_fmodID, m_currentFrequency);
+
         CheckForHotkeys();
+        UpdateUIWidgetText();
+
         unsigned int currentPlaybackPositionMS = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel);
         if (currentPlaybackPositionMS < m_lastPlaybackPositionMS || !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
@@ -227,6 +230,13 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     artistNameWidget->m_propertiesForAllStates.Set("Text", artist, false);
 }
 
+//-----------------------------------------------------------------------------------
+void SongManager::UpdateUIWidgetText()
+{
+    LabelWidget* rpmWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("RPM"));
+    ASSERT_OR_DIE(rpmWidget, "Couldn't find the RPM label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    rpmWidget->m_propertiesForAllStates.Set("Text", Stringf("RPM: %i", (int)m_currentRPM), false);
+}
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
