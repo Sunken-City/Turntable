@@ -14,6 +14,7 @@ public:
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     void SetMetadataFromFile(const std::string& fileName);
+    void SetNowPlayingTextFromMetadata();
     void Update(float deltaSeconds);
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////

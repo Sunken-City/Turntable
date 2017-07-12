@@ -1,7 +1,16 @@
 <Root>
-  <Label Name="Song Name"
-      Text="No Song"
-      TextSize="2.0f"
+  <Label Name="ArtistName"
+      Text="Artist: N/A"
+      TextSize="1.5f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 60"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="SongName"
+      Text="Title: N/A"
+      TextSize="1.5f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"

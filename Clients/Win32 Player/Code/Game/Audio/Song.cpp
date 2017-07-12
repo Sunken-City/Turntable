@@ -14,6 +14,8 @@
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "SongManager.hpp"
+#include "Engine/UI/UISystem.hpp"
+#include "Engine/UI/Widgets/LabelWidget.hpp"
 
 //-----------------------------------------------------------------------------------
 Song::Song(const std::string& fullPathToFile)
@@ -111,7 +113,20 @@ void Song::SetMetadataFromFile(const std::string& fileName)
 }
 
 //-----------------------------------------------------------------------------------
+void Song::SetNowPlayingTextFromMetadata()
+{
+    LabelWidget* songNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("SongName"));
+    LabelWidget* artistNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("ArtistName"));
+
+    ASSERT_OR_DIE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_OR_DIE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+
+    songNameWidget->m_propertiesForAllStates.Set("Text", Stringf("Title: %s", m_title.c_str()), false);
+    artistNameWidget->m_propertiesForAllStates.Set("Text", Stringf("Artist: %s", m_artist.c_str()), false);
+}
+
+//-----------------------------------------------------------------------------------
 void Song::Update(float deltaSeconds)
 {
-
+    UNUSED(deltaSeconds);
 }

@@ -140,16 +140,12 @@ void TheGame::Update(float deltaSeconds)
 {
     m_currentRecord->Update(deltaSeconds);
     SongManager::instance->Update(deltaSeconds);
-    if (InputSystem::instance->WasKeyJustPressed('R'))
-    {
-        UISystem::instance->ReloadUI("Data/UI/PlayerLayout.xml");
-    }
+    quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
         Console::instance->ActivateConsole();
     }
-
     if (Console::instance->IsActive())
     {
         return; //Don't do anything involving input updates.
@@ -158,6 +154,11 @@ void TheGame::Update(float deltaSeconds)
     {
         g_isQuitting = true;
         return;
+    }
+
+    if (InputSystem::instance->WasKeyJustPressed('R'))
+    {
+        UISystem::instance->ReloadUI("Data/UI/PlayerLayout.xml");
     }
     if (InputSystem::instance->WasKeyJustPressed('L'))
     {
@@ -174,7 +175,6 @@ void TheGame::Update(float deltaSeconds)
 
     ForwardRenderer::instance->Update(deltaSeconds);
     CheckForImportedMeshes();
-    quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
 
     if (InputSystem::instance->WasKeyJustPressed('B'))
     {
