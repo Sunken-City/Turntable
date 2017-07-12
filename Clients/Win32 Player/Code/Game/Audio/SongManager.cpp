@@ -8,6 +8,8 @@
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Audio/Audio.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/UI/UISystem.hpp"
+#include "Engine/UI/Widgets/LabelWidget.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -69,7 +71,7 @@ void SongManager::Play(Song* songToPlay)
     }
     m_activeSong = songToPlay;
     m_baseFrequency = m_activeSong->m_samplerate;
-    m_activeSong->SetNowPlayingTextFromMetadata();
+    SetNowPlayingTextFromMetadata(m_activeSong);
 
     AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, 0.8f); //TODO: Find out why PlaySound causes a linker error here
     if (m_loopMode != SONG_LOOP)
@@ -101,6 +103,7 @@ void SongManager::StopAll()
     {
         delete m_activeSong;
         m_activeSong = nullptr;
+        SetNowPlayingTextFromMetadata(nullptr);
     }
 }
 
@@ -162,6 +165,7 @@ void SongManager::StopSong()
     {
         delete m_activeSong;
         m_activeSong = nullptr;
+        SetNowPlayingTextFromMetadata(nullptr); //Set to default values.
     }
 }
 
@@ -182,6 +186,11 @@ void SongManager::SetRPM(float rpm, bool changeInstantly /*= false*/)
 //-----------------------------------------------------------------------------------
 void SongManager::CheckForHotkeys()
 {
+    if (Console::instance->IsActive())
+    {
+        return;
+    }
+
     if (InputSystem::instance->WasKeyJustPressed(' '))
     {
         if (m_currentRPM != 0)
@@ -195,6 +204,29 @@ void SongManager::CheckForHotkeys()
         }
     }
 }
+
+//-----------------------------------------------------------------------------------
+void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
+{
+    LabelWidget* songNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("SongName"));
+    LabelWidget* artistNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("ArtistName"));
+
+    ASSERT_OR_DIE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_OR_DIE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+
+    std::string title = "No Song Playing";
+    std::string artist = "No Artist";
+
+    if (currentSong)
+    {
+        title = Stringf("Title: %s", currentSong->m_title.c_str());
+        artist = Stringf("Artist: %s", currentSong->m_artist.c_str());
+    }
+
+    songNameWidget->m_propertiesForAllStates.Set("Text", title, false);
+    artistNameWidget->m_propertiesForAllStates.Set("Text", artist, false);
+}
+
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------

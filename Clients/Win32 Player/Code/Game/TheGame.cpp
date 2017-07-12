@@ -234,7 +234,6 @@ void TheGame::Render() const
         RenderAxisLines();
     }
     End3DPerspective();
-    Console::instance->Render();
 }
 
 //-----------------------------------------------------------------------------------

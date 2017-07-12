@@ -33,7 +33,8 @@ public:
     void OnSongBeginPlay();
     void StopSong();
     void SetRPM(float rpm, bool changeInstantly = false);
-	void CheckForHotkeys();
+    void CheckForHotkeys(); 
+    void SetNowPlayingTextFromMetadata(Song* currentSong);
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static SongManager* instance;
@@ -44,12 +45,12 @@ public:
     Event<> m_eventSongBeginPlay;
     Song* m_activeSong = nullptr;
     float m_currentRPM = 0.0f;
-	float m_lastRPM = 0.0f; //Cached value of previous rpm before pausing
+    float m_lastRPM = 0.0f; //Cached value of previous rpm before pausing
     LoopMode m_loopMode = NO_LOOP;
     bool m_wiggleRPM = false;
     float m_wiggleDelta = 1.0f;
-	unsigned int m_lastPlaybackPositionMS = 0;
-	float m_baseFrequency; //Frequency of what the song is supposed to be played at, based on what kind of vinyl we're playing
-	float m_targetFrequency; //The target frequency of the track. m_currentFrequency lerps towards this value.
-	float m_currentFrequency; //Actual frequency of the track that was last passed to FMOD
+    unsigned int m_lastPlaybackPositionMS = 0;
+    float m_baseFrequency; //Frequency of what the song is supposed to be played at, based on what kind of vinyl we're playing
+    float m_targetFrequency; //The target frequency of the track. m_currentFrequency lerps towards this value.
+    float m_currentFrequency; //Actual frequency of the track that was last passed to FMOD
 };
