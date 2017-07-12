@@ -213,21 +213,27 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
 {
     LabelWidget* songNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("SongName"));
     LabelWidget* artistNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("ArtistName"));
+    LabelWidget* albumNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("AlbumName"));
 
     ASSERT_OR_DIE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_OR_DIE(albumNameWidget, "Couldn't find the AlbumName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+
 
     std::string title = "No Song Playing";
     std::string artist = "No Artist";
+    std::string album = "No Album";
 
     if (currentSong)
     {
         title = Stringf("Title: %s", currentSong->m_title.c_str());
         artist = Stringf("Artist: %s", currentSong->m_artist.c_str());
+        album = Stringf("Album: %s", currentSong->m_album.c_str());
     }
 
     songNameWidget->m_propertiesForAllStates.Set("Text", title, false);
     artistNameWidget->m_propertiesForAllStates.Set("Text", artist, false);
+    albumNameWidget->m_propertiesForAllStates.Set("Text", album, false);
 }
 
 //-----------------------------------------------------------------------------------
