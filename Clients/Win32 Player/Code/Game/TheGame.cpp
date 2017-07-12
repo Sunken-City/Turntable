@@ -1,4 +1,4 @@
-#include "Game/TheGame.hpp"
+﻿#include "Game/TheGame.hpp"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -44,7 +44,6 @@
 #include "Engine/Renderer/3D/Scene3D.hpp"
 #include "Renderables/VinylRecord.hpp"
 #include "Audio/SongManager.hpp"
-
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
 extern Skeleton* g_loadedSkeleton;
@@ -83,7 +82,8 @@ TheGame::TheGame()
     builder.CopyToMesh(quadForFBO->m_mesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
 
     quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
-    
+
+    //PrintConsoleWelcome();    
     LoadDefaultScene(); 
     InitializeMainCamera();
 }
@@ -109,6 +109,19 @@ TheGame::~TheGame()
     delete m_uvDebugMaterial;
     delete m_normalDebugMaterial;
     Framebuffer::FramebufferDelete(m_fbo);
+}
+
+//-----------------------------------------------------------------------------------
+void TheGame::PrintConsoleWelcome()
+{
+    //Unicode support motivation
+    Console::instance->PrintLine("Welcome to", RGBA::YELLOW);
+    Console::instance->PrintLine("████████╗██╗   ██╗██████╗ ███╗   ██╗████████╗ █████╗ ██████╗ ██╗     ███████╗", RGBA::YELLOW);
+    Console::instance->PrintLine("╚══██╔══╝██║   ██║██╔══██╗████╗  ██║╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝", RGBA::YELLOW);
+    Console::instance->PrintLine("   ██║   ██║   ██║██████╔╝██╔██╗ ██║   ██║   ███████║██████╔╝██║     █████╗  ", RGBA::YELLOW);
+    Console::instance->PrintLine("   ██║   ██║   ██║██╔══██╗██║╚██╗██║   ██║   ██╔══██║██╔══██╗██║     ██╔══╝  ", RGBA::YELLOW);
+    Console::instance->PrintLine("   ██║   ╚██████╔╝██║  ██║██║ ╚████║   ██║   ██║  ██║██████╔╝███████╗███████╗", RGBA::YELLOW);
+    Console::instance->PrintLine("   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝", RGBA::YELLOW);
 }
 
 //-----------------------------------------------------------------------------------
