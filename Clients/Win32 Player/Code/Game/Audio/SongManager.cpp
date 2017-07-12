@@ -43,7 +43,18 @@ void SongManager::Update(float deltaSeconds)
             float wiggleAmount = MathUtils::GetRandomFloat(-m_wiggleDelta, m_wiggleDelta);
             SetRPM(m_currentRPM + wiggleAmount);
         }
-        m_activeSong->Update(deltaSeconds);
+		m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
+		AudioSystem::instance->SetFrequency(m_activeSong->m_fmodID, m_currentFrequency);
+		unsigned int currentPlaybackPositionMS = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel);
+		if (currentPlaybackPositionMS < m_lastPlaybackPositionMS || !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
+		{
+			m_lastPlaybackPositionMS = 0;
+			m_eventSongFinished.Trigger();
+		}
+		else
+		{
+			m_lastPlaybackPositionMS = currentPlaybackPositionMS;
+		}
     }
 }
 
@@ -55,6 +66,7 @@ void SongManager::Play(Song* songToPlay)
         StopSong();
     }
     m_activeSong = songToPlay;
+	m_baseFrequency = m_activeSong->m_samplerate;
 
     AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, 0.8f); //TODO: Find out why PlaySound causes a linker error here
     if (m_loopMode != SONG_LOOP)
@@ -157,10 +169,10 @@ void SongManager::SetRPM(float rpm, bool changeInstantly /*= false*/)
     float frequencyMultiplier = rpm / TheGame::instance->m_currentRecord->m_baseRPM;
     TheGame::instance->m_currentRecord->m_currentRotationRate = TheGame::instance->CalculateRotationRateFromRPM(rpm);
 
-    m_activeSong->m_targetFrequency = m_activeSong->m_baseFrequency * frequencyMultiplier;
+    m_targetFrequency = m_baseFrequency * frequencyMultiplier;
     if (changeInstantly)
     {
-        m_activeSong->m_currentFrequency = m_activeSong->m_targetFrequency;
+        m_currentFrequency = m_targetFrequency;
     }
 }
 
