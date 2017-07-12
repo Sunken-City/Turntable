@@ -32,6 +32,7 @@ public:
     void RenderPostProcess() const;
     void LoadDefaultScene();
     float CalculateRotationRateFromRPM(float RPM) { return (RPM * 360) / 60; }
+    void PrintConsoleWelcome();
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static TheGame* instance;

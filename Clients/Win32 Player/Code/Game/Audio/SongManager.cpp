@@ -245,6 +245,23 @@ CONSOLE_COMMAND(addtoqueue)
 }
 
 //-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(printqueue)
+{
+    Console::instance->PrintLine("----====Current Queue====----", RGBA::ORANGE);
+
+    unsigned int index = 0;
+    for (Song* song : SongManager::instance->m_songQueue)
+    {
+        RGBA lineColor = ++index % 2 == 0 ? RGBA::EARTHBOUND_GREEN : RGBA::EARTHBOUND_BLUE;
+        Console::instance->PrintLine(Stringf("[%i] %s", index, song->m_title.c_str()), lineColor);
+    }
+    if (index == 0)
+    {
+        Console::instance->PrintLine("<EMPTY>", RGBA::RED);
+    }
+}
+
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(loopoff)
 {
     UNUSED(args);
