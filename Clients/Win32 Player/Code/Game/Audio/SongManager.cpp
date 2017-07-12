@@ -7,6 +7,7 @@
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Audio/Audio.hpp"
+#include "Engine/Input/InputSystem.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -45,6 +46,7 @@ void SongManager::Update(float deltaSeconds)
         }
 		m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
 		AudioSystem::instance->SetFrequency(m_activeSong->m_fmodID, m_currentFrequency);
+		CheckForHotkeys();
 		unsigned int currentPlaybackPositionMS = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel);
 		if (currentPlaybackPositionMS < m_lastPlaybackPositionMS || !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
 		{
@@ -174,6 +176,23 @@ void SongManager::SetRPM(float rpm, bool changeInstantly /*= false*/)
     {
         m_currentFrequency = m_targetFrequency;
     }
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::CheckForHotkeys()
+{
+	if (InputSystem::instance->WasKeyJustPressed(' '))
+	{
+		if (m_currentRPM != 0)
+		{
+			m_lastRPM = m_currentRPM;
+			Console::instance->RunCommand("setrpm 0");
+		}
+		else
+		{
+			Console::instance->RunCommand("setrpm " + std::to_string(m_lastRPM));
+		}
+	}
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////

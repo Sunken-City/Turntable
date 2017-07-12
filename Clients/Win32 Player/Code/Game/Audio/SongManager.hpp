@@ -33,6 +33,7 @@ public:
     void OnSongBeginPlay();
     void StopSong();
     void SetRPM(float rpm, bool changeInstantly = false);
+	void CheckForHotkeys();
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static SongManager* instance;
@@ -43,6 +44,7 @@ public:
     Event<> m_eventSongBeginPlay;
     Song* m_activeSong = nullptr;
     float m_currentRPM = 0.0f;
+	float m_lastRPM = 0.0f; //Cached value of previous rpm before pausing
     LoopMode m_loopMode = NO_LOOP;
     bool m_wiggleRPM = false;
     float m_wiggleDelta = 1.0f;
