@@ -52,8 +52,13 @@ void SongManager::Update(float deltaSeconds)
         CheckForHotkeys();
         UpdateUIWidgetText();
 
-        unsigned int currentPlaybackPositionMS = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel);
-        if (currentPlaybackPositionMS < m_lastPlaybackPositionMS || !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
+		unsigned int currentPlaybackPositionMS = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel);
+		if (AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel) && currentPlaybackPositionMS == 0)
+		{
+			m_eventSongBeginPlay.Trigger();
+			m_lastPlaybackPositionMS = currentPlaybackPositionMS;
+		}
+        else if (currentPlaybackPositionMS < m_lastPlaybackPositionMS || !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
             m_lastPlaybackPositionMS = 0;
             m_eventSongFinished.Trigger();
@@ -68,7 +73,7 @@ void SongManager::Update(float deltaSeconds)
 //-----------------------------------------------------------------------------------
 void SongManager::Play(Song* songToPlay)
 {
-    if (IsPlaying())
+    if (m_loopMode == NO_LOOP && IsPlaying())
     {
         StopSong();
     }
@@ -77,14 +82,14 @@ void SongManager::Play(Song* songToPlay)
     SetNowPlayingTextFromMetadata(m_activeSong);
 
     AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, 0.8f); //TODO: Find out why PlaySound causes a linker error here
-    if (m_loopMode != SONG_LOOP)
-    {
-        AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
-    }
+    AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
+    //if (m_loopMode != SONG_LOOP)
+    //{
+    //}
     m_activeSong->m_fmodChannel = AudioSystem::instance->GetChannel(m_activeSong->m_fmodID);
 
     //Load album art
-    Texture* albumArtTexture = GetImageFromFileMetadata(songToPlay->m_filePath);
+    Texture* albumArtTexture = GetImageFromFileMetadata(songToPlay->m_filePath); //Only run once if loop is on
     if (albumArtTexture)
     {
         TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(albumArtTexture);
@@ -146,22 +151,25 @@ void SongManager::OnSongPlaybackFinished()
 	{
 		Play(m_activeSong);
 	}
-    StopSong();
-    delete m_activeSong;
-    m_activeSong = nullptr;
-    if (m_songQueue.size() > 0)
-    {
-        m_activeSong = m_songQueue.front();
-        m_songQueue.pop_front();
-        if (m_activeSong)
-        {
-            Play(m_activeSong);
-        }
-    }
-    else
-    {
-        StopAll();
-    }
+	else
+	{
+		StopSong();
+		delete m_activeSong;
+		m_activeSong = nullptr;
+		if (m_songQueue.size() > 0)
+		{
+			m_activeSong = m_songQueue.front();
+			m_songQueue.pop_front();
+			if (m_activeSong)
+			{
+				Play(m_activeSong);
+			}
+		}
+		else
+		{
+			StopAll();
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------------
@@ -226,21 +234,18 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     LabelWidget* albumNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("AlbumName"));
     LabelWidget* yearWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Year"));
     LabelWidget* genreWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Genre"));
-    LabelWidget* playcountWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Playcount"));
 
     ASSERT_OR_DIE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(albumNameWidget, "Couldn't find the AlbumName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(yearWidget, "Couldn't find the Year label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(genreWidget, "Couldn't find the Genre label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(playcountWidget, "Couldn't find the Playcount label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
 
     std::string title = "No Song Playing";
     std::string artist = "No Artist";
     std::string album = "No Album";
     std::string year = "Unknown Year";
     std::string genre = "Unknown Genre";
-    std::string playcount = "Playcount: 0";
 
     if (currentSong)
     {
@@ -249,7 +254,6 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
         album = Stringf("Album: %s", currentSong->m_album.c_str());
         year = Stringf("Year: %d", currentSong->m_year);
         genre = Stringf("Genre: %s", currentSong->m_genre.c_str());
-        playcount = Stringf("Playcount: %d", currentSong->m_playcount);
     }
 
     songNameWidget->m_propertiesForAllStates.Set("Text", title, false);
@@ -257,7 +261,6 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     albumNameWidget->m_propertiesForAllStates.Set("Text", album, false);
     yearWidget->m_propertiesForAllStates.Set("Text", year, false);
     genreWidget->m_propertiesForAllStates.Set("Text", genre, false);
-    playcountWidget->m_propertiesForAllStates.Set("Text", playcount, false);
 }
 
 //-----------------------------------------------------------------------------------
@@ -266,6 +269,19 @@ void SongManager::UpdateUIWidgetText()
     LabelWidget* rpmWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("RPM"));
     ASSERT_OR_DIE(rpmWidget, "Couldn't find the RPM label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     rpmWidget->m_propertiesForAllStates.Set("Text", Stringf("RPM: %i", (int)m_currentRPM), false);
+
+	LabelWidget* playcountWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Playcount"));
+	ASSERT_OR_DIE(playcountWidget, "Couldn't find the Playcount label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+	if (m_activeSong)
+	{
+		std::string playcount = Stringf("Playcount: %d", m_activeSong->m_playcount);
+		playcountWidget->m_propertiesForAllStates.Set("Text", playcount, false);
+	}
+	else
+	{
+		std::string playcount = Stringf("Playcount: 0");
+		playcountWidget->m_propertiesForAllStates.Set("Text", playcount, false);
+	}
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
