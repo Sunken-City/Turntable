@@ -27,6 +27,7 @@ public:
     void StopAll();
     bool IsPlaying();
     void AddToQueue(Song* newSong);
+    void PlayNext(Song* newSong);
     unsigned int GetQueueLength();
     inline void SetLoopMode(LoopMode mode) { m_loopMode = mode; };
     void OnSongPlaybackFinished();
