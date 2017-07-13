@@ -214,26 +214,40 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     LabelWidget* songNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("SongName"));
     LabelWidget* artistNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("ArtistName"));
     LabelWidget* albumNameWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("AlbumName"));
+    LabelWidget* yearWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Year"));
+    LabelWidget* genreWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Genre"));
+    LabelWidget* playcountWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Playcount"));
 
     ASSERT_OR_DIE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(albumNameWidget, "Couldn't find the AlbumName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-
+    ASSERT_OR_DIE(yearWidget, "Couldn't find the Year label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_OR_DIE(genreWidget, "Couldn't find the Genre label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_OR_DIE(playcountWidget, "Couldn't find the Playcount label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
 
     std::string title = "No Song Playing";
     std::string artist = "No Artist";
     std::string album = "No Album";
+    std::string year = "Unknown Year";
+    std::string genre = "Unknown Genre";
+    std::string playcount = "Playcount: 0";
 
     if (currentSong)
     {
         title = Stringf("Title: %s", currentSong->m_title.c_str());
         artist = Stringf("Artist: %s", currentSong->m_artist.c_str());
         album = Stringf("Album: %s", currentSong->m_album.c_str());
+        year = Stringf("Year: %d", currentSong->m_year);
+        genre = Stringf("Genre: %s", currentSong->m_genre.c_str());
+        playcount = Stringf("Playcount: %d", currentSong->m_playcount);
     }
 
     songNameWidget->m_propertiesForAllStates.Set("Text", title, false);
     artistNameWidget->m_propertiesForAllStates.Set("Text", artist, false);
     albumNameWidget->m_propertiesForAllStates.Set("Text", album, false);
+    yearWidget->m_propertiesForAllStates.Set("Text", year, false);
+    genreWidget->m_propertiesForAllStates.Set("Text", genre, false);
+    playcountWidget->m_propertiesForAllStates.Set("Text", playcount, false);
 }
 
 //-----------------------------------------------------------------------------------

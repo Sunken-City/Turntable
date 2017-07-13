@@ -5,7 +5,7 @@
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="10, 110"
+      Offset="10, 260"
       TextOpacity="1.0f">
   </Label>
   <Label Name="SongName"
@@ -14,11 +14,38 @@
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="10, 60"
+      Offset="10, 210"
       TextOpacity="1.0f">
   </Label>
   <Label Name="AlbumName"
       Text="No Album"
+      TextSize="1.5f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 160"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="Year"
+      Text="Unknown Year"
+      TextSize="1.5f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 110"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="Genre"
+      Text="Unknown Genre"
+      TextSize="1.5f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 60"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="PlayingTime"
+      Text="?/?"
       TextSize="1.5f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
@@ -33,6 +60,15 @@
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
       Offset="1400, 10"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="Playcount"
+      Text="Playcount: 0"
+      TextSize="2.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="1270, 70"
       TextOpacity="1.0f">
   </Label>
 </Root>
