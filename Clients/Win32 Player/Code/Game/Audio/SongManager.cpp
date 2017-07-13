@@ -142,6 +142,10 @@ unsigned int SongManager::GetQueueLength()
 //-----------------------------------------------------------------------------------
 void SongManager::OnSongPlaybackFinished()
 {
+	if (m_loopMode == SONG_LOOP)
+	{
+		Play(m_activeSong);
+	}
     StopSong();
     delete m_activeSong;
     m_activeSong = nullptr;
