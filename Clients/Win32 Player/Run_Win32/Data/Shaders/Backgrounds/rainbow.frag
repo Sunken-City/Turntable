@@ -12,17 +12,17 @@ out vec4 outColor;
 void main(void)
 {
   vec2 offset = passUV0 - vec2(.5f);
-  float d = length(offset); //how far am I from the center
+  float d = length(offset) * 200.0f; //how far am I from the center
   vec2 u = offset / d;
 
   float offsetAmount = .05f * -cos((gTime * 4.0f) + (d * 100.0f));
   vec2 uv = passUV0 + u * offsetAmount;
 
-  float red   = sin(gTime + passPosition.x * passPosition.y + 0) * 0.5f + 0.5f;
-  float green = sin(gTime + passPosition.x * passPosition.y + 2) * 0.5f + 0.5f;
-  float blue  = sin(gTime + passPosition.x * passPosition.y + 4) * 0.5f + 0.5f;
+  float red   = sin(gTime + passPosition.x + passPosition.y + 0) * 0.5f + 0.5f;
+  float green = sin(gTime + passPosition.x + passPosition.y + 2) * 0.5f + 0.5f;
+  float blue  = sin(gTime + passPosition.x + passPosition.y + 4) * 0.5f + 0.5f;
 
   vec4 rainbowColor = vec4(red, green, blue, 1.0f);
 
-  outColor = rainbowColor * texture(gDiffuseTexture, passUV0);
+  outColor = rainbowColor;
 }

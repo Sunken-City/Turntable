@@ -44,10 +44,13 @@ public:
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     Framebuffer* m_fbo = nullptr;
     VinylRecord* m_currentRecord = nullptr;
+    Material* m_fboMaterial = nullptr;
+    Texture* m_blankFBOColorTexture = nullptr;
+    Texture* m_blankFBODepthTexture = nullptr;
+    MeshRenderer* m_quadForFBO = nullptr;
 
 private:
     Texture* m_pauseTexture = nullptr;
-    Material* m_fboMaterial = nullptr;
     Material* m_currentMaterial = nullptr;
     Material* m_testMaterial = nullptr;
     Material* m_uvDebugMaterial = nullptr;
