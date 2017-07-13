@@ -68,12 +68,16 @@ TheGame::TheGame()
     SongManager::instance = new SongManager();
     UISystem::instance->LoadAndParseUIXML("Data/UI/PlayerLayout.xml");
 
+    InitializeRand();
     SetUpShader();
     m_blankFBOColorTexture = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
     m_blankFBODepthTexture = new Texture(1600, 900, Texture::TextureFormat::D24S8);
     m_fbo = Framebuffer::FramebufferCreate(1, &m_blankFBOColorTexture, m_blankFBODepthTexture);
 
-    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //post_pixelation
+    //Set up a random background shader for the FBO from the backgrounds folder.
+    std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds", "*.frag");
+    int shaderIndex = MathUtils::GetRandomInt(0, backgroundShaders.size() - 1);
+    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()), //post_pixelation
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
     m_fboMaterial->SetNormalTexture(m_blankFBODepthTexture);
