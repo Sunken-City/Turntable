@@ -220,7 +220,7 @@ void SongManager::CheckForHotkeys()
     }
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::RIGHT))
     {
-
+        m_eventSongFinished.Trigger();
     }
 }
 
