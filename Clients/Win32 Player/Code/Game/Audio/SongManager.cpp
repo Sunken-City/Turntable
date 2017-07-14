@@ -76,7 +76,7 @@ void SongManager::Play(Song* songToPlay)
     m_baseFrequency = m_activeSong->m_samplerate;
     SetNowPlayingTextFromMetadata(m_activeSong);
 
-    AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, 0.8f); //TODO: Find out why PlaySound causes a linker error here
+    AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, m_songVolume); //TODO: Find out why PlaySound causes a linker error here
     if (m_loopMode != SONG_LOOP)
     {
         AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
@@ -435,6 +435,23 @@ CONSOLE_COMMAND(setrpm)
 
     float rpm = args.GetFloatArgument(0);
     SongManager::instance->SetRPM(rpm);
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(setvolume)
+{
+    if (!args.HasArgs(1))
+    {
+        Console::instance->PrintLine("setvolume <0-100>", RGBA::RED);
+        return;
+    }
+
+    int passedVolume = args.GetIntArgument(0);
+    int sanitizedVolume = Clamp<int>(passedVolume, 0, 100);
+    SongManager::instance->m_songVolume = (float)sanitizedVolume / 100.0f;
+    AudioSystem::instance->SetVolume(SongManager::instance->m_activeSong->m_fmodChannel, SongManager::instance->m_songVolume);
+
+    Console::instance->PrintLine(Stringf("Volume level set to %i%%", sanitizedVolume), RGBA::GOLD);
 }
 
 //-----------------------------------------------------------------------------------

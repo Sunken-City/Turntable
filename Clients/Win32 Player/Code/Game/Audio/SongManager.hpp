@@ -54,4 +54,5 @@ public:
     float m_baseFrequency; //Frequency of what the song is supposed to be played at, based on what kind of vinyl we're playing
     float m_targetFrequency; //The target frequency of the track. m_currentFrequency lerps towards this value.
     float m_currentFrequency; //Actual frequency of the track that was last passed to FMOD
+    float m_songVolume = 0.8f;
 };
