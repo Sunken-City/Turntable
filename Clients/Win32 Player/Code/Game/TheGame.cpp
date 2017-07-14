@@ -45,6 +45,7 @@
 #include "Renderables/VinylRecord.hpp"
 #include "Audio/SongManager.hpp"
 #include "Engine/UI/UISystem.hpp"
+#include "Engine/Input/InputOutputUtils.hpp"
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
 extern Skeleton* g_loadedSkeleton;
@@ -52,7 +53,6 @@ extern AnimationMotion* g_loadedMotion;
 extern std::vector<AnimationMotion*>* g_loadedMotions;
 extern int g_numLoadedMeshes;
 
-MeshRenderer* quadForFBO;
 unsigned int samplerID;
 unsigned int diffuseID;
 unsigned int normalMapID;
@@ -68,22 +68,26 @@ TheGame::TheGame()
     SongManager::instance = new SongManager();
     UISystem::instance->LoadAndParseUIXML("Data/UI/PlayerLayout.xml");
 
+    InitializeRand();
     SetUpShader();
-    Texture* blankFBOTexture = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
-    Texture* depthTexture1 = new Texture(1600, 900, Texture::TextureFormat::D24S8);
-    m_fbo = Framebuffer::FramebufferCreate(1, &blankFBOTexture, depthTexture1);
+    m_blankFBOColorTexture = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
+    m_blankFBODepthTexture = new Texture(1600, 900, Texture::TextureFormat::D24S8);
+    m_fbo = Framebuffer::FramebufferCreate(1, &m_blankFBOColorTexture, m_blankFBODepthTexture);
 
-    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //post_pixelation
+    //Set up a random background shader for the FBO from the backgrounds folder.
+    std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds", "*.frag");
+    int shaderIndex = MathUtils::GetRandomInt(0, backgroundShaders.size() - 1);
+    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()), //post_pixelation
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
-    m_fboMaterial->SetDiffuseTexture(blankFBOTexture);
-    m_fboMaterial->SetNormalTexture(depthTexture1);
+    m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
+    m_fboMaterial->SetNormalTexture(m_blankFBODepthTexture);
 
     MeshBuilder builder;
     builder.AddQuad(Vector3(-1, -1, 0), Vector3::UP, 2.0f, Vector3::RIGHT, 2.0f);
-    quadForFBO = new MeshRenderer(new Mesh(), m_fboMaterial);
-    builder.CopyToMesh(quadForFBO->m_mesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
+    m_quadForFBO = new MeshRenderer(new Mesh(), m_fboMaterial);
+    builder.CopyToMesh(m_quadForFBO->m_mesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
 
-    quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
+    m_quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
 
     //PrintConsoleWelcome();    
     LoadDefaultScene(); 
@@ -98,8 +102,8 @@ TheGame::~TheGame()
     delete m_currentRecord;
     delete m_fbo->m_colorTargets[0];
     delete m_fbo->m_depthStencilTarget;
-    delete quadForFBO->m_mesh;
-    delete quadForFBO;
+    delete m_quadForFBO->m_mesh;
+    delete m_quadForFBO;
     delete loadedMesh;
     delete lightMaterial;
     delete m_testMaterial->m_shaderProgram;
@@ -140,7 +144,7 @@ void TheGame::Update(float deltaSeconds)
 {
     m_currentRecord->Update(deltaSeconds);
     SongManager::instance->Update(deltaSeconds);
-    quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
+    m_quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
@@ -330,9 +334,9 @@ void TheGame::RenderPostProcess() const
     Matrix4x4::MatrixMakeIdentity(&model);
     Matrix4x4::MatrixMakeIdentity(&view);
     Matrix4x4::MatrixMakeIdentity(&proj);
-    quadForFBO->m_material->SetMatrices(model, view, proj);
-    quadForFBO->m_material->BindAvailableTextures();
-    quadForFBO->Render();
+    m_quadForFBO->m_material->SetMatrices(model, view, proj);
+    m_quadForFBO->m_material->BindAvailableTextures();
+    m_quadForFBO->Render();
 }
 
 //-----------------------------------------------------------------------------------
@@ -417,4 +421,32 @@ CONSOLE_COMMAND(getsongmetadata)
     Console::instance->PrintLine(Stringf("Artist: %s\n", artist.toCString()));
     Console::instance->PrintLine(Stringf("Album: %s\n", album.toCString()));
     Console::instance->PrintLine(Stringf("Year: %i\n", year));
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(setbackground)
+{
+    if (!args.HasArgs(1))
+    {
+        Console::instance->PrintLine("setbackground <shadername>", RGBA::RED);
+        return;
+    }
+    std::string shaderName = args.GetStringArgument(0);
+    std::string fileName = Stringf("Data/Shaders/Backgrounds/%s.frag", shaderName.c_str());
+    if (!FileExists(fileName))
+    {
+        Console::instance->PrintLine("Could not find background shader with that name.", RGBA::RED);
+        return;
+    }
+    
+    delete TheGame::instance->m_fboMaterial->m_shaderProgram;
+    delete TheGame::instance->m_fboMaterial;
+
+    TheGame::instance->m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", fileName.c_str()),
+        RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
+    TheGame::instance->m_fboMaterial->SetDiffuseTexture(TheGame::instance->m_blankFBOColorTexture);
+    TheGame::instance->m_fboMaterial->SetNormalTexture(TheGame::instance->m_blankFBODepthTexture);
+    TheGame::instance->m_quadForFBO->m_material = TheGame::instance->m_fboMaterial;
+
+    Console::instance->PrintLine("Successfuly changed background!", RGBA::FOREST_GREEN);
 }

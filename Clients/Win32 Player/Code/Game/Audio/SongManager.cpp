@@ -271,8 +271,18 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
 void SongManager::UpdateUIWidgetText()
 {
     LabelWidget* rpmWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("RPM"));
+    LabelWidget* playingTimeWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("PlayingTime"));
+
     ASSERT_OR_DIE(rpmWidget, "Couldn't find the RPM label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    rpmWidget->m_propertiesForAllStates.Set("Text", Stringf("RPM: %i", (int)m_currentRPM), false);
+    ASSERT_OR_DIE(playingTimeWidget, "Couldn't find the PlayingTime label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+
+    unsigned int currentSongLengthSeconds = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_fmodID) / 1000;
+    unsigned int currentPlaybackPositionSeconds = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel) / 1000;
+    std::string playingTime = Stringf("%02i:%02i / %02i:%02i", currentPlaybackPositionSeconds / 60, currentPlaybackPositionSeconds % 60, currentSongLengthSeconds / 60, currentSongLengthSeconds % 60);
+    std::string rpm = Stringf("RPM: %i", (int)m_currentRPM);
+
+    rpmWidget->m_propertiesForAllStates.Set("Text", rpm, false);
+    playingTimeWidget->m_propertiesForAllStates.Set("Text", playingTime, false);
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
