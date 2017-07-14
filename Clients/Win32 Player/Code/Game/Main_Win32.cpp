@@ -56,7 +56,7 @@ void HandleFileDrop(WPARAM wParam)
     std::wstring filePath(tcharFilePath);
     if (!SongManager::instance->IsPlaying())
     {
-        Console::instance->RunCommand(Stringf("play \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+        Console::instance->RunCommand(Stringf("play \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()), true);
     }
     else
     {

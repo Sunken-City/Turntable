@@ -71,10 +71,16 @@ void SongManager::Play(Song* songToPlay)
 
     AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, m_songVolume); //TODO: Find out why PlaySound causes a linker error here
     AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
-    m_eventSongBeginPlay.Trigger();
-
-    SetNowPlayingTextFromMetadata(m_activeSong);
     m_activeSong->m_fmodChannel = AudioSystem::instance->GetChannel(m_activeSong->m_fmodID);
+
+    if (SongManager::instance->m_targetFrequency < 0)
+    {
+        unsigned int endOfSongTimestampMS = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_fmodID) - 200;
+        AudioSystem::instance->SetPlaybackPositionMS(m_activeSong->m_fmodChannel, endOfSongTimestampMS);
+    }
+    
+    m_eventSongBeginPlay.Trigger();
+    SetNowPlayingTextFromMetadata(m_activeSong);
 
     //Load album art
     Texture* albumArtTexture = GetImageFromFileMetadata(songToPlay->m_filePath); //TODO: Only load texture once if loop is on
