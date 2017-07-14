@@ -206,7 +206,7 @@ void SongManager::CheckForHotkeys()
         if (m_currentRPM != 0)
         {
             m_lastRPM = m_currentRPM;
-            Console::instance->RunCommand("setrpm 0");
+            Console::instance->RunCommand("pause");
         }
         else
         {
@@ -429,6 +429,10 @@ CONSOLE_COMMAND(stop)
 CONSOLE_COMMAND(pause)
 {
     UNUSED(args);
+    if (SongManager::instance->m_wiggleRPM)
+    {
+        Console::instance->RunCommand("wigglerpm");
+    }
     Console::instance->RunCommand("setrpm 0");
 }
 
