@@ -224,6 +224,7 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     LabelWidget* yearWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Year"));
     LabelWidget* genreWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Genre"));
     LabelWidget* playcountWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Playcounts"));
+    LabelWidget* playingTimeWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("PlayingTime"));
 
     ASSERT_OR_DIE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
@@ -231,6 +232,7 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     ASSERT_OR_DIE(yearWidget, "Couldn't find the Year label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(genreWidget, "Couldn't find the Genre label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
     ASSERT_OR_DIE(playcountWidget, "Couldn't find the Playcounts label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_OR_DIE(playingTimeWidget, "Couldn't find the PlayingTime label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
 
     std::string title = "No Song Playing";
     std::string artist = "No Artist";
@@ -238,6 +240,7 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     std::string year = "Unknown Year";
     std::string genre = "Unknown Genre";
     std::string playcount = "Playcounts: 0";
+    std::string playtime = "00:00 / 00:00";
 
     if (currentSong)
     {
@@ -255,6 +258,7 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     yearWidget->m_propertiesForAllStates.Set("Text", year, false);
     genreWidget->m_propertiesForAllStates.Set("Text", genre, false);
     playcountWidget->m_propertiesForAllStates.Set("Text", playcount, false);
+    playingTimeWidget->m_propertiesForAllStates.Set("Text", playtime, false);
 }
 
 //-----------------------------------------------------------------------------------

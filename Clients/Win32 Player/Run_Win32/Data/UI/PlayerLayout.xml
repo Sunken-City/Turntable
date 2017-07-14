@@ -45,7 +45,7 @@
       TextOpacity="1.0f">
   </Label>
   <Label Name="PlayingTime"
-      Text="00:00/00:00"
+      Text="00:00 / 00:00"
       TextSize="1.5f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
