@@ -52,19 +52,9 @@ void SongManager::Update(float deltaSeconds)
         CheckForHotkeys();
         UpdateUIWidgetText();
 
-        /*unsigned int currentPlaybackPositionMS = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel);
-        if (AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel) && currentPlaybackPositionMS == 0)
-        {
-            m_lastPlaybackPositionMS = currentPlaybackPositionMS;
-        }*/
         if (!AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
-            //m_lastPlaybackPositionMS = 0;
             m_eventSongFinished.Trigger();
-        }
-        else
-        {
-            //m_lastPlaybackPositionMS = currentPlaybackPositionMS;
         }
     }
 }
@@ -87,7 +77,7 @@ void SongManager::Play(Song* songToPlay)
     m_activeSong->m_fmodChannel = AudioSystem::instance->GetChannel(m_activeSong->m_fmodID);
 
     //Load album art
-    Texture* albumArtTexture = GetImageFromFileMetadata(songToPlay->m_filePath); //Only run once if loop is on
+    Texture* albumArtTexture = GetImageFromFileMetadata(songToPlay->m_filePath); //TODO: Only load texture once if loop is on
     if (albumArtTexture)
     {
         TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(albumArtTexture);
