@@ -21,6 +21,7 @@
 #include "Engine/Fonts/BitmapFont.hpp"
 #include "Engine/Core/Events/EventSystem.hpp"
 #include "Engine/UI/UISystem.hpp"
+#include "Audio/SongManager.hpp"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -53,7 +54,14 @@ void HandleFileDrop(WPARAM wParam)
 
     DragQueryFile(fileDrop, fileNumberToQuery, tcharFilePath, MAX_PATH);
     std::wstring filePath(tcharFilePath);
-    Console::instance->RunCommand(Stringf("play \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+    if (!SongManager::instance->IsPlaying())
+    {
+        Console::instance->RunCommand(Stringf("play \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+    }
+    else
+    {
+        Console::instance->RunCommand(Stringf("addtoqueue \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+    }
 
     while (--numFilesInDrop > 0)
     {
