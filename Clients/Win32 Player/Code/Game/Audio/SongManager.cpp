@@ -213,6 +213,15 @@ void SongManager::CheckForHotkeys()
             Console::instance->RunCommand("setrpm " + std::to_string(m_lastRPM));
         }
     }
+
+    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::LEFT))
+    {
+        AudioSystem::instance->SetPlaybackPositionMS(m_activeSong->m_fmodChannel, 0);
+    }
+    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::RIGHT))
+    {
+
+    }
 }
 
 //-----------------------------------------------------------------------------------
