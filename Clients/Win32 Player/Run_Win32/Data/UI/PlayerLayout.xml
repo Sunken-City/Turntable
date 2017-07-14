@@ -59,16 +59,16 @@
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1400, 10"
+      Offset="1200, 10"
       TextOpacity="1.0f">
   </Label>
-  <Label Name="Playcount"
-      Text="Playcount: 0"
+  <Label Name="Playcounts"
+      Text="Playcounts: 0"
       TextSize="2.0f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1270, 70"
+      Offset="1200, 70"
       TextOpacity="1.0f">
   </Label>
 </Root>
