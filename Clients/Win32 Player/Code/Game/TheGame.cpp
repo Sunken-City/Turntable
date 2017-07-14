@@ -89,7 +89,7 @@ TheGame::TheGame()
 
     m_quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
 
-    //PrintConsoleWelcome();    
+    PrintConsoleWelcome();    
     LoadDefaultScene(); 
     InitializeMainCamera();
 }
@@ -121,13 +121,16 @@ TheGame::~TheGame()
 void TheGame::PrintConsoleWelcome()
 {
     //Unicode support motivation
-    Console::instance->PrintLine("Welcome to", RGBA::YELLOW);
-    Console::instance->PrintLine("████████╗██╗   ██╗██████╗ ███╗   ██╗████████╗ █████╗ ██████╗ ██╗     ███████╗", RGBA::YELLOW);
-    Console::instance->PrintLine("╚══██╔══╝██║   ██║██╔══██╗████╗  ██║╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝", RGBA::YELLOW);
-    Console::instance->PrintLine("   ██║   ██║   ██║██████╔╝██╔██╗ ██║   ██║   ███████║██████╔╝██║     █████╗  ", RGBA::YELLOW);
-    Console::instance->PrintLine("   ██║   ██║   ██║██╔══██╗██║╚██╗██║   ██║   ██╔══██║██╔══██╗██║     ██╔══╝  ", RGBA::YELLOW);
-    Console::instance->PrintLine("   ██║   ╚██████╔╝██║  ██║██║ ╚████║   ██║   ██║  ██║██████╔╝███████╗███████╗", RGBA::YELLOW);
-    Console::instance->PrintLine("   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝", RGBA::YELLOW);
+    Console::instance->PrintLine("Welcome to Turntable!", RGBA::GOLD);
+    Console::instance->PrintLine("Version 0.1 - Staccato", RGBA::GOLD);
+    Console::instance->PrintLine("Type 'help' for a list of commands", RGBA::GOLD);
+    
+//     Console::instance->PrintLine("████████╗██╗   ██╗██████╗ ███╗   ██╗████████╗ █████╗ ██████╗ ██╗     ███████╗", RGBA::YELLOW);
+//     Console::instance->PrintLine("╚══██╔══╝██║   ██║██╔══██╗████╗  ██║╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝", RGBA::YELLOW);
+//     Console::instance->PrintLine("   ██║   ██║   ██║██████╔╝██╔██╗ ██║   ██║   ███████║██████╔╝██║     █████╗  ", RGBA::YELLOW);
+//     Console::instance->PrintLine("   ██║   ██║   ██║██╔══██╗██║╚██╗██║   ██║   ██╔══██║██╔══██╗██║     ██╔══╝  ", RGBA::YELLOW);
+//     Console::instance->PrintLine("   ██║   ╚██████╔╝██║  ██║██║ ╚████║   ██║   ██║  ██║██████╔╝███████╗███████╗", RGBA::YELLOW);
+//     Console::instance->PrintLine("   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝", RGBA::YELLOW);
 }
 
 //-----------------------------------------------------------------------------------
