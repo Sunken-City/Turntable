@@ -58,7 +58,7 @@ void SongManager::Update(float deltaSeconds)
 			m_eventSongBeginPlay.Trigger();
 			m_lastPlaybackPositionMS = currentPlaybackPositionMS;
 		}
-        else if (currentPlaybackPositionMS < m_lastPlaybackPositionMS || !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
+        else if (/*currentPlaybackPositionMS < m_lastPlaybackPositionMS ||*/!AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
             m_lastPlaybackPositionMS = 0;
             m_eventSongFinished.Trigger();
