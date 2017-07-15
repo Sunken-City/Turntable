@@ -234,8 +234,8 @@ void VinylRecord::UpdateVinylRotation(float deltaSeconds)
 //-----------------------------------------------------------------------------------
 void VinylRecord::UpdateVinylJacket()
 {
-    static bool jacketOn = true;
-    static Vector3 desiredJacketPosition = m_sleeve->m_transform.GetLocalPosition();
+    static bool jacketOn = false;
+    static Vector3 desiredJacketPosition = m_sleeve->m_transform.GetLocalPosition() + Vector3(-100.0f, 0.0f, 0.0f);
     if (InputSystem::instance->WasKeyJustPressed('J'))
     {
         jacketOn = !jacketOn;
