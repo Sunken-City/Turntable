@@ -18,6 +18,7 @@ public:
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     //Metadata
+    Texture* m_albumArt = nullptr;
     std::string m_filePath;
     std::string m_fileName;
     std::string m_fileExtension;

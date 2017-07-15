@@ -82,11 +82,15 @@ void SongManager::Play(Song* songToPlay)
     m_eventSongBeginPlay.Trigger();
     SetNowPlayingTextFromMetadata(m_activeSong);
 
-    //Load album art
-    Texture* albumArtTexture = GetImageFromFileMetadata(songToPlay->m_filePath); //TODO: Only load texture once if loop is on
-    if (albumArtTexture)
+    //Load album art if we haven't already
+    if (!m_activeSong->m_albumArt)
     {
-        TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(albumArtTexture);
+        m_activeSong->m_albumArt = GetImageFromFileMetadata(songToPlay->m_filePath);
+    }
+    if (m_activeSong->m_albumArt)
+    {
+        TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(m_activeSong->m_albumArt);
+        TheGame::instance->m_fboMaterial->SetNormalTexture(m_activeSong->m_albumArt);
     }
 }
 
