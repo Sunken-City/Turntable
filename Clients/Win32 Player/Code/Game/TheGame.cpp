@@ -153,7 +153,7 @@ void TheGame::Update(float deltaSeconds)
     SongManager::instance->Update(deltaSeconds);
     m_quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
 
-    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
+    if (!Console::instance->IsActive() && InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
         Console::instance->ActivateConsole();
     }
