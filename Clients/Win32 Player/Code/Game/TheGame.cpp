@@ -91,6 +91,7 @@ TheGame::TheGame()
     builder.CopyToMesh(m_quadForFBO->m_mesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
 
     m_quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
+    Console::instance->m_backgroundTexture = Texture::CreateOrGetTexture("Data/Images/Logos/turntableSplash.png");
 
     PrintConsoleWelcome();    
     LoadDefaultScene(); 
