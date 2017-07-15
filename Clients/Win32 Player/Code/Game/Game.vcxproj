@@ -109,12 +109,19 @@
     <ClInclude Include="Audio\Song.hpp" />
     <ClInclude Include="Audio\SongManager.hpp" />
     <ClInclude Include="Renderables\VinylRecord.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="TheGame.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Engine\Code\Engine\Engine.vcxproj">
       <Project>{adf625c9-96ec-4c9f-b6f0-235762d622ae}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Turntable.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\Run_Win32\Data\Images\Logos\turntable.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -25,5 +25,12 @@
     <ClInclude Include="Renderables\VinylRecord.hpp" />
     <ClInclude Include="Audio\Song.hpp" />
     <ClInclude Include="Audio\SongManager.hpp" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Turntable.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\Run_Win32\Data\Images\Logos\turntable.ico" />
   </ItemGroup>
 </Project>
