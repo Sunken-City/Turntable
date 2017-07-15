@@ -49,10 +49,10 @@ void SongManager::Update(float deltaSeconds)
         m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
         AudioSystem::instance->SetFrequency(m_activeSong->m_fmodID, m_currentFrequency);
 
-        CheckForHotkeys();
+        CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
         UpdateUIWidgetText();
 
-        if (!AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
+        if (m_activeSong && !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
             m_eventSongFinished.Trigger();
         }
@@ -152,8 +152,6 @@ void SongManager::OnSongPlaybackFinished()
     else
     {
         StopSong();
-        delete m_activeSong;
-        m_activeSong = nullptr;
         if (m_songQueue.size() > 0)
         {
             m_activeSong = m_songQueue.front();
@@ -283,6 +281,11 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
 //-----------------------------------------------------------------------------------
 void SongManager::UpdateUIWidgetText()
 {
+    if (!m_activeSong)
+    {
+        return;
+    }
+
     LabelWidget* rpmWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("RPM"));
     LabelWidget* playingTimeWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("PlayingTime"));
 
