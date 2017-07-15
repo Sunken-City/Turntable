@@ -228,7 +228,16 @@ void SongManager::CheckForHotkeys()
     }
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::RIGHT))
     {
-        m_eventSongFinished.Trigger();
+        if (m_loopMode == SONG_LOOP)
+        {
+            SongManager::instance->SetLoopMode(SongManager::LoopMode::NO_LOOP);
+            m_eventSongFinished.Trigger();
+            SongManager::instance->SetLoopMode(SongManager::LoopMode::SONG_LOOP);
+        }
+        else
+        {
+            m_eventSongFinished.Trigger();
+        }
     }
 }
 
