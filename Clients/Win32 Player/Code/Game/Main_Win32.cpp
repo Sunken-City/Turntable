@@ -22,6 +22,8 @@
 #include "Engine/Core/Events/EventSystem.hpp"
 #include "Engine/UI/UISystem.hpp"
 #include "Audio/SongManager.hpp"
+#include <gl/GL.h>
+#include "ThirdParty/OpenGL/wglext.h"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -210,6 +212,20 @@ void CreateOpenGLWindow(HINSTANCE applicationInstanceHandle)
     g_openGLRenderingContext = wglCreateContext(g_displayDeviceContext);
     wglMakeCurrent(g_displayDeviceContext, g_openGLRenderingContext);
 
+
+    PFNWGLCREATECONTEXTATTRIBSARBPROC createContextAttribsARBpointer = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(g_openGLRenderingContext);
+
+    static const int attributes[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+        
+        NULL
+    };
+    g_openGLRenderingContext = createContextAttribsARBpointer(g_displayDeviceContext, NULL, attributes);
+    wglMakeCurrent(g_displayDeviceContext, g_openGLRenderingContext);
+
     DragAcceptFiles(g_hWnd, TRUE);
 }
 
@@ -257,7 +273,9 @@ void Render()
     Renderer::instance->FrameBufferCopyToBack(TheGame::instance->m_fbo, TheGame::instance->m_fbo->m_pixelWidth, TheGame::instance->m_fbo->m_pixelHeight);
     TheGame::instance->m_fbo->Unbind();
 
+    Renderer::instance->m_defaultMaterial->m_renderState.depthTestingMode = RenderState::DepthTestingMode::ON;
     TheGame::instance->Render();
+    Renderer::instance->m_defaultMaterial->m_renderState.depthTestingMode = RenderState::DepthTestingMode::OFF;
     UISystem::instance->Render();
     Console::instance->Render();
 
