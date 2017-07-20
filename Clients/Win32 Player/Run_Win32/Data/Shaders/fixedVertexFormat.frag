@@ -3,6 +3,7 @@
 uniform vec4 gColor;
 uniform sampler2D gDiffuseTexture;
 
+in vec3 passPosition;
 in vec4 passColor;
 in vec2 passUV0;
 
