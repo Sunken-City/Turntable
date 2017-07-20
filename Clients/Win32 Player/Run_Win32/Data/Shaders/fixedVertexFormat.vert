@@ -8,9 +8,9 @@ in vec3 inPosition;
 in vec4 inColor;
 in vec2 inUV0;
 
+out vec3 passPosition;
 out vec4 passColor;
 out vec2 passUV0;
-out vec3 passPosition;
 
 void main(void)
 {
@@ -23,5 +23,5 @@ void main(void)
   // row major would be:
   // pos = gProj * gView * gModel * pos; //Row major
 
-  gl_Position = pos; //gl_position is a built in type
+  gl_Position = pos; //gl_Position is a built in type
 }
