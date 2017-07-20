@@ -9,9 +9,16 @@
 
 A niche music player, full of features you didn't know you ever wanted.
 
-#Version 0.1 - Staccato
+# Version 0.1 - Staccato
 
-##**Controls:**
+## **How to use:**
+Turntable is a music player that plays back music while emulating a record player.
+You can drag and drop songs to play from your file explorer onto the program to play them.
+Open up the console with ~ in order to change the rpm, queue up more songs, or other features.
+Feel free to leave issues in the repository for feature requests, bugs, and anything else that will help make the application better!
+Most importantly, Have fun! :D
+
+## **Controls:**
 ~ -> Opens up the console. This is where you can change rpm and use all of the features.
 **Since UI requires an engine refactor, this will be the primary method of input until the next version.**
 
@@ -33,7 +40,7 @@ B -> Debug hotkey to view the mesh with a default texture. This one really doesn
 
 L -> Debug hotkey to unlock and lock the camera.
 
-##**Console Commands:**
+## **Console Commands:**
 
 help -> Displays all of the console commands registered.
 
