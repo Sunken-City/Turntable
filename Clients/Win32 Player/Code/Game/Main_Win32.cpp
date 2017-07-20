@@ -267,8 +267,7 @@ void Update()
 //-----------------------------------------------------------------------------------------------
 void Render()
 {
-    Renderer::instance->ClearScreen(0.0f, 0.0f, 0.0f); //Clear screen for FBO
-
+    Renderer::instance->ClearScreen(0.0f, 0.8f, 0.0f); //Clear screen for FBO
     TheGame::instance->m_fbo->Bind();
     Renderer::instance->ClearScreen(0.3f, 0.3f, 0.3f);
     TheGame::instance->RenderPostProcess();
