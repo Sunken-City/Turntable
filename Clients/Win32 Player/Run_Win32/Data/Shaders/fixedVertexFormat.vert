@@ -10,6 +10,7 @@ in vec2 inUV0;
 
 out vec4 passColor;
 out vec2 passUV0;
+out vec3 passPosition;
 
 void main(void)
 {
@@ -17,6 +18,7 @@ void main(void)
   passUV0 = inUV0;
 
   vec4 pos = vec4(inPosition, 1.0f);
+  passPosition = (pos * gModel).xyz;
   pos = pos * gModel * gView * gProj; //column major
   // row major would be:
   // pos = gProj * gView * gModel * pos; //Row major
