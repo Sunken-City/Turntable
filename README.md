@@ -7,6 +7,8 @@
    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝
 </pre>
 
+![Alt text](/Clients/Win32 Player/Docs/Staccato.png?raw=true "V0.1 - Staccato")
+
 A niche music player, full of features you didn't know you ever wanted.
 
 # Version 0.1 - Staccato
