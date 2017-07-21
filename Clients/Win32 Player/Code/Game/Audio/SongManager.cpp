@@ -49,8 +49,10 @@ void SongManager::Update(float deltaSeconds)
 
         if (m_activeSong->m_ignoresFrequency)
         {
-            float frequencyMultiplier = m_currentRPM / TheGame::instance->m_currentRecord->m_baseRPM;
-            AudioSystem::instance->SetMIDISpeed(m_activeSong->m_fmodID, frequencyMultiplier);
+            static float currentFrequencyMultiplier = 1.0f;
+            float targetFrequencyMultiplier = m_currentRPM / TheGame::instance->m_currentRecord->m_baseRPM;
+            currentFrequencyMultiplier = Lerp(0.1f, currentFrequencyMultiplier, targetFrequencyMultiplier);
+            AudioSystem::instance->SetMIDISpeed(m_activeSong->m_fmodID, currentFrequencyMultiplier);
         }
         else
         {
