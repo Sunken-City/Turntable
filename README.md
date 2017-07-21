@@ -98,3 +98,23 @@ ls -> Same as dir.
 cd <newDirectory> -> Changes directory to the newDirectory, appending it to the relative path.
 
 loadmesh -> Debug command for loading in a mesh.
+
+## **Development Team:**
+
+**Anthony Cloudy**: Project Lead and Lead Programmer
+(Twitter)[https://twitter.com/cloudygamedev]
+(Github)[https://github.com/picoriley]
+
+**Jonathan Lyttle**: Programmer
+(Github)[https://github.com/picoriley]
+
+**Regan Carver**: Programmer
+(Github)[https://github.com/picoriley]
+
+## **Special Thanks & Credits:**
+
+**Heather Tierney**: for modeling and texturing the records and their sleeves.
+
+**Prasanna Ravichandran**: for designing the original logo.
+
+**Ryan See**: for creating some sound effects for the project.
