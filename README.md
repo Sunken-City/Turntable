@@ -122,6 +122,7 @@ loadmesh -> Debug command for loading in a mesh.
 [Portfolio](www.heathertierney.com)
 
 **Prasanna Ravichandran**: for designing the original logo.
+
 [Portfolio](www.prasannar.com)
 
 **Ryan See**: for creating some sound effects for the project.
