@@ -13,6 +13,7 @@
 #include "ThirdParty/taglib/include/taglib/oggflacfile.h"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/StringUtils.hpp"
+#include "Engine/Input/InputOutputUtils.hpp"
 #include "SongManager.hpp"
 
 //-----------------------------------------------------------------------------------
