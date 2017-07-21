@@ -46,8 +46,17 @@ void SongManager::Update(float deltaSeconds)
             float wiggleAmount = MathUtils::GetRandomFloat(-m_wiggleDelta, m_wiggleDelta);
             SetRPM(m_currentRPM + wiggleAmount);
         }
-        m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
-        AudioSystem::instance->SetFrequency(m_activeSong->m_fmodID, m_currentFrequency);
+
+        if (m_activeSong->m_ignoresFrequency)
+        {
+            float frequencyMultiplier = m_currentRPM / TheGame::instance->m_currentRecord->m_baseRPM;
+            AudioSystem::instance->SetMIDISpeed(m_activeSong->m_fmodID, frequencyMultiplier);
+        }
+        else
+        {
+            m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
+            AudioSystem::instance->SetFrequency(m_activeSong->m_fmodID, m_currentFrequency);
+        }
 
         CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
         UpdateUIWidgetText();

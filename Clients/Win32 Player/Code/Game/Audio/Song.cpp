@@ -22,9 +22,8 @@ Song::Song(const std::string& fullPathToFile)
     m_filePath = fullPathToFile;
     m_fileExtension = GetFileExtension(fullPathToFile);
     m_fileName = GetFileName(fullPathToFile);
-    SetMetadataFromFile(fullPathToFile);
-
     m_fmodID = AudioSystem::instance->CreateOrGetSound(fullPathToFile);
+    SetMetadataFromFile(fullPathToFile);
 }
 
 //-----------------------------------------------------------------------------------
@@ -96,19 +95,36 @@ void Song::SetMetadataFromFile(const std::string& fileName)
         m_bitdepth = wavFile.audioProperties()->bitsPerSample();
     }
 
-    TagLib::FileRef file(fileName.c_str());
+    //Midis have no metadata, so let's fill it out manually.
+    if (m_fileExtension == "mid" || m_fileExtension == "midi")
+    {
+        m_artist = "Unknown";
+        m_album = "Unkown";
+        m_genre = "MIDI";
+        m_title = m_fileName;
+        m_year = 0;
+        m_trackNum = 0;
 
-    m_artist = file.tag()->artist().toCString();
-    m_album = file.tag()->album().toCString();
-    m_genre = file.tag()->genre().toCString();
-    m_title = file.tag()->title().toCString();
-    m_year = file.tag()->year();
-    m_trackNum = file.tag()->track();
+        m_playcount = 0;
+        m_samplerate = AudioSystem::instance->GetFrequency(m_fmodID); //This should return -1 since it's a MIDI
+        m_ignoresFrequency = true;
+    }
+    else
+    {
+        TagLib::FileRef file(fileName.c_str());
 
-    m_lengthInSeconds = file.audioProperties()->lengthInSeconds();
-    m_samplerate = file.audioProperties()->sampleRate();
-    m_bitrate = file.audioProperties()->bitrate();
-    m_numChannels = file.audioProperties()->channels();
+        m_artist = file.tag()->artist().toCString();
+        m_album = file.tag()->album().toCString();
+        m_genre = file.tag()->genre().toCString();
+        m_title = file.tag()->title().toCString();
+        m_year = file.tag()->year();
+        m_trackNum = file.tag()->track();
+
+        m_lengthInSeconds = file.audioProperties()->lengthInSeconds();
+        m_samplerate = file.audioProperties()->sampleRate();
+        m_bitrate = file.audioProperties()->bitrate();
+        m_numChannels = file.audioProperties()->channels();
+    }
 }
 
 //-----------------------------------------------------------------------------------
