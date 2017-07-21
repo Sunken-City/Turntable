@@ -102,18 +102,19 @@ loadmesh -> Debug command for loading in a mesh.
 ## **Development Team:**
 
 **Anthony Cloudy**: Project Lead and Lead Programmer
-(Twitter)[https://twitter.com/cloudygamedev]
-(Github)[https://github.com/picoriley]
+[Twitter](https://twitter.com/cloudygamedev)
+[Github](https://github.com/picoriley)
 
 **Jonathan Lyttle**: Programmer
-(Github)[https://github.com/picoriley]
+[Github](https://github.com/weruder)
 
 **Regan Carver**: Programmer
-(Github)[https://github.com/picoriley]
+[Github](https://github.com/dolphiniac)
 
 ## **Special Thanks & Credits:**
 
-**Heather Tierney**: for modeling and texturing the records and their sleeves.
+**Heather Tierney**: for 3D modeling and texturing the records and their sleeves.
+[Portfolio](www.heathertierney.com)
 
 **Prasanna Ravichandran**: for designing the original logo.
 
