@@ -11,6 +11,7 @@
 #include "ThirdParty/taglib/include/taglib/wavfile.h"
 #include "ThirdParty/taglib/include/taglib/rifffile.h"
 #include "ThirdParty/taglib/include/taglib/oggflacfile.h"
+#include "ThirdParty/taglib/include/taglib/mp4file.h"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
