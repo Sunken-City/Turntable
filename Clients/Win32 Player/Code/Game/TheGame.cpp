@@ -54,6 +54,8 @@ extern Skeleton* g_loadedSkeleton;
 extern AnimationMotion* g_loadedMotion;
 extern std::vector<AnimationMotion*>* g_loadedMotions;
 extern int g_numLoadedMeshes;
+extern int WINDOW_PHYSICAL_WIDTH;
+extern int WINDOW_PHYSICAL_HEIGHT;
 
 unsigned int samplerID;
 unsigned int diffuseID;
@@ -72,8 +74,8 @@ TheGame::TheGame()
 
     InitializeRand();
     SetUpShader();
-    m_blankFBOColorTexture = new Texture(1600, 900, Texture::TextureFormat::RGBA8);
-    m_blankFBODepthTexture = new Texture(1600, 900, Texture::TextureFormat::D24S8);
+    m_blankFBOColorTexture = new Texture(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT, Texture::TextureFormat::RGBA8);
+    m_blankFBODepthTexture = new Texture(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT, Texture::TextureFormat::D24S8);
     m_fbo = Framebuffer::FramebufferCreate(1, &m_blankFBOColorTexture, m_blankFBODepthTexture);
 
     //Set up a random background shader for the FBO from the backgrounds folder.
