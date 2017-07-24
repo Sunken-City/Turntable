@@ -1,0 +1,112 @@
+<Root>
+  <Label Name="ArtistName"
+      Text="No Artist"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 260"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="SongName"
+      Text="No Song Playing"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 230"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="AlbumName"
+      Text="No Album"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 200"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="Year"
+      Text="Unknown Year"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 170"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="Genre"
+      Text="Unknown Genre"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 140"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="PlayingTime"
+      Text="00:00 / 00:00"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 110"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="RPM"
+      Text="RPM: 0"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="1200, 110"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="Playcounts"
+      Text="Playcounts: 0"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="1200, 140"
+      TextOpacity="1.0f">
+  </Label>
+  <Window
+    Size="1600, 100"
+    Offset="800, 50"
+    BackgroundColor="0xFFFFFFFF"
+    BorderWidth="0.0f">
+    <Button Name="Next Button"
+      BackgroundColor="0x888888FF"
+      BorderWidth="0.0f"
+      Offset="100,0"
+      Size="100,100"
+      H_Size="110,110"
+      P_Size="90,90"
+      Opacity="1.0f"
+      OnClick="SkipNext"
+      Texture="Data/Images/UI/next.png">
+    </Button>
+    <Button Name="Back Button"
+      BackgroundColor="0x888888FF"
+      BorderWidth="0.0f"
+      Offset="-100,0"
+      Size="100,100"
+      H_Size="110,110"
+      P_Size="90,90"
+      Opacity="1.0f"
+      OnClick="SkipBack"
+      Texture="Data/Images/UI/back.png">
+    </Button>
+    <Button Name="Play/Pause Button"
+      BackgroundColor="0x888888FF"
+      BorderWidth="0.0f"
+      Size="100,100"
+      H_Size="110,110"
+      P_Size="90,90"
+      Opacity="1.0f"
+      OnClick="TogglePlayPause"
+      Texture="Data/Images/UI/pause.png">
+    </Button>
+  </Window>
+</Root>
