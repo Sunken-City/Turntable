@@ -76,6 +76,28 @@
     Offset="800, 50"
     BackgroundColor="0xFFFFFFFF"
     BorderWidth="0.0f">
+    <Button Name="Next Button"
+      BackgroundColor="0x888888FF"
+      BorderWidth="0.0f"
+      Offset="100,0"
+      Size="100,100"
+      H_Size="110,110"
+      P_Size="90,90"
+      Opacity="1.0f"
+      OnClick="SkipNext"
+      Texture="Data/Images/UI/next.png">
+    </Button>
+    <Button Name="Back Button"
+      BackgroundColor="0x888888FF"
+      BorderWidth="0.0f"
+      Offset="-100,0"
+      Size="100,100"
+      H_Size="110,110"
+      P_Size="90,90"
+      Opacity="1.0f"
+      OnClick="SkipBack"
+      Texture="Data/Images/UI/back.png">
+    </Button>
     <Button Name="Play/Pause Button"
       BackgroundColor="0x888888FF"
       BorderWidth="0.0f"

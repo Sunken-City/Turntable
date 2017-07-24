@@ -20,7 +20,9 @@ SongManager::SongManager()
 {
     m_eventSongFinished.RegisterMethod(this, &SongManager::OnSongPlaybackFinished);
     m_eventSongBeginPlay.RegisterMethod(this, &SongManager::OnSongBeginPlay);
-    EventSystem::RegisterEventCallback("TogglePlayPause", &TogglePlayPause);
+    EventSystem::RegisterEventCallback("TogglePlayPause", &OnTogglePlayPause);
+    EventSystem::RegisterEventCallback("SkipBack", &OnSkipBack);
+    EventSystem::RegisterEventCallback("SkipNext", &OnSkipNext);
 }
 
 //-----------------------------------------------------------------------------------
@@ -159,6 +161,10 @@ unsigned int SongManager::GetQueueLength()
 //-----------------------------------------------------------------------------------
 void SongManager::OnSongPlaybackFinished()
 {
+    if (!m_activeSong)
+    {
+        return;
+    }
     if (m_loopMode == SONG_LOOP)
     {
         Play(m_activeSong);
@@ -225,46 +231,16 @@ void SongManager::CheckForHotkeys()
 
     if (InputSystem::instance->WasKeyJustPressed(' '))
     {
-        TogglePlayPause();
+        OnTogglePlayPause();
     }
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::LEFT))
     {
-        AudioSystem::instance->SetPlaybackPositionMS(m_activeSong->m_fmodChannel, 0);
+        OnSkipBack();
     }
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::RIGHT))
     {
-        if (m_loopMode == SONG_LOOP)
-        {
-            SongManager::instance->SetLoopMode(SongManager::LoopMode::NO_LOOP);
-            m_eventSongFinished.Trigger();
-            SongManager::instance->SetLoopMode(SongManager::LoopMode::SONG_LOOP);
-        }
-        else
-        {
-            m_eventSongFinished.Trigger();
-        }
-    }
-}
-
-//-----------------------------------------------------------------------------------
-void TogglePlayPause(NamedProperties& params)
-{
-    UNUSED(params);
-    WidgetBase* playPauseButton = UISystem::instance->FindWidgetByName("Play/Pause Button");
-
-    if (SongManager::instance->m_currentRPM != 0)
-    {
-        SongManager::instance->m_lastRPM = SongManager::instance->m_currentRPM;
-        Console::instance->RunCommand("pause");
-        playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/play.png");
-        playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/play.png");
-    }
-    else
-    {
-        Console::instance->RunCommand("setrpm " + std::to_string(SongManager::instance->m_lastRPM));
-        playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/pause.png");
-        playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/pause.png");
+        OnSkipNext();
     }
 }
 
@@ -335,6 +311,51 @@ void SongManager::UpdateUIWidgetText()
 
     rpmWidget->m_propertiesForAllStates.Set("Text", rpm, false);
     playingTimeWidget->m_propertiesForAllStates.Set("Text", playingTime, false);
+}
+
+//UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------------------
+void OnSkipNext(NamedProperties& params)
+{
+    UNUSED(params);
+    if (SongManager::instance->m_loopMode == SongManager::LoopMode::SONG_LOOP)
+    {
+        SongManager::instance->SetLoopMode(SongManager::LoopMode::NO_LOOP);
+        SongManager::instance->m_eventSongFinished.Trigger();
+        SongManager::instance->SetLoopMode(SongManager::LoopMode::SONG_LOOP);
+    }
+    else
+    {
+        SongManager::instance->m_eventSongFinished.Trigger();
+    }
+}
+
+//-----------------------------------------------------------------------------------
+void OnSkipBack(NamedProperties& params)
+{
+    UNUSED(params);
+    AudioSystem::instance->SetPlaybackPositionMS(SongManager::instance->m_activeSong->m_fmodChannel, 0);
+}
+
+//-----------------------------------------------------------------------------------
+void OnTogglePlayPause(NamedProperties& params)
+{
+    UNUSED(params);
+    WidgetBase* playPauseButton = UISystem::instance->FindWidgetByName("Play/Pause Button");
+
+    if (SongManager::instance->m_currentRPM != 0)
+    {
+        SongManager::instance->m_lastRPM = SongManager::instance->m_currentRPM;
+        Console::instance->RunCommand("pause");
+        playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/play.png");
+        playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/play.png");
+    }
+    else
+    {
+        Console::instance->RunCommand("setrpm " + std::to_string(SongManager::instance->m_lastRPM));
+        playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/pause.png");
+        playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/pause.png");
+    }
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////

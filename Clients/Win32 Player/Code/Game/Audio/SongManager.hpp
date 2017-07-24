@@ -59,4 +59,6 @@ public:
 };
 
 //UI EVENTS/////////////////////////////////////////////////////////////////////
-void TogglePlayPause(NamedProperties& params = NamedProperties::NONE);
+void OnSkipNext(NamedProperties& params = NamedProperties::NONE);
+void OnSkipBack(NamedProperties& params = NamedProperties::NONE);
+void OnTogglePlayPause(NamedProperties& params = NamedProperties::NONE);
