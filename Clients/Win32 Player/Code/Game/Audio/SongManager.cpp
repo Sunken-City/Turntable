@@ -11,6 +11,7 @@
 #include "Engine/UI/UISystem.hpp"
 #include "Engine/UI/Widgets/LabelWidget.hpp"
 #include "Engine/Core/Events/EventSystem.hpp"
+#include "Engine/Renderer/Texture.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -250,14 +251,20 @@ void SongManager::CheckForHotkeys()
 void TogglePlayPause(NamedProperties& params)
 {
     UNUSED(params);
+    WidgetBase* playPauseButton = UISystem::instance->FindWidgetByName("Play/Pause Button");
+
     if (SongManager::instance->m_currentRPM != 0)
     {
         SongManager::instance->m_lastRPM = SongManager::instance->m_currentRPM;
         Console::instance->RunCommand("pause");
+        playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/play.png");
+        playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/play.png");
     }
     else
     {
         Console::instance->RunCommand("setrpm " + std::to_string(SongManager::instance->m_lastRPM));
+        playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/pause.png");
+        playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/pause.png");
     }
 }
 

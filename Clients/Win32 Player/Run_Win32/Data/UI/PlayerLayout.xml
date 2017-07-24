@@ -75,17 +75,14 @@
     Size="1600, 100"
     Offset="800, 50"
     BackgroundColor="0xFFFFFFFF"
-    BorderWidth="0.0f"
-    Texture="Data/Images/Test.png">
+    BorderWidth="0.0f">
     <Button Name="Play/Pause Button"
-      BorderColor="0x225500FF"
-      BackgroundColor="0xFFFFFFFF"
+      BackgroundColor="0x888888FF"
       BorderWidth="0.0f"
       Size="100,100"
-      TextSize="2.0f"
-      TextColor="0xFF819CFF"
+      H_Size="110,110"
+      P_Size="90,90"
       Opacity="1.0f"
-      TextOpacity="1.0f"
       OnClick="TogglePlayPause"
       Texture="Data/Images/UI/pause.png">
     </Button>
