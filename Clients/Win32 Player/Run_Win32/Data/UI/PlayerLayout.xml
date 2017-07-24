@@ -1,7 +1,7 @@
 <Root>
   <Label Name="ArtistName"
       Text="No Artist"
-      TextSize="1.5f"
+      TextSize="1.0f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
@@ -10,65 +10,84 @@
   </Label>
   <Label Name="SongName"
       Text="No Song Playing"
-      TextSize="1.5f"
+      TextSize="1.0f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="10, 210"
+      Offset="10, 230"
       TextOpacity="1.0f">
   </Label>
   <Label Name="AlbumName"
       Text="No Album"
-      TextSize="1.5f"
+      TextSize="1.0f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="10, 160"
+      Offset="10, 200"
       TextOpacity="1.0f">
   </Label>
   <Label Name="Year"
       Text="Unknown Year"
-      TextSize="1.5f"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 170"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="Genre"
+      Text="Unknown Genre"
+      TextSize="1.0f"
+      TextColor="0xFF819CFF"
+      BorderColor="0x00000000"
+      BackgroundColor="0x00000000"
+      Offset="10, 140"
+      TextOpacity="1.0f">
+  </Label>
+  <Label Name="PlayingTime"
+      Text="00:00 / 00:00"
+      TextSize="1.0f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
       Offset="10, 110"
       TextOpacity="1.0f">
   </Label>
-  <Label Name="Genre"
-      Text="Unknown Genre"
-      TextSize="1.5f"
-      TextColor="0xFF819CFF"
-      BorderColor="0x00000000"
-      BackgroundColor="0x00000000"
-      Offset="10, 60"
-      TextOpacity="1.0f">
-  </Label>
-  <Label Name="PlayingTime"
-      Text="00:00 / 00:00"
-      TextSize="1.5f"
-      TextColor="0xFF819CFF"
-      BorderColor="0x00000000"
-      BackgroundColor="0x00000000"
-      Offset="10, 10"
-      TextOpacity="1.0f">
-  </Label>
   <Label Name="RPM"
       Text="RPM: 0"
-      TextSize="2.0f"
+      TextSize="1.0f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1200, 10"
+      Offset="1200, 110"
       TextOpacity="1.0f">
   </Label>
   <Label Name="Playcounts"
       Text="Playcounts: 0"
-      TextSize="2.0f"
+      TextSize="1.0f"
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1200, 70"
+      Offset="1200, 140"
       TextOpacity="1.0f">
   </Label>
+  <Window
+    Size="1600, 100"
+    Offset="800, 50"
+    BackgroundColor="0xFFFFFFFF"
+    BorderWidth="0.0f"
+    Texture="Data/Images/Test.png">
+    <Button Name="Play/Pause Button"
+      BorderColor="0x225500FF"
+      BackgroundColor="0xFFFFFFFF"
+      BorderWidth="0.0f"
+      Size="100,100"
+      TextSize="2.0f"
+      TextColor="0xFF819CFF"
+      Opacity="1.0f"
+      TextOpacity="1.0f"
+      OnClick="TogglePlayPause"
+      Texture="Data/Images/UI/pause.png">
+    </Button>
+  </Window>
 </Root>

@@ -1,6 +1,7 @@
 #pragma once
 #include <deque>
 #include "Engine\Core\Events\Event.hpp"
+#include "Engine\Core\Events\NamedProperties.hpp"
 
 class Song;
 
@@ -56,3 +57,6 @@ public:
     float m_currentFrequency = 0.0f; //Actual frequency of the track that was last passed to FMOD
     float m_songVolume = 0.8f;
 };
+
+//UI EVENTS/////////////////////////////////////////////////////////////////////
+void TogglePlayPause(NamedProperties& params = NamedProperties::NONE);

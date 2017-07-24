@@ -10,6 +10,7 @@
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/UI/UISystem.hpp"
 #include "Engine/UI/Widgets/LabelWidget.hpp"
+#include "Engine/Core/Events/EventSystem.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -18,6 +19,7 @@ SongManager::SongManager()
 {
     m_eventSongFinished.RegisterMethod(this, &SongManager::OnSongPlaybackFinished);
     m_eventSongBeginPlay.RegisterMethod(this, &SongManager::OnSongBeginPlay);
+    EventSystem::RegisterEventCallback("TogglePlayPause", &TogglePlayPause);
 }
 
 //-----------------------------------------------------------------------------------
@@ -222,15 +224,7 @@ void SongManager::CheckForHotkeys()
 
     if (InputSystem::instance->WasKeyJustPressed(' '))
     {
-        if (m_currentRPM != 0)
-        {
-            m_lastRPM = m_currentRPM;
-            Console::instance->RunCommand("pause");
-        }
-        else
-        {
-            Console::instance->RunCommand("setrpm " + std::to_string(m_lastRPM));
-        }
+        TogglePlayPause();
     }
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::LEFT))
@@ -249,6 +243,21 @@ void SongManager::CheckForHotkeys()
         {
             m_eventSongFinished.Trigger();
         }
+    }
+}
+
+//-----------------------------------------------------------------------------------
+void TogglePlayPause(NamedProperties& params)
+{
+    UNUSED(params);
+    if (SongManager::instance->m_currentRPM != 0)
+    {
+        SongManager::instance->m_lastRPM = SongManager::instance->m_currentRPM;
+        Console::instance->RunCommand("pause");
+    }
+    else
+    {
+        Console::instance->RunCommand("setrpm " + std::to_string(SongManager::instance->m_lastRPM));
     }
 }
 
