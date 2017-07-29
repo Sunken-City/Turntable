@@ -346,6 +346,10 @@ void OnSkipNext(NamedProperties& params)
 void OnSkipBack(NamedProperties& params)
 {
     UNUSED(params);
+    if (!SongManager::instance->m_activeSong)
+    {
+        return;
+    }
     AudioSystem::instance->SetPlaybackPositionMS(SongManager::instance->m_activeSong->m_fmodChannel, 0);
 }
 

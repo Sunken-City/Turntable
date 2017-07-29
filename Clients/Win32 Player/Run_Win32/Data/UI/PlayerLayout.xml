@@ -71,11 +71,13 @@
       Offset="1200, 140"
       TextOpacity="1.0f">
   </Label>
+
   <Window
     Size="1600, 100"
     Offset="800, 50"
     BackgroundColor="0xFFFFFFFF"
-    BorderWidth="0.0f">
+    BorderWidth="0.0f"
+    Dock="bottom">
     <Button Name="Next Button"
       BackgroundColor="0x888888FF"
       BorderWidth="0.0f"
@@ -108,5 +110,11 @@
       OnClick="TogglePlayPause"
       Texture="Data/Images/UI/pause.png">
     </Button>
+  </Window>
+  <Window
+    Size="100, 100"
+    BackgroundColor="0xFF0000FF"
+    BorderWidth="3.0f"
+    Dock="left">
   </Window>
 </Root>
