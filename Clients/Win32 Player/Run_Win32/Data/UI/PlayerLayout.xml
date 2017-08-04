@@ -111,10 +111,10 @@
       Texture="Data/Images/UI/pause.png">
     </Button>
   </Window>
-  <Window
-    Size="100, 100"
-    BackgroundColor="0xFF0000FF"
-    BorderWidth="3.0f"
-    Dock="left">
-  </Window>
+    <Window
+      Size="100, 100"
+      BackgroundColor="0xFF0000FF"
+      BorderWidth="3.0f"
+      Dock="left">
+    </Window>
 </Root>
