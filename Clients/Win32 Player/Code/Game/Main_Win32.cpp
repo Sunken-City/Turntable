@@ -30,8 +30,8 @@
 
 //-----------------------------------------------------------------------------------------------
 const int OFFSET_FROM_WINDOWS_DESKTOP = 50;
-const int WINDOW_PHYSICAL_WIDTH = 1600;
-const int WINDOW_PHYSICAL_HEIGHT = 900;
+int WINDOW_PHYSICAL_WIDTH = 1600;
+int WINDOW_PHYSICAL_HEIGHT = 900;
 const float VIEW_LEFT = 0.0;
 const float VIEW_RIGHT = 1600.0;
 const float VIEW_BOTTOM = 0.0;
@@ -40,6 +40,7 @@ const Vector2 BOTTOM_LEFT = Vector2(VIEW_LEFT, VIEW_BOTTOM);
 const Vector2 TOP_RIGHT = Vector2(VIEW_RIGHT, VIEW_TOP);
 
 bool g_isQuitting = false;
+bool g_isFullscreen = false;
 HWND g_hWnd = nullptr;
 HDC g_displayDeviceContext = nullptr;
 HGLRC g_openGLRenderingContext = nullptr;
@@ -161,15 +162,47 @@ void CreateOpenGLWindow(HINSTANCE applicationInstanceHandle)
     windowClassDescription.lpszClassName = TEXT("Simple Window Class");
     RegisterClassEx(&windowClassDescription);
 
-    const DWORD windowStyleFlags = WS_CAPTION | WS_BORDER | WS_THICKFRAME | WS_SYSMENU | WS_OVERLAPPED;
-    const DWORD windowStyleExFlags = WS_EX_APPWINDOW;
-
     RECT desktopRect;
     HWND desktopWindowHandle = GetDesktopWindow();
     GetClientRect(desktopWindowHandle, &desktopRect);
 
-    RECT windowRect = { OFFSET_FROM_WINDOWS_DESKTOP, OFFSET_FROM_WINDOWS_DESKTOP, OFFSET_FROM_WINDOWS_DESKTOP + WINDOW_PHYSICAL_WIDTH, OFFSET_FROM_WINDOWS_DESKTOP + WINDOW_PHYSICAL_HEIGHT };
-    AdjustWindowRectEx(&windowRect, windowStyleFlags, FALSE, windowStyleExFlags);
+    Vector2 desktopSize = Vector2(desktopRect.right - desktopRect.left, desktopRect.bottom - desktopRect.top);
+    float maxWindowPercentage = 0.85f;
+    Vector2 maxWindowSize = desktopSize * maxWindowPercentage;
+    float maxWindowAspect = maxWindowSize.x / maxWindowSize.y;
+    float desiredAspect = (float)WINDOW_PHYSICAL_WIDTH / (float)WINDOW_PHYSICAL_HEIGHT;
+
+    Vector2 windowSize = maxWindowSize;
+    if (desiredAspect > maxWindowAspect) //Too wide
+    {
+        windowSize.y = maxWindowSize.x / desiredAspect;
+    }
+    else
+    {
+        windowSize.x = maxWindowSize.y * desiredAspect;
+    }
+
+    Vector2 marginDimensions = desktopSize - windowSize;
+
+    float top = marginDimensions.y / 2.0f;
+    float left = marginDimensions.x / 2.0f;
+    float bottom = top + windowSize.y;
+    float right = left + windowSize.x;
+
+    RECT windowRect = { (int)left, (int)top, (int)right, (int)bottom };
+    DWORD windowStyleFlags = WS_CAPTION | WS_BORDER | WS_THICKFRAME | WS_SYSMENU | WS_OVERLAPPED;
+    DWORD windowStyleExFlags = WS_EX_APPWINDOW;
+    if (g_isFullscreen)
+    {
+        windowStyleFlags = WS_POPUP;
+        windowStyleExFlags = WS_EX_APPWINDOW;
+        windowRect = desktopRect;
+    }
+
+    WINDOW_PHYSICAL_WIDTH = windowRect.right - windowRect.left;
+    WINDOW_PHYSICAL_HEIGHT = windowRect.bottom - windowRect.top;
+
+    AdjustWindowRectEx(&windowRect, windowStyleFlags, FALSE, windowStyleExFlags); //Compensates for the windows frame, allowing the above rectangle to be just the client space.
 
     WCHAR windowTitle[1024];
     MultiByteToWideChar(GetACP(), 0, APP_NAME, -1, windowTitle, sizeof(windowTitle) / sizeof(windowTitle[0]));

@@ -10,6 +10,8 @@
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/UI/UISystem.hpp"
 #include "Engine/UI/Widgets/LabelWidget.hpp"
+#include "Engine/Core/Events/EventSystem.hpp"
+#include "Engine/Renderer/Texture.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -18,6 +20,9 @@ SongManager::SongManager()
 {
     m_eventSongFinished.RegisterMethod(this, &SongManager::OnSongPlaybackFinished);
     m_eventSongBeginPlay.RegisterMethod(this, &SongManager::OnSongBeginPlay);
+    EventSystem::RegisterEventCallback("TogglePlayPause", &OnTogglePlayPause);
+    EventSystem::RegisterEventCallback("SkipBack", &OnSkipBack);
+    EventSystem::RegisterEventCallback("SkipNext", &OnSkipNext);
 }
 
 //-----------------------------------------------------------------------------------
@@ -156,6 +161,10 @@ unsigned int SongManager::GetQueueLength()
 //-----------------------------------------------------------------------------------
 void SongManager::OnSongPlaybackFinished()
 {
+    if (!m_activeSong)
+    {
+        return;
+    }
     if (m_loopMode == SONG_LOOP)
     {
         Play(m_activeSong);
@@ -222,33 +231,16 @@ void SongManager::CheckForHotkeys()
 
     if (InputSystem::instance->WasKeyJustPressed(' '))
     {
-        if (m_currentRPM != 0)
-        {
-            m_lastRPM = m_currentRPM;
-            Console::instance->RunCommand("pause");
-        }
-        else
-        {
-            Console::instance->RunCommand("setrpm " + std::to_string(m_lastRPM));
-        }
+        OnTogglePlayPause();
     }
 
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::LEFT))
     {
-        AudioSystem::instance->SetPlaybackPositionMS(m_activeSong->m_fmodChannel, 0);
+        OnSkipBack();
     }
     if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::RIGHT))
     {
-        if (m_loopMode == SONG_LOOP)
-        {
-            SongManager::instance->SetLoopMode(SongManager::LoopMode::NO_LOOP);
-            m_eventSongFinished.Trigger();
-            SongManager::instance->SetLoopMode(SongManager::LoopMode::SONG_LOOP);
-        }
-        else
-        {
-            m_eventSongFinished.Trigger();
-        }
+        OnSkipNext();
     }
 }
 
@@ -263,13 +255,19 @@ void SongManager::SetNowPlayingTextFromMetadata(Song* currentSong)
     LabelWidget* playcountWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("Playcounts"));
     LabelWidget* playingTimeWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("PlayingTime"));
 
-    ASSERT_OR_DIE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(albumNameWidget, "Couldn't find the AlbumName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(yearWidget, "Couldn't find the Year label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(genreWidget, "Couldn't find the Genre label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(playcountWidget, "Couldn't find the Playcounts label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(playingTimeWidget, "Couldn't find the PlayingTime label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(songNameWidget, "Couldn't find the SongName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(artistNameWidget, "Couldn't find the ArtistName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(albumNameWidget, "Couldn't find the AlbumName label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(yearWidget, "Couldn't find the Year label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(genreWidget, "Couldn't find the Genre label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(playcountWidget, "Couldn't find the Playcounts label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(playingTimeWidget, "Couldn't find the PlayingTime label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    if (!(songNameWidget && artistNameWidget && albumNameWidget && yearWidget && genreWidget && playcountWidget && playingTimeWidget))
+    {
+        UISystem::instance->ReloadUI("Data/UI/BackupLayout.xml");
+        SetNowPlayingTextFromMetadata(currentSong); //this will cause an infinite loop if you break BackupLayout.xml
+        return;
+    }
 
     std::string title = "No Song Playing";
     std::string artist = "No Artist";
@@ -309,8 +307,14 @@ void SongManager::UpdateUIWidgetText()
     LabelWidget* rpmWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("RPM"));
     LabelWidget* playingTimeWidget = dynamic_cast<LabelWidget*>(UISystem::instance->FindWidgetByName("PlayingTime"));
 
-    ASSERT_OR_DIE(rpmWidget, "Couldn't find the RPM label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
-    ASSERT_OR_DIE(playingTimeWidget, "Couldn't find the PlayingTime label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(rpmWidget, "Couldn't find the RPM label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    ASSERT_RECOVERABLE(playingTimeWidget, "Couldn't find the PlayingTime label widget. Have you customized Data/UI/PlayerLayout.xml recently?");
+    if (!rpmWidget || !playingTimeWidget)
+    {
+        UISystem::instance->ReloadUI("Data/UI/BackupLayout.xml");
+        UpdateUIWidgetText(); //this will cause an infinite loop if you break BackupLayout.xml
+        return;
+    }
 
     unsigned int currentSongLengthSeconds = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_fmodID) / 1000;
     unsigned int currentPlaybackPositionSeconds = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel) / 1000;
@@ -319,6 +323,61 @@ void SongManager::UpdateUIWidgetText()
 
     rpmWidget->m_propertiesForAllStates.Set("Text", rpm, false);
     playingTimeWidget->m_propertiesForAllStates.Set("Text", playingTime, false);
+}
+
+//UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------------------
+void OnSkipNext(NamedProperties& params)
+{
+    UNUSED(params);
+    if (SongManager::instance->m_loopMode == SongManager::LoopMode::SONG_LOOP)
+    {
+        SongManager::instance->SetLoopMode(SongManager::LoopMode::NO_LOOP);
+        SongManager::instance->m_eventSongFinished.Trigger();
+        SongManager::instance->SetLoopMode(SongManager::LoopMode::SONG_LOOP);
+    }
+    else
+    {
+        SongManager::instance->m_eventSongFinished.Trigger();
+    }
+}
+
+//-----------------------------------------------------------------------------------
+void OnSkipBack(NamedProperties& params)
+{
+    UNUSED(params);
+    if (!SongManager::instance->m_activeSong)
+    {
+        return;
+    }
+    AudioSystem::instance->SetPlaybackPositionMS(SongManager::instance->m_activeSong->m_fmodChannel, 0);
+}
+
+//-----------------------------------------------------------------------------------
+void OnTogglePlayPause(NamedProperties& params)
+{
+    UNUSED(params);
+    WidgetBase* playPauseButton = UISystem::instance->FindWidgetByName("Play/Pause Button");
+
+    if (SongManager::instance->m_currentRPM != 0)
+    {
+        SongManager::instance->m_lastRPM = SongManager::instance->m_currentRPM;
+        Console::instance->RunCommand("pause");
+        if (playPauseButton)
+        {
+            playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/play.png");
+            playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/play.png");
+        }
+    }
+    else
+    {
+        Console::instance->RunCommand("setrpm " + std::to_string(SongManager::instance->m_lastRPM));
+        if (playPauseButton)
+        {
+            playPauseButton->SetProperty<std::string>("Texture", "Data/Images/UI/pause.png");
+            playPauseButton->m_texture = Texture::CreateOrGetTexture("Data/Images/UI/pause.png");
+        }
+    }
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
