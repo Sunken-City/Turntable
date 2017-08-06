@@ -12,6 +12,7 @@
 #include "Engine/UI/Widgets/LabelWidget.hpp"
 #include "Engine/Core/Events/EventSystem.hpp"
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Input/InputOutputUtils.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -325,6 +326,58 @@ void SongManager::UpdateUIWidgetText()
     playingTimeWidget->m_propertiesForAllStates.Set("Text", playingTime, false);
 }
 
+//-----------------------------------------------------------------------------------
+void SongManager::SavePlaylist(const std::string& name)
+{
+    //Saves the current song queue to an XML formatted playlist in the user's AppData directory
+    if (m_songQueue.size() != 0)
+    {
+        XMLNode playlist = OpenPlaylist(name);
+        if (playlist.isEmpty())
+        {
+            playlist.addText(name.c_str());
+        }
+        for (int i = 0; i < m_songQueue.size(); ++i)
+        {
+            //AddToPlaylist(playlist, m_songQueue.at(i));
+        }
+    }
+    else
+    {
+        Console::instance->PrintLine("Couldn't save the playlist; there are no songs in the queue.", RGBA::RED);
+    }
+}
+
+XMLNode SongManager::OpenPlaylist(const std::string& name)
+{
+    //Opens a playlist for writing
+    XMLNode playlist;
+    char* appdata = getenv("APPDATA");
+    std::string midPath = "\\Turntable";
+    std::string playlistBasePath = appdata + midPath;
+    EnsureDirectoryExists(playlistBasePath);
+    playlistBasePath += "\\Playlists\\";
+    std::string playlistFullPath = playlistBasePath + name + ".xml";
+    if (!EnsureDirectoryExists(playlistBasePath) || !EnsureFileExists(playlistFullPath))
+    {
+        ERROR_RECOVERABLE("Couldn't open the playlist for reading or writing.");
+    }
+    else
+    {
+        playlist = XMLUtils::OpenXMLDocument(playlistFullPath);
+    }
+    return playlist;
+    //playlist.writeToFile(playlistPath, XMLNode::char_encoding_UTF8);
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::AddToPlaylist(XMLNode* playlist, Song* currentSong)
+{
+    //Create entries for a song in the playlist
+    playlist->addChild("Song");
+    playlist->getChildNode(playlist->nChildNode());
+}
+
 //UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 void OnSkipNext(NamedProperties& params)
@@ -492,6 +545,19 @@ CONSOLE_COMMAND(printqueue)
     {
         Console::instance->PrintLine("<EMPTY>", RGBA::RED);
     }
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(saveplaylist)
+{
+    if (!(args.HasArgs(1)))
+    {
+        Console::instance->PrintLine("saveplaylist <filename>", RGBA::RED);
+        return;
+    }
+
+    SongManager::instance->SavePlaylist(args.GetStringArgument(0));
+    Console::instance->PrintLine("Saved playlist.", RGBA::GBLIGHTGREEN);
 }
 
 //-----------------------------------------------------------------------------------
