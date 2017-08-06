@@ -11,7 +11,7 @@
 #include "ThirdParty/taglib/include/taglib/wavfile.h"
 #include "ThirdParty/taglib/include/taglib/rifffile.h"
 #include "ThirdParty/taglib/include/taglib/oggflacfile.h"
-#include "ThirdParty/taglib/include/taglib/mp4file.h"
+#include "ThirdParty/taglib/include/taglib/vorbisfile.h"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
@@ -94,6 +94,23 @@ void Song::SetMetadataFromFile(const std::string& fileName)
         }
 
         m_bitdepth = wavFile.audioProperties()->bitsPerSample();
+    }
+    else if (m_fileExtension == "ogg")
+    {
+        TagLib::Ogg::Vorbis::File oggFile(fileName.c_str());
+        TagLib::PropertyMap map = oggFile.properties();
+
+        auto playcountPropertyIter = map.find("PCNT");
+        if (playcountPropertyIter != map.end())
+        {
+            bool wasInt = false;
+            m_playcount = playcountPropertyIter->second.toString().toInt(&wasInt);
+            ASSERT_OR_DIE(&wasInt, "Tried to grab the playcount, but found a non-integer value in the PCNT field.");
+        }
+        else
+        {
+            m_playcount = 0;
+        }
     }
 
     //Midis have no metadata, so let's fill it out manually.
