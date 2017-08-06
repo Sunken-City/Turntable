@@ -4,6 +4,7 @@
 #include "Engine\Core\Events\NamedProperties.hpp"
 
 class Song;
+struct XMLNode;
 
 class SongManager
 {
@@ -36,6 +37,9 @@ public:
     void CheckForHotkeys(); 
     void SetNowPlayingTextFromMetadata(Song* currentSong);
     void UpdateUIWidgetText();
+    void SavePlaylist(const std::string& name);
+    void AddToPlaylist(XMLNode* playlist, Song* currentSong);
+    XMLNode OpenPlaylist(const std::string& name);
 
     //EVENTS/////////////////////////////////////////////////////////////////////
     void OnSongPlaybackFinished();
