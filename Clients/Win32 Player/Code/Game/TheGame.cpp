@@ -144,7 +144,7 @@ void TheGame::InitializeMainCamera()
 {
     Camera3D* camera = ForwardRenderer::instance->GetMainCamera();
     camera->m_updateFromInput = false;
-    camera->m_position = Vector3(30.0f, 30.0f, 0.0f);
+    camera->m_position = Vector3(30.0f, 30.0f, -10.0f);
     camera->LookAt(m_currentRecord->GetPosition());
 }
 
