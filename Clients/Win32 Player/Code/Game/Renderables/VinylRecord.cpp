@@ -71,25 +71,25 @@ void VinylRecord::Update(float deltaSeconds)
     m_innerMaterial->SetVec4Uniform(std::hash<std::string>{}("gColor"), RGBA::WHITE.ToVec4());
     m_innerMaterial->SetVec4Uniform(std::hash<std::string>{}("gAmbientLight"), RGBA::BLACK.ToVec4());
     m_innerMaterial->SetVec4Uniform(std::hash<std::string>{}("gLightColor"), RGBA::WHITE.ToVec4());
-    m_innerMaterial->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::BLUE.ToVec4());
+    m_innerMaterial->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::GRAY.ToVec4());
     m_innerMaterial->SetVec3Uniform(std::hash<std::string>{}("gLightPosition"), Vector3(30.0f, 10.0f, 30.0f));
     m_innerMaterial->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
     m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
     m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
-    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
-    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 100.0f);
+    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 150.0f);
+    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 200.0f);
     m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
 
     m_outerMaterial->SetVec4Uniform(std::hash<std::string>{}("gColor"), RGBA::WHITE.ToVec4());
     m_outerMaterial->SetVec4Uniform(std::hash<std::string>{}("gAmbientLight"), RGBA::BLACK.ToVec4());
     m_outerMaterial->SetVec4Uniform(std::hash<std::string>{}("gLightColor"), RGBA::WHITE.ToVec4());
-    m_outerMaterial->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::BLUE.ToVec4());
+    m_outerMaterial->SetVec4Uniform(std::hash<std::string>{}("gFogColor"), RGBA::GRAY.ToVec4());
     m_outerMaterial->SetVec3Uniform(std::hash<std::string>{}("gLightPosition"), Vector3(30.0f, 10.0f, 30.0f));
     m_outerMaterial->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
     m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
     m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
-    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
-    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 100.0f);
+    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 150.0f);
+    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 200.0f);
     m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
 
 }
