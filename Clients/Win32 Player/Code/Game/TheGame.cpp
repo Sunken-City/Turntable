@@ -47,6 +47,7 @@
 #include <Windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
+#include "UserData/AchievementManager.hpp"
 
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
@@ -70,6 +71,7 @@ TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
 {
     SongManager::instance = new SongManager();
+    AchievementManager::instance = new AchievementManager();
     UISystem::instance->LoadAndParseUIXML("Data/UI/PlayerLayout.xml");
 
     InitializeRand();
@@ -105,6 +107,8 @@ TheGame::~TheGame()
 {
     delete SongManager::instance;
     SongManager::instance = nullptr;
+    delete AchievementManager::instance;
+    AchievementManager::instance = nullptr;
     delete m_currentRecord;
     delete m_fbo->m_colorTargets[0];
     delete m_fbo->m_depthStencilTarget;

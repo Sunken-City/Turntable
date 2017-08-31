@@ -31,13 +31,16 @@ public:
     void PlayNext(Song* newSong);
     unsigned int GetQueueLength();
     inline void SetLoopMode(LoopMode mode) { m_loopMode = mode; };
-    void OnSongPlaybackFinished();
-    void OnSongBeginPlay();
     void StopSong();
     void SetRPM(float rpm, bool changeInstantly = false);
     void CheckForHotkeys(); 
     void SetNowPlayingTextFromMetadata(Song* currentSong);
     void UpdateUIWidgetText();
+
+    //EVENTS/////////////////////////////////////////////////////////////////////
+    void OnSongPlaybackFinished();
+    void OnSongBeginPlay();
+
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static SongManager* instance;
 

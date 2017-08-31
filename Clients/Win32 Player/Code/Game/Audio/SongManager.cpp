@@ -2,6 +2,7 @@
 #include "Game/Audio/Song.hpp"
 #include "Game/TheGame.hpp"
 #include "Game/Renderables/VinylRecord.hpp"
+#include "Game/UserData/AchievementManager.hpp"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
 #include "Engine/Renderer/Material.hpp"
@@ -12,6 +13,7 @@
 #include "Engine/UI/Widgets/LabelWidget.hpp"
 #include "Engine/Core/Events/EventSystem.hpp"
 #include "Engine/Renderer/Texture.hpp"
+#include "../UserData/UserProfile.hpp"
 
 SongManager* SongManager::instance = nullptr;
 
@@ -44,6 +46,7 @@ void SongManager::FlushSongQueue()
 //-----------------------------------------------------------------------------------
 void SongManager::Update(float deltaSeconds)
 {
+    UNUSED(deltaSeconds);
     if (m_activeSong)
     {
         if (m_wiggleRPM)
@@ -83,7 +86,7 @@ void SongManager::Play(Song* songToPlay)
         StopSong();
     }
     m_activeSong = songToPlay;
-    m_baseFrequency = m_activeSong->m_samplerate;
+    m_baseFrequency = (float)m_activeSong->m_samplerate;
 
     AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, m_songVolume); //TODO: Find out why PlaySound causes a linker error here
     AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
@@ -192,6 +195,14 @@ void SongManager::OnSongPlaybackFinished()
 void SongManager::OnSongBeginPlay()
 {
     IncrementPlaycount(m_activeSong->m_filePath);
+    if (m_activeSong->m_playcount == 0)
+    {
+        AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_NEW_SONG);
+    }
+    else
+    {
+        AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_PLAY);
+    }
     ++m_activeSong->m_playcount;
 }
 
@@ -480,6 +491,7 @@ CONSOLE_COMMAND(playnext)
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(printqueue)
 {
+    UNUSED(args)
     Console::instance->PrintLine("----====Current Queue====----", RGBA::ORANGE);
 
     unsigned int index = 0;
