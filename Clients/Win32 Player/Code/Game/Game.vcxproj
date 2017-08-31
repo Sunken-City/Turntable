@@ -104,6 +104,8 @@
     <ClCompile Include="Main_Win32.cpp" />
     <ClCompile Include="Renderables\VinylRecord.cpp" />
     <ClCompile Include="TheGame.cpp" />
+    <ClCompile Include="UserData\AchievementManager.cpp" />
+    <ClCompile Include="UserData\UserProfile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\Song.hpp" />
@@ -111,6 +113,8 @@
     <ClInclude Include="Renderables\VinylRecord.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TheGame.hpp" />
+    <ClInclude Include="UserData\AchievementManager.hpp" />
+    <ClInclude Include="UserData\UserProfile.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Engine\Code\Engine\Engine.vcxproj">
