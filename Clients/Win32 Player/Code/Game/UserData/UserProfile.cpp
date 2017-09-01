@@ -98,6 +98,7 @@ UserProfile* UserProfile::LoadFromDisk(const std::string& profileName /*= "Defau
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(stats)
 {
     UNUSED(args);
@@ -111,6 +112,7 @@ CONSOLE_COMMAND(stats)
     Console::instance->PrintLine(Stringf("You have listened to music for %02i:%02i:%02i.", secondsListened / 3600, secondsListened / 60, secondsListened % 60), RGBA::KHAKI);
 }
 
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(addexp)
 {
     if (!args.HasArgs(1))
@@ -127,6 +129,7 @@ CONSOLE_COMMAND(addexp)
     Console::instance->PrintLine(Stringf("You now have %i tokens available to spend.", AchievementManager::instance->m_currentProfile->m_numTokens), RGBA::BADDAD);
 }
 
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(printlevels)
 {
     for (int i = 0; i < 100; ++i)
