@@ -4,7 +4,7 @@
 
 enum ExperienceValues
 {
-    EXP_FOR_PLAY = 5,
+    EXP_FOR_PLAY = 10,
     EXP_FOR_NEW_SONG = 50,
     EXP_FOR_ALBUM = 100,
 };

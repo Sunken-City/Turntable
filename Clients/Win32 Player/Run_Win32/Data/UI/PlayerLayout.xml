@@ -59,7 +59,7 @@
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1200, 110"
+      Offset="1400, 110"
       TextOpacity="1.0f">
   </Label>
   <Label Name="Playcounts"
@@ -68,7 +68,7 @@
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1200, 140"
+      Offset="1400, 140"
       TextOpacity="1.0f">
   </Label>
 

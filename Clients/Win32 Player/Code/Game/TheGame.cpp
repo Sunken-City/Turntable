@@ -437,6 +437,16 @@ CONSOLE_COMMAND(getsongmetadata)
 }
 
 //-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(printbackgrounds)
+{
+    std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds/", "*.frag");
+    for (std::string& shader : backgroundShaders)
+    {
+        Console::instance->PrintLine(shader, RGBA::JOLTIK_PURPLE);
+    }
+}
+
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(setbackground)
 {
     if (!args.HasArgs(1))

@@ -109,7 +109,7 @@ CONSOLE_COMMAND(stats)
     Console::instance->PrintLine(Stringf("You have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::CERULEAN);
     Console::instance->PrintLine(Stringf("You have %i tokens available to spend.", AchievementManager::instance->m_currentProfile->m_numTokens), RGBA::BADDAD);
     Console::instance->PrintLine(Stringf("You have a total of %i playcounts.", AchievementManager::instance->m_currentProfile->m_lifetimePlaycounts), RGBA::MAGENTA);
-    Console::instance->PrintLine(Stringf("You have listened to music for %02i:%02i:%02i.", secondsListened / 3600, secondsListened / 60, secondsListened % 60), RGBA::KHAKI);
+    Console::instance->PrintLine(Stringf("You have listened to music for %02i:%02i:%02i.", secondsListened / 3600, (secondsListened / 60) % 60, secondsListened % 60), RGBA::KHAKI);
 }
 
 //-----------------------------------------------------------------------------------
