@@ -42,10 +42,15 @@ bool UserProfile::CheckForLevelUp()
 //-----------------------------------------------------------------------------------
 unsigned int UserProfile::CalculateExperienceRequiredForLevel(unsigned int level)
 {
-    level -= 1; //Offset so that level 1 takes 0 experience.
     float levelOverConstant = (float)level / EXPERIENCE_CURVE_CONSTANT;
     float levelOverConstantSquared = levelOverConstant * levelOverConstant;
     return (unsigned int)ceilf(levelOverConstantSquared);
+}
+
+//-----------------------------------------------------------------------------------
+unsigned int UserProfile::CalculateLevelFromExperience(unsigned int experience)
+{
+    return (EXPERIENCE_CURVE_CONSTANT * sqrt(experience));
 }
 
 //-----------------------------------------------------------------------------------
@@ -92,20 +97,14 @@ UserProfile* UserProfile::LoadFromDisk(const std::string& profileName /*= "Defau
     return loadedProfile;
 }
 
-//-----------------------------------------------------------------------------------
-unsigned int UserProfile::CalculateLevelFromExperience(unsigned int experience)
-{
-    //Offset level by one so that level 1 takes 0 experience.
-    return (EXPERIENCE_CURVE_CONSTANT * sqrt(experience)) + 1;
-}
-
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
 CONSOLE_COMMAND(stats)
 {
     UNUSED(args);
     unsigned int secondsListened = AchievementManager::instance->m_currentProfile->m_lifetimeSecondsListened;
+    unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
 
-    Console::instance->PrintLine(Stringf("You are level %i.", AchievementManager::instance->m_currentProfile->m_level), RGBA::CYAN);
+    Console::instance->PrintLine(Stringf("You are level %i [%s]", level, AchievementManager::instance->GetTitleForLevel(level).c_str()), RGBA::CYAN);
     Console::instance->PrintLine(Stringf("You have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::CERULEAN);
     Console::instance->PrintLine(Stringf("You have %i tokens available to spend.", AchievementManager::instance->m_currentProfile->m_numTokens), RGBA::BADDAD);
     Console::instance->PrintLine(Stringf("You have a total of %i playcounts.", AchievementManager::instance->m_currentProfile->m_lifetimePlaycounts), RGBA::MAGENTA);
@@ -121,15 +120,21 @@ CONSOLE_COMMAND(addexp)
     }
 
     AchievementManager::instance->m_currentProfile->AddExperience(args.GetIntArgument(0));
-    Console::instance->PrintLine(Stringf("You are now level %i.", AchievementManager::instance->m_currentProfile->m_level), RGBA::CYAN);
+    unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
+
+    Console::instance->PrintLine(Stringf("You are now level %i [%s]", level, AchievementManager::instance->GetTitleForLevel(level).c_str()), RGBA::CYAN);
     Console::instance->PrintLine(Stringf("You now have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::CERULEAN);
     Console::instance->PrintLine(Stringf("You now have %i tokens available to spend.", AchievementManager::instance->m_currentProfile->m_numTokens), RGBA::BADDAD);
 }
 
 CONSOLE_COMMAND(printlevels)
 {
-    for (int i = 1; i < 100; ++i)
+    for (int i = 0; i < 100; ++i)
     {
-        Console::instance->PrintLine(Stringf("Level %i takes %i exp.", i, AchievementManager::instance->m_currentProfile->CalculateExperienceRequiredForLevel(i)), RGBA::BADDAD);
+        Console::instance->PrintLine(Stringf("Level %i [%s] takes %i exp.", 
+            i, 
+            AchievementManager::instance->GetTitleForLevel(i).c_str(), 
+            AchievementManager::instance->m_currentProfile->CalculateExperienceRequiredForLevel(i)), 
+            RGBA::BADDAD);
     }
 }

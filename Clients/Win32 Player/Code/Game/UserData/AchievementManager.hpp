@@ -18,6 +18,8 @@ public:
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     bool LoadDefaultProfile();
+    void LoadTitles();
+    std::string GetTitleForLevel(unsigned int level);
     void AddExperience(ExperienceValues expReason, float multiplier = 1.0f);
     void IncrementLifetimeSeconds(float deltaSeconds);
     inline void IncrementLifetimePlaycount() { m_currentProfile->m_lifetimePlaycounts++; };
@@ -27,6 +29,8 @@ public:
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     UserProfile* m_currentProfile = nullptr;
+    std::vector<std::string> m_titles;
+    std::vector<std::string> m_prefixes;
 };
 
 void OnLevelUp(NamedProperties& params = NamedProperties::NONE);

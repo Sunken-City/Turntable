@@ -3,6 +3,7 @@
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/Events/EventSystem.hpp"
+#include "Engine/Input/XMLUtils.hpp"
 
 AchievementManager* AchievementManager::instance = nullptr;
 
@@ -10,6 +11,7 @@ AchievementManager* AchievementManager::instance = nullptr;
 AchievementManager::AchievementManager()
 {
     EventSystem::RegisterEventCallback("LevelUp", &OnLevelUp);
+    LoadTitles();
     if (!LoadDefaultProfile())
     {
         Console::instance->PrintLine("Could not load default profile, creating a new one.", RGBA::RED);
@@ -31,6 +33,60 @@ bool AchievementManager::LoadDefaultProfile()
 {
     m_currentProfile = UserProfile::LoadFromDisk();
     return m_currentProfile != nullptr;
+}
+
+//-----------------------------------------------------------------------------------
+void AchievementManager::LoadTitles()
+{
+    XMLNode root = XMLUtils::OpenXMLDocument("Data/Configuration/LevelsAndTitles.xml");
+    XMLNode prefixesNode = XMLUtils::GetChildNodeAtPosition(root, "Prefixes");
+    XMLNode titlesNode = XMLUtils::GetChildNodeAtPosition(root, "Titles");
+    std::vector<XMLNode> prefixes = XMLUtils::GetChildren(prefixesNode);
+    std::vector<XMLNode> titles = XMLUtils::GetChildren(titlesNode);
+
+    for (XMLNode& node : prefixes)
+    {
+        if (node.isEmpty() || node.IsContentEmpty())
+        {
+            continue;
+        }
+        m_prefixes.push_back(node.getAttribute("name"));
+    }
+    for (XMLNode& node : titles)
+    {
+        if (node.isEmpty() || node.IsContentEmpty())
+        {
+            continue;
+        }
+        m_titles.push_back(node.getAttribute("name"));
+    }
+}
+
+//-----------------------------------------------------------------------------------
+std::string AchievementManager::GetTitleForLevel(unsigned int level)
+{
+    unsigned int numPrefixes = m_prefixes.size();
+    unsigned int numTitles = m_titles.size();
+
+    unsigned int prefixIndex = level % numPrefixes;
+    unsigned int titleIndex = level / numPrefixes;
+
+    if (titleIndex >= numTitles)
+    {
+        return "TURNTABLE TOP TIER";
+    }
+
+    std::string prefix = m_prefixes[prefixIndex];
+    std::string title = m_titles[titleIndex];
+
+    if (prefix.empty())
+    {
+        return title;
+    }
+    else
+    {
+        return prefix + " " + title;
+    }
 }
 
 //-----------------------------------------------------------------------------------

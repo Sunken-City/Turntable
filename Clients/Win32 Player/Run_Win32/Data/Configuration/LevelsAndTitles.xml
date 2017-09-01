@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Prefixes>
+  <Prefix name=""/>
+  <Prefix name="Bronze"/>
+  <Prefix name="Silver"/>
+  <Prefix name="Gold"/>
+  <Prefix name="Platinum"/>
+</Prefixes>
+<Titles>
+  <Title name="Beginner"/>
+  <Title name="Greenhorn"/>
+  <Title name="Neophyte"/>
+  <Title name="Appreciator"/>
+  <Title name="Aficionado"/>
+  <Title name="Bass Blaster"/>
+  <Title name="Expert"/>
+  <Title name="Prodigy"/>
+  <Title name="Maestro"/>
+  <Title name="Wizard"/>
+  <Title name="Virtuoso"/>
+  <Title name="Maniac"/>
+  <Title name="Audiophile"/>
+  <Title name="LoopMaster"/>
+</Titles>
