@@ -29,4 +29,6 @@ public:
     unsigned int m_experience = 0;
     unsigned int m_level = 1;
     unsigned int m_numTokens = 0;
+    unsigned int m_lifetimePlaycounts = 0;
+    unsigned int m_lifetimeSecondsListened = 0; //A uint is fine here. Accounts for the next 136 years of listening or so.
 };
