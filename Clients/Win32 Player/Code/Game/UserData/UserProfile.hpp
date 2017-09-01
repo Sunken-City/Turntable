@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 class UserProfile
 {
@@ -10,6 +11,10 @@ public:
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     void AddExperience(unsigned int expGained);
     unsigned int CalculateExperienceRequiredForLevel(unsigned int level);
+    void SaveToDisk(const std::string& profileName = "Default");
+
+    //STATIC FUNCTIONS/////////////////////////////////////////////////////////////////////
+    static UserProfile* LoadFromDisk(const std::string& profileName = "Default");
     
 private:
     bool CheckForLevelUp();
@@ -17,6 +22,7 @@ private:
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     static constexpr float EXPERIENCE_CURVE_CONSTANT = 0.2f;
+    static constexpr char* USER_PROFILE_VERSION_STRING = "v0.1";
 
 public:
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////

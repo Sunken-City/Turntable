@@ -12,6 +12,7 @@ AchievementManager::AchievementManager()
     EventSystem::RegisterEventCallback("LevelUp", &OnLevelUp);
     if (!LoadDefaultProfile())
     {
+        Console::instance->PrintLine("Could not load default profile, creating a new one.", RGBA::RED);
         m_currentProfile = new UserProfile();
     }
 }
@@ -23,6 +24,13 @@ AchievementManager::~AchievementManager()
     {
         delete m_currentProfile;
     }
+}
+
+//-----------------------------------------------------------------------------------
+bool AchievementManager::LoadDefaultProfile()
+{
+    m_currentProfile = UserProfile::LoadFromDisk();
+    return m_currentProfile != nullptr;
 }
 
 //-----------------------------------------------------------------------------------
