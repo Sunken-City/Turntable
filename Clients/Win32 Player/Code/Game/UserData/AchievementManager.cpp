@@ -34,9 +34,12 @@ bool AchievementManager::LoadDefaultProfile()
 }
 
 //-----------------------------------------------------------------------------------
-void AchievementManager::AddExperience(ExperienceValues expReason)
+void AchievementManager::AddExperience(ExperienceValues expReason, float multiplier /*= 1.0f*/)
 {
     unsigned int experienceGained = (unsigned int)expReason;
+    experienceGained = static_cast<unsigned int>((float)experienceGained * multiplier);
+    experienceGained = experienceGained == 0 ? 1 : experienceGained;
+
     switch (expReason)
     {
     case EXP_FOR_PLAY:
@@ -53,6 +56,20 @@ void AchievementManager::AddExperience(ExperienceValues expReason)
     }
 
     m_currentProfile->AddExperience(experienceGained);
+}
+
+//-----------------------------------------------------------------------------------
+void AchievementManager::IncrementLifetimeSeconds(float deltaSeconds)
+{
+    static float timeListened = 0.0f;
+    timeListened += deltaSeconds;
+    if (timeListened >= 1.0f)
+    {
+        //Only add the seconds, leave the fractional portion.
+        float secondsListened = floorf(timeListened);
+        m_currentProfile->m_lifetimeSecondsListened += (unsigned int)secondsListened;
+        timeListened -= secondsListened;
+    }
 }
 
 //EVENTS/////////////////////////////////////////////////////////////////////

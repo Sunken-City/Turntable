@@ -58,6 +58,8 @@ void UserProfile::SaveToDisk(const std::string& profileName /*= "Default"*/)
     expNode.addAttribute("Exp", Stringf("%i", m_experience).c_str());
     expNode.addAttribute("Level", Stringf("%i", m_level).c_str());
     expNode.addAttribute("Tokens", Stringf("%i", m_numTokens).c_str());
+    expNode.addAttribute("LifetimePlaycounts", Stringf("%i", m_lifetimePlaycounts).c_str());
+    expNode.addAttribute("LifetimeSeconds", Stringf("%i", m_lifetimeSecondsListened).c_str());
 
     std::string saveDirectory = GetAppDataDirectory();
     EnsureDirectoryExists(saveDirectory + "\\Turntable");
@@ -84,6 +86,8 @@ UserProfile* UserProfile::LoadFromDisk(const std::string& profileName /*= "Defau
     loadedProfile->m_experience = std::stoi(expNode.getAttribute("Exp"));
     loadedProfile->m_level = std::stoi(expNode.getAttribute("Level"));
     loadedProfile->m_numTokens = std::stoi(expNode.getAttribute("Tokens"));
+    loadedProfile->m_lifetimePlaycounts = std::stoi(expNode.getAttribute("LifetimePlaycounts"));
+    loadedProfile->m_lifetimeSecondsListened = std::stoi(expNode.getAttribute("LifetimeSeconds"));
 
     return loadedProfile;
 }
@@ -99,9 +103,13 @@ unsigned int UserProfile::CalculateLevelFromExperience(unsigned int experience)
 CONSOLE_COMMAND(stats)
 {
     UNUSED(args);
+    unsigned int secondsListened = AchievementManager::instance->m_currentProfile->m_lifetimeSecondsListened;
+
     Console::instance->PrintLine(Stringf("You are level %i.", AchievementManager::instance->m_currentProfile->m_level), RGBA::CYAN);
     Console::instance->PrintLine(Stringf("You have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::CERULEAN);
     Console::instance->PrintLine(Stringf("You have %i tokens available to spend.", AchievementManager::instance->m_currentProfile->m_numTokens), RGBA::BADDAD);
+    Console::instance->PrintLine(Stringf("You have a total of %i playcounts.", AchievementManager::instance->m_currentProfile->m_lifetimePlaycounts), RGBA::MAGENTA);
+    Console::instance->PrintLine(Stringf("You have listened to music for %02i:%02i:%02i.", secondsListened / 3600, secondsListened / 60, secondsListened % 60), RGBA::KHAKI);
 }
 
 CONSOLE_COMMAND(addexp)

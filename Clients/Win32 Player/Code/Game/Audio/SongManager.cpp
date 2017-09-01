@@ -71,6 +71,8 @@ void SongManager::Update(float deltaSeconds)
         CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
         UpdateUIWidgetText();
 
+        AchievementManager::instance->IncrementLifetimeSeconds(deltaSeconds);
+
         if (m_activeSong && !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
             m_eventSongFinished.Trigger();
@@ -194,16 +196,16 @@ void SongManager::OnSongPlaybackFinished()
 //-----------------------------------------------------------------------------------
 void SongManager::OnSongBeginPlay()
 {
-    IncrementPlaycount(m_activeSong->m_filePath);
+    float songLengthMultiplier = (float)m_activeSong->m_lengthInSeconds / 60.0f;
     if (m_activeSong->m_playcount == 0)
     {
         AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_NEW_SONG);
     }
-    else
-    {
-        AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_PLAY);
-    }
+    AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_PLAY, songLengthMultiplier);
+
+    IncrementPlaycount(m_activeSong->m_filePath);
     ++m_activeSong->m_playcount;
+    AchievementManager::instance->IncrementLifetimePlaycount();
 }
 
 //-----------------------------------------------------------------------------------

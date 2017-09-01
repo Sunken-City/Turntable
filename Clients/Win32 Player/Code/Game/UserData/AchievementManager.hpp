@@ -4,7 +4,7 @@
 
 enum ExperienceValues
 {
-    EXP_FOR_PLAY = 10,
+    EXP_FOR_PLAY = 5,
     EXP_FOR_NEW_SONG = 50,
     EXP_FOR_ALBUM = 100,
 };
@@ -18,7 +18,9 @@ public:
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     bool LoadDefaultProfile();
-    void AddExperience(ExperienceValues expReason);
+    void AddExperience(ExperienceValues expReason, float multiplier = 1.0f);
+    void IncrementLifetimeSeconds(float deltaSeconds);
+    inline void IncrementLifetimePlaycount() { m_currentProfile->m_lifetimePlaycounts++; };
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static AchievementManager* instance;
