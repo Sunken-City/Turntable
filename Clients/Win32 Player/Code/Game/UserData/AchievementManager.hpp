@@ -17,7 +17,7 @@ public:
     ~AchievementManager();
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
-    bool LoadDefaultProfile() { return false; }; //Todo: Implement a file load for the user profile.
+    bool LoadDefaultProfile();
     void AddExperience(ExperienceValues expReason);
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
