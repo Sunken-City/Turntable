@@ -72,7 +72,10 @@ void SongManager::Update(float deltaSeconds)
         CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
         UpdateUIWidgetText();
 
-        AchievementManager::instance->IncrementLifetimeSeconds(deltaSeconds);
+        if (m_currentRPM != 0.0f) //We set this value to 0.0f when we pause, no need to worry about roundoff <3
+        {
+            AchievementManager::instance->IncrementLifetimeSeconds(deltaSeconds);
+        }
 
         if (m_activeSong && !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
@@ -198,11 +201,13 @@ void SongManager::OnSongPlaybackFinished()
 void SongManager::OnSongBeginPlay()
 {
     float songLengthMultiplier = (float)m_activeSong->m_lengthInSeconds / 60.0f;
+    unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
+    float levelMultiplier = (float)level / 100.0f;
     if (m_activeSong->m_playcount == 0)
     {
         AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_NEW_SONG);
     }
-    AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_PLAY, songLengthMultiplier);
+    AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_PLAY, songLengthMultiplier + levelMultiplier);
 
     IncrementPlaycount(m_activeSong->m_filePath);
     ++m_activeSong->m_playcount;
