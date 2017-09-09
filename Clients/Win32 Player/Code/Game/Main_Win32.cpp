@@ -142,6 +142,8 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure(HWND windowHandle, UINT wmMessa
     case WM_DROPFILES:
         HandleFileDrop(wParam);
         break;
+    case WM_SETCURSOR:
+        break;
     }
 
     return DefWindowProc(windowHandle, wmMessageCode, wParam, lParam);
