@@ -105,40 +105,81 @@
   </Window>
 
   <!-- UNIT TESTS -->
-  <!--
+
   <Window
+    Name="FillTest"
     BackgroundColor="0xAAAAAAFF"
     Dock="fill">
   </Window>
+
   <Window
+    Name="DockBottomTest"
+    BackgroundColor="0x123456FF"
+    Size="0, 200"
+    Dock="bottom">
+  </Window>
+
+  <Window
+    Name="DockTopTest"
+    BackgroundColor="0x123456FF"
+    Size="0, 200"
+    Dock="top">
+  </Window>
+
+  <Window
+    Name="DockLeftTest"
+    BackgroundColor="0x654321FF"
+    Size="100, 0"
+    Dock="left">
+  </Window>
+
+  <Window
+    Name="DockRightTest"
+    BackgroundColor="0x654321FF"
+    Size="100, 0"
+    Dock="right">
+  </Window>
+
+  <Window
+    Name="SizeTest"
     Size="100, 100"
     BackgroundColor="0xFF0000FF">
   </Window>
+
   <Window
+    Name="OffsetTest"
     Size="50, 50"
     Offset="100,100"
     BackgroundColor="0x00FF00FF">
   </Window>
+
   <Window
+    Name="BorderTest"
     Size="200, 100"
     Offset="300,210"
     BorderWidth="5.4984"
     BackgroundColor="0x0000FFFF">
   </Window>
+
   <Window
+    Name="PaddingTest"
     Size="50, 50"
     Padding="100,0"
     Offset="400,400"
     BorderWidth="10"
     BackgroundColor="0x00FFFFFF">
   </Window>
+
   <Label
+    Name="TextTest"
     Text="Meme"
     Offset="500,500"
     BorderWidth="10"
     BackgroundColor="0xFF00FFFF">
   </Label>
+
   <Label
+    Name="TextMinSizeTest"
     Text="Meme"
     TextColor="0xAAAAAAFF"
     Size="0, 100"
@@ -154,5 +195,5 @@
     BorderWidth="10"
     BackgroundColor="0x00FFFFFF">
   </Label>
-  -->
+  <!-- -->
 </Root>
