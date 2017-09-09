@@ -1,7 +1,7 @@
 #pragma once
 #include <deque>
-#include "Engine\Core\Events\Event.hpp"
-#include "Engine\Core\Events\NamedProperties.hpp"
+#include "Engine/Core/Events/Event.hpp"
+#include "Engine/Core/Events/NamedProperties.hpp"
 
 class Song;
 
