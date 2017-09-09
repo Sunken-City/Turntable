@@ -71,7 +71,10 @@ void SongManager::Update(float deltaSeconds)
         CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
         UpdateUIWidgetText();
 
-        AchievementManager::instance->IncrementLifetimeSeconds(deltaSeconds);
+        if (m_currentRPM != 0.0f)
+        {
+            AchievementManager::instance->IncrementLifetimeSeconds(deltaSeconds);
+        }
 
         if (m_activeSong && !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {

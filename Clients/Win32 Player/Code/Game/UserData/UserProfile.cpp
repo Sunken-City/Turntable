@@ -106,10 +106,21 @@ CONSOLE_COMMAND(stats)
     unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
 
     Console::instance->PrintLine(Stringf("You are level %i [%s]", level, AchievementManager::instance->GetTitleForLevel(level).c_str()), RGBA::CYAN);
-    Console::instance->PrintLine(Stringf("You have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::CERULEAN);
+    Console::instance->PrintLine(Stringf("You have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::PURPLE);
     Console::instance->PrintLine(Stringf("You have %i tokens available to spend.", AchievementManager::instance->m_currentProfile->m_numTokens), RGBA::BADDAD);
     Console::instance->PrintLine(Stringf("You have a total of %i playcounts.", AchievementManager::instance->m_currentProfile->m_lifetimePlaycounts), RGBA::MAGENTA);
     Console::instance->PrintLine(Stringf("You have listened to music for %02i:%02i:%02i.", secondsListened / 3600, (secondsListened / 60) % 60, secondsListened % 60), RGBA::KHAKI);
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(nextlevel)
+{
+    UNUSED(args);
+    unsigned int currentLevel = AchievementManager::instance->m_currentProfile->m_level;
+    unsigned int nextLevel = currentLevel + 1;
+    unsigned int currentExperience = AchievementManager::instance->m_currentProfile->m_experience;
+    unsigned int requiredExperience = AchievementManager::instance->m_currentProfile->CalculateExperienceRequiredForLevel(nextLevel);
+    Console::instance->PrintLine(Stringf("You need %i more experience to reach level %i.", requiredExperience, nextLevel), RGBA::PURPLE);
 }
 
 //-----------------------------------------------------------------------------------
@@ -125,7 +136,7 @@ CONSOLE_COMMAND(addexp)
     unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
 
     Console::instance->PrintLine(Stringf("You are now level %i [%s]", level, AchievementManager::instance->GetTitleForLevel(level).c_str()), RGBA::CYAN);
-    Console::instance->PrintLine(Stringf("You now have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::CERULEAN);
+    Console::instance->PrintLine(Stringf("You now have %i experience.", AchievementManager::instance->m_currentProfile->m_experience), RGBA::PURPLE);
     Console::instance->PrintLine(Stringf("You now have %i tokens available to spend.", AchievementManager::instance->m_currentProfile->m_numTokens), RGBA::BADDAD);
 }
 

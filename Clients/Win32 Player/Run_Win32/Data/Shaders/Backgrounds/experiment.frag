@@ -24,7 +24,8 @@ void main(void)
   float green = cos(length(offset * (theta + r)) * -20.0f + gTime + 2) * 0.5f + 0.5f;
   float blue  = cos(length(offset * (theta + r)) * -20.0f + gTime + 4) * 0.5f + 0.5f;
 
-  vec4 fragColor = vec4(red, green, blue, 1.0f);
+  float color = length(offset) * 1.5f + (sin(theta * 10.0f + r + gTime * theta) * 0.1f);
+  vec4 fragColor = vec4(color, color, color, 1.0f);
 
   outColor = fragColor;
 }
