@@ -32,8 +32,6 @@ public:
     void PlayNext(Song* newSong);
     unsigned int GetQueueLength();
     inline void SetLoopMode(LoopMode mode) { m_loopMode = mode; };
-    void OnSongPlaybackFinished();
-    void OnSongBeginPlay();
     void StopSong();
     void SetRPM(float rpm, bool changeInstantly = false);
     void CheckForHotkeys(); 
@@ -42,6 +40,11 @@ public:
     void SavePlaylist(const std::string& name);
     void AddToPlaylist(XMLNode& playlist, Song* currentSong);
     XMLNode OpenPlaylist(const std::string& name);
+
+    //EVENTS/////////////////////////////////////////////////////////////////////
+    void OnSongPlaybackFinished();
+    void OnSongBeginPlay();
+
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static SongManager* instance;
 

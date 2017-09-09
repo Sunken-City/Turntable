@@ -47,6 +47,7 @@
 #include <Windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
+#include "UserData/AchievementManager.hpp"
 
 TheGame* TheGame::instance = nullptr;
 extern MeshBuilder* g_loadedMeshBuilder;
@@ -70,6 +71,7 @@ TheGame::TheGame()
 : m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
 {
     SongManager::instance = new SongManager();
+    AchievementManager::instance = new AchievementManager();
     UISystem::instance->LoadAndParseUIXML("Data/UI/PlayerLayout.xml");
 
     InitializeRand();
@@ -105,6 +107,8 @@ TheGame::~TheGame()
 {
     delete SongManager::instance;
     SongManager::instance = nullptr;
+    delete AchievementManager::instance;
+    AchievementManager::instance = nullptr;
     delete m_currentRecord;
     delete m_fbo->m_colorTargets[0];
     delete m_fbo->m_depthStencilTarget;
@@ -144,7 +148,7 @@ void TheGame::InitializeMainCamera()
 {
     Camera3D* camera = ForwardRenderer::instance->GetMainCamera();
     camera->m_updateFromInput = false;
-    camera->m_position = Vector3(30.0f, 30.0f, 0.0f);
+    camera->m_position = Vector3(30.0f, 30.0f, -10.0f);
     camera->LookAt(m_currentRecord->GetPosition());
 }
 
@@ -430,6 +434,16 @@ CONSOLE_COMMAND(getsongmetadata)
     Console::instance->PrintLine(Stringf("Artist: %s\n", artist.toCString()));
     Console::instance->PrintLine(Stringf("Album: %s\n", album.toCString()));
     Console::instance->PrintLine(Stringf("Year: %i\n", year));
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(printbackgrounds)
+{
+    std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds/", "*.frag");
+    for (std::string& shader : backgroundShaders)
+    {
+        Console::instance->PrintLine(shader, RGBA::JOLTIK_PURPLE);
+    }
 }
 
 //-----------------------------------------------------------------------------------

@@ -17,6 +17,8 @@
     <ClCompile Include="Renderables\VinylRecord.cpp" />
     <ClCompile Include="Audio\Song.cpp" />
     <ClCompile Include="Audio\SongManager.cpp" />
+    <ClCompile Include="UserData\UserProfile.cpp" />
+    <ClCompile Include="UserData\AchievementManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TheGame.hpp">
@@ -26,6 +28,8 @@
     <ClInclude Include="Audio\Song.hpp" />
     <ClInclude Include="Audio\SongManager.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="UserData\UserProfile.hpp" />
+    <ClInclude Include="UserData\AchievementManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Turntable.rc" />

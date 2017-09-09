@@ -59,7 +59,7 @@
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1200, 110"
+      Offset="1400, 110"
       TextOpacity="1.0f">
   </Label>
   <Label Name="Playcounts"
@@ -68,45 +68,91 @@
       TextColor="0xFF819CFF"
       BorderColor="0x00000000"
       BackgroundColor="0x00000000"
-      Offset="1200, 140"
+      Offset="1400, 140"
       TextOpacity="1.0f">
   </Label>
+
   <Window
-    Size="1600, 100"
-    Offset="800, 50"
+    Size="0, 200"
     BackgroundColor="0xFFFFFFFF"
-    BorderWidth="0.0f">
+    BorderWidth="0.0f"
+    Dock="bottom">
     <Button Name="Next Button"
       BackgroundColor="0x888888FF"
       BorderWidth="0.0f"
-      Offset="100,0"
+      Offset="900,50"
       Size="100,100"
-      H_Size="110,110"
-      P_Size="90,90"
-      Opacity="1.0f"
+      Opacity="100%"
       OnClick="SkipNext"
       Texture="Data/Images/UI/next.png">
     </Button>
     <Button Name="Back Button"
       BackgroundColor="0x888888FF"
-      BorderWidth="0.0f"
-      Offset="-100,0"
+      Offset="700,50"
       Size="100,100"
-      H_Size="110,110"
-      P_Size="90,90"
-      Opacity="1.0f"
+      Opacity="100%"
       OnClick="SkipBack"
       Texture="Data/Images/UI/back.png">
     </Button>
     <Button Name="Play/Pause Button"
       BackgroundColor="0x888888FF"
-      BorderWidth="0.0f"
       Size="100,100"
-      H_Size="110,110"
-      P_Size="90,90"
-      Opacity="1.0f"
+      Offset="800,50"
+      Opacity="100%"
       OnClick="TogglePlayPause"
       Texture="Data/Images/UI/pause.png">
     </Button>
   </Window>
+
+  <!-- UNIT TESTS -->
+  <!--
+  <Window
+    BackgroundColor="0xAAAAAAFF"
+    Dock="fill">
+  </Window>
+  <Window
+    Size="100, 100"
+    BackgroundColor="0xFF0000FF">
+  </Window>
+  <Window
+    Size="50, 50"
+    Offset="100,100"
+    BackgroundColor="0x00FF00FF">
+  </Window>
+  <Window
+    Size="200, 100"
+    Offset="300,210"
+    BorderWidth="5.4984"
+    BackgroundColor="0x0000FFFF">
+  </Window>
+  <Window
+    Size="50, 50"
+    Padding="100,0"
+    Offset="400,400"
+    BorderWidth="10"
+    BackgroundColor="0x00FFFFFF">
+  </Window>
+  <Label
+    Text="Meme"
+    Offset="500,500"
+    BorderWidth="10"
+    BackgroundColor="0xFF00FFFF">
+  </Label>
+  <Label
+    Text="Meme"
+    TextColor="0xAAAAAAFF"
+    Size="0, 100"
+    Offset="300,500"
+    BorderWidth="10"
+    BackgroundColor="0xFFFF00FF">
+  </Label>
+
+  <Label
+    Size="50, 50"
+    Padding="100,0"
+    Offset="-400,-400"
+    BorderWidth="10"
+    BackgroundColor="0x00FFFFFF">
+  </Label>
+  -->
 </Root>
