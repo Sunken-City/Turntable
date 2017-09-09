@@ -377,7 +377,7 @@ void SongManager::SavePlaylist(const std::string& name)
         }
         for (int i = 0; i < m_songQueue.size(); ++i)
         {
-            //AddToPlaylist(playlist, m_songQueue.at(i));
+            AddToPlaylist(playlist, m_songQueue.at(i));
         }
     }
     else
@@ -402,18 +402,18 @@ XMLNode SongManager::OpenPlaylist(const std::string& name)
     }
     else
     {
-        playlist = XMLUtils::OpenXMLDocument(playlistFullPath);
+        playlist.createXMLTopNode(name.c_str());
+        playlist.writeToFile(playlistFullPath.c_str());
     }
     return playlist;
-    //playlist.writeToFile(playlistPath, XMLNode::char_encoding_UTF8);
 }
 
 //-----------------------------------------------------------------------------------
-void SongManager::AddToPlaylist(XMLNode* playlist, Song* currentSong)
+void SongManager::AddToPlaylist(XMLNode& playlist, Song* currentSong)
 {
     //Create entries for a song in the playlist
-    playlist->addChild("Song");
-    playlist->getChildNode(playlist->nChildNode());
+    playlist.addChild("Song");
+    playlist.getChildNode(playlist.nChildNode());
 }
 
 //UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////
