@@ -40,7 +40,7 @@ public:
     void SetNowPlayingTextFromMetadata(Song* currentSong);
     void UpdateUIWidgetText();
     void SavePlaylist(const std::string& name);
-    void AddToPlaylist(XMLNode* playlist, Song* currentSong);
+    void AddToPlaylist(XMLNode& playlist, Song* currentSong);
     XMLNode OpenPlaylist(const std::string& name);
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static SongManager* instance;
