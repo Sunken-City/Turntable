@@ -120,7 +120,8 @@ CONSOLE_COMMAND(nextlevel)
     unsigned int nextLevel = currentLevel + 1;
     unsigned int currentExperience = AchievementManager::instance->m_currentProfile->m_experience;
     unsigned int requiredExperience = AchievementManager::instance->m_currentProfile->CalculateExperienceRequiredForLevel(nextLevel);
-    Console::instance->PrintLine(Stringf("You need %i more experience to reach level %i.", requiredExperience, nextLevel), RGBA::PURPLE);
+    unsigned int differenceExperience = requiredExperience - currentExperience;
+    Console::instance->PrintLine(Stringf("You need %i more experience to reach level %i.", differenceExperience, nextLevel), RGBA::PURPLE);
 }
 
 //-----------------------------------------------------------------------------------
