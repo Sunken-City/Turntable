@@ -20,11 +20,22 @@
 //-----------------------------------------------------------------------------------
 Song::Song(const std::string& fullPathToFile)
 {
-    m_filePath = fullPathToFile;
+    m_filePath = std::wstring(fullPathToFile.begin(), fullPathToFile.end());
     m_fileExtension = GetFileExtension(fullPathToFile);
     m_fileName = GetFileName(fullPathToFile);
+    m_fmodID = AudioSystem::instance->CreateOrGetSound(m_filePath);
+    SetMetadataFromFile(m_filePath);
+}
+
+//-----------------------------------------------------------------------------------
+Song::Song(const std::wstring& fullPathToFile)
+{
+    m_filePath = fullPathToFile;
+    std::string strFilePath = std::string(fullPathToFile.begin(), fullPathToFile.end());
+    m_fileExtension = GetFileExtension(strFilePath);
+    m_fileName = GetFileName(strFilePath);
     m_fmodID = AudioSystem::instance->CreateOrGetSound(fullPathToFile);
-    SetMetadataFromFile(fullPathToFile);
+    SetMetadataFromFile(m_filePath);
 }
 
 //-----------------------------------------------------------------------------------
@@ -34,7 +45,7 @@ Song::~Song()
 }
 
 //-----------------------------------------------------------------------------------
-void Song::SetMetadataFromFile(const std::string& fileName)
+void Song::SetMetadataFromFile(const std::wstring& fileName)
 {
     //Taglib doesn't implement bits per sample for every file type (mp3). It's assumed to be 16 right now
     //which could be wrong in some edge cases
