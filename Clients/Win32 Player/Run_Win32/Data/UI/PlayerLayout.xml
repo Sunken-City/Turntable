@@ -79,7 +79,6 @@
     Dock="bottom">
     <Button Name="Next Button"
       BackgroundColor="0x888888FF"
-      BorderWidth="0.0f"
       Offset="900,50"
       Size="100,100"
       Opacity="100%"
@@ -104,7 +103,27 @@
     </Button>
   </Window>
 
-  <!-- UNIT TESTS -->
+<!--
+  <VerticalList
+    Name="Shop"
+    Size="200, 0"
+    BackgroundColor="0xFFFFFFFF"
+    BorderWidth="0.0f"
+    Dock="left">
+      <Label
+      Text="Token Shop"
+      TextColor="0xAAAAAAFF"
+      BackgroundColor="0x00000000"/>
+      <Button Name="Play/Pause Button"
+        BackgroundColor="0x888888FF"
+        Size="100,100"
+        Opacity="100%"
+        OnClick="TogglePlayPause"
+        Texture="Data/Images/Debug/UIBox.png">
+      </Button>
+  </VerticalList>
+-->
+  <!-- UNIT TESTS
 
   <Window
     Name="FillTest"
@@ -195,5 +214,5 @@
     BorderWidth="10"
     BackgroundColor="0x00FFFFFF">
   </Label>
-  <!-- -->
+   -->
 </Root>
