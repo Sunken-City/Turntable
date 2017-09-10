@@ -59,18 +59,18 @@ void HandleFileDrop(WPARAM wParam)
     std::wstring filePath(tcharFilePath);
     if (!SongManager::instance->IsPlaying())
     {
-        Console::instance->RunCommand(Stringf("play \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()), true);
+        Console::instance->RunCommand(WStringf(L"play \"%s\"", filePath.c_str()), true);
     }
     else
     {
-        Console::instance->RunCommand(Stringf("addtoqueue \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+        Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", filePath.c_str()));
     }
 
     while (--numFilesInDrop > 0)
     {
         DragQueryFile(fileDrop, ++fileNumberToQuery, tcharFilePath, MAX_PATH);
         std::wstring filePath(tcharFilePath);
-        Console::instance->RunCommand(Stringf("addtoqueue \"%s\"", std::string(filePath.begin(), filePath.end()).c_str()));
+        Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", filePath.c_str()));
     }
     DragFinish(fileDrop);
 }
