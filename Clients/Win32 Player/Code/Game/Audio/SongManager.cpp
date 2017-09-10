@@ -351,14 +351,15 @@ void SongManager::SavePlaylist(const std::string& name)
     if (m_songQueue.size() != 0)
     {
         XMLNode playlist = OpenPlaylist(name);
-        if (playlist.isEmpty())
-        {
-            playlist.addText(name.c_str());
-        }
         for (int i = 0; i < m_songQueue.size(); ++i)
         {
             AddToPlaylist(playlist, m_songQueue.at(i));
         }
+    }
+    else if (m_activeSong)
+    {
+        XMLNode playlist = OpenPlaylist(name);
+        AddToPlaylist(playlist, m_activeSong);
     }
     else
     {
@@ -366,26 +367,49 @@ void SongManager::SavePlaylist(const std::string& name)
     }
 }
 
+//-----------------------------------------------------------------------------------
+bool SongManager::CheckForPlaylist(const std::string& name)
+{
+    std::string appdata = GetAppDataDirectory();
+    EnsureDirectoryExists(appdata + "\\Turntable");
+    EnsureDirectoryExists(appdata + "\\Turntable\\Playlists");
+    std::string fullPath = appdata + "\\Turntable\\Playlists\\" + name + ".xml";
+    if (!FileExists(fullPath))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+//-----------------------------------------------------------------------------------
 XMLNode SongManager::OpenPlaylist(const std::string& name)
 {
     //Opens a playlist for writing
+    std::string appdata = GetAppDataDirectory();
     XMLNode playlist;
-    char* appdata = getenv("APPDATA");
-    std::string midPath = "\\Turntable";
-    std::string playlistBasePath = appdata + midPath;
-    EnsureDirectoryExists(playlistBasePath);
-    playlistBasePath += "\\Playlists\\";
-    std::string playlistFullPath = playlistBasePath + name + ".xml";
-    if (!EnsureDirectoryExists(playlistBasePath) || !EnsureFileExists(playlistFullPath))
+    if (CheckForPlaylist(name))
     {
-        ERROR_RECOVERABLE("Couldn't open the playlist for reading or writing.");
+        playlist = XMLUtils::OpenXMLDocument(appdata + "\\Turntable\\Playlists\\" + name + ".xml");
+        return XMLUtils::GetChildNodeAtPosition(playlist, name);
     }
-    else
-    {
-        playlist.createXMLTopNode(name.c_str());
-        playlist.writeToFile(playlistFullPath.c_str());
-    }
+
     return playlist;
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::LoadPlaylist(const XMLNode& playlist)
+{
+    //Loads a playlist into the queue
+    std::vector<XMLNode> songs = XMLUtils::GetChildren(playlist);
+    for (int i = 0; i < songs.size(); ++i)
+    {
+        if (songs.at(i).getAttributeName(0) == "FilePath")
+        {
+            Song* nextSong = new Song(songs.at(i).getAttribute(0).lpszValue);
+            m_songQueue.push_back(nextSong);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------------
@@ -563,6 +587,26 @@ CONSOLE_COMMAND(printqueue)
     if (index == 0)
     {
         Console::instance->PrintLine("<EMPTY>", RGBA::RED);
+    }
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(loadplaylist)
+{
+    if (!(args.HasArgs(1)))
+    {
+        Console::instance->PrintLine("loadplaylist <filename>", RGBA::RED);
+        return;
+    }
+
+    XMLNode playlist = SongManager::instance->OpenPlaylist(args.GetStringArgument(0));
+    if (playlist.isEmpty())
+    {
+        Console::instance->PrintLine("Playlist was empty or didn't exist.", RGBA::RED);
+    }
+    else
+    {
+
     }
 }
 

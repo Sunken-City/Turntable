@@ -40,6 +40,8 @@ public:
     void SavePlaylist(const std::string& name);
     void AddToPlaylist(XMLNode& playlist, Song* currentSong);
     XMLNode OpenPlaylist(const std::string& name);
+    bool CheckForPlaylist(const std::string& name);
+    void LoadPlaylist(const XMLNode& playlist);
 
     //EVENTS/////////////////////////////////////////////////////////////////////
     void OnSongPlaybackFinished();
