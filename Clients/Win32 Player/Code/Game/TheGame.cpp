@@ -132,7 +132,7 @@ void TheGame::PrintConsoleWelcome()
 {
     //Unicode support motivation
     Console::instance->PrintLine("Welcome to Turntable!", RGBA::GOLD);
-    Console::instance->PrintLine("Version 0.1 - Staccato", RGBA::GOLD);
+    Console::instance->PrintLine("Version 0.2 - Andante", RGBA::GOLD);
     Console::instance->PrintLine("Type 'help' for a list of commands", RGBA::GOLD);
     
 //     Console::instance->PrintLine("████████╗██╗   ██╗██████╗ ███╗   ██╗████████╗ █████╗ ██████╗ ██╗     ███████╗", RGBA::YELLOW);
