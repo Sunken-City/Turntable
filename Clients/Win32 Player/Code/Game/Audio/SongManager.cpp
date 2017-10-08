@@ -348,6 +348,9 @@ void SongManager::UpdateUIWidgetText()
 void SongManager::SavePlaylist(const std::string& name)
 {
     //Saves the current song queue to an XML formatted playlist in the user's AppData directory
+    std::string appdata = GetAppDataDirectory();
+    std::string savePath = Stringf("%s\\Turntable\\Playlists\\%s.xml", appdata.c_str(), name.c_str());
+
     if (m_songQueue.size() != 0)
     {
         XMLNode playlist = OpenPlaylist(name);
@@ -355,11 +358,15 @@ void SongManager::SavePlaylist(const std::string& name)
         {
             AddToPlaylist(playlist, m_songQueue.at(i));
         }
+
+        playlist.writeToFile(savePath.c_str());
     }
     else if (m_activeSong)
     {
         XMLNode playlist = OpenPlaylist(name);
         AddToPlaylist(playlist, m_activeSong);
+
+        playlist.writeToFile(savePath.c_str());
     }
     else
     {
@@ -386,13 +393,9 @@ bool SongManager::CheckForPlaylist(const std::string& name)
 XMLNode SongManager::OpenPlaylist(const std::string& name)
 {
     //Opens a playlist for writing
-    std::string appdata = GetAppDataDirectory();
     XMLNode playlist;
-    if (CheckForPlaylist(name))
-    {
-        playlist = XMLUtils::OpenXMLDocument(appdata + "\\Turntable\\Playlists\\" + name + ".xml");
-        return XMLUtils::GetChildNodeAtPosition(playlist, name);
-    }
+
+    playlist = XMLNode::createXMLTopNode("Playlist");
 
     return playlist;
 }
@@ -404,11 +407,13 @@ void SongManager::LoadPlaylist(const XMLNode& playlist)
     std::vector<XMLNode> songs = XMLUtils::GetChildren(playlist);
     for (int i = 0; i < songs.size(); ++i)
     {
-        if (songs.at(i).getAttributeName(0) == "FilePath")
+        XMLNode& currentSongNode = songs[i];
+        if (currentSongNode.isEmpty() || currentSongNode.IsContentEmpty())
         {
-            Song* nextSong = new Song(songs.at(i).getAttribute(0).lpszValue);
-            m_songQueue.push_back(nextSong);
+            continue;
         }
+        Song* nextSong = new Song(currentSongNode.getAttribute("FilePath"));
+        m_songQueue.push_back(nextSong);
     }
 }
 
@@ -416,8 +421,9 @@ void SongManager::LoadPlaylist(const XMLNode& playlist)
 void SongManager::AddToPlaylist(XMLNode& playlist, Song* currentSong)
 {
     //Create entries for a song in the playlist
-    playlist.addChild("Song");
-    playlist.getChildNode(playlist.nChildNode());
+    XMLNode songNode = playlist.addChild("Song");
+    std::string strFilePath = std::string(currentSong->m_filePath.begin(), currentSong->m_filePath.end());
+    songNode.addAttribute("FilePath", strFilePath.c_str());
 }
 
 //UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////
@@ -599,15 +605,11 @@ CONSOLE_COMMAND(loadplaylist)
         return;
     }
 
-    XMLNode playlist = SongManager::instance->OpenPlaylist(args.GetStringArgument(0));
-    if (playlist.isEmpty())
-    {
-        Console::instance->PrintLine("Playlist was empty or didn't exist.", RGBA::RED);
-    }
-    else
-    {
-
-    }
+    std::string appdata = GetAppDataDirectory();
+    std::string filePath = Stringf("%s\\Turntable\\Playlists\\%s.xml", appdata.c_str(), args.GetStringArgument(0).c_str());
+    XMLNode root = XMLUtils::OpenXMLDocument(filePath);
+    XMLNode playlist = XMLUtils::GetChildNodeAtPosition(root, "Playlist");
+    SongManager::instance->LoadPlaylist(playlist);
 }
 
 //-----------------------------------------------------------------------------------
