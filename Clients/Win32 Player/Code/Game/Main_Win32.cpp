@@ -44,6 +44,7 @@ bool g_isFullscreen = false;
 HWND g_hWnd = nullptr;
 HDC g_displayDeviceContext = nullptr;
 HGLRC g_openGLRenderingContext = nullptr;
+HHOOK g_shellHook = NULL;
 const char* APP_NAME = "Turntable";
 
 //-----------------------------------------------------------------------------------
@@ -83,9 +84,38 @@ void HandleMouseWheel(WPARAM wParam)
 }
 
 //-----------------------------------------------------------------------------------------------
+LRESULT CALLBACK AppCommandHandlingProcedure(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT lResult = CallNextHookEx(g_shellHook, nCode, wParam, lParam);
+    short appCommand = GET_KEYSTATE_WPARAM(wParam);
+    //Special case for the media keys. Tread cautiously, this implementation doesn't cover all the bases.
+    //These key commands are faked, we never "unpress" these buttons. This must be refactored in order to use anything other than "just pressed" when polling for input 
+    switch (appCommand)
+    {
+    case APPCOMMAND_MEDIA_PAUSE:
+    case APPCOMMAND_MEDIA_PLAY:
+    case APPCOMMAND_MEDIA_PLAY_PAUSE:
+    case VK_MEDIA_PLAY_PAUSE:
+        InputSystem::instance->SetKeyDownStatus(VK_MEDIA_PLAY_PAUSE, true);
+        break;
+    case APPCOMMAND_MEDIA_NEXTTRACK:
+        InputSystem::instance->SetKeyDownStatus(VK_MEDIA_NEXT_TRACK, true);
+        break;
+    case APPCOMMAND_MEDIA_PREVIOUSTRACK:
+        InputSystem::instance->SetKeyDownStatus(VK_MEDIA_PREV_TRACK, true);
+        break;
+    default:
+        break;
+    }
+
+    return lResult;
+}
+
+//-----------------------------------------------------------------------------------------------
 LRESULT CALLBACK WindowsMessageHandlingProcedure(HWND windowHandle, UINT wmMessageCode, WPARAM wParam, LPARAM lParam)
 {
     unsigned char asKey = (unsigned char)wParam;
+
     switch (wmMessageCode)
     {
     case WM_CLOSE:
@@ -106,7 +136,6 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure(HWND windowHandle, UINT wmMessa
             return 0;
         }
         break;
-
     case WM_KEYUP:
         InputSystem::instance->SetKeyDownStatus(asKey, false);
         break;
@@ -264,6 +293,9 @@ void CreateOpenGLWindow(HINSTANCE applicationInstanceHandle)
     wglMakeCurrent(g_displayDeviceContext, g_openGLRenderingContext);
 
     DragAcceptFiles(g_hWnd, TRUE);
+    g_shellHook = SetWindowsHookExA(WH_KEYBOARD_LL, AppCommandHandlingProcedure, 0, 0);
+    if (NULL == g_shellHook)
+        MessageBox(0, L"Hook Failed", L"", 0);
 }
 
 
