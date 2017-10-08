@@ -690,9 +690,15 @@ CONSOLE_COMMAND(setvolume)
     int passedVolume = args.GetIntArgument(0);
     int sanitizedVolume = Clamp<int>(passedVolume, 0, 100);
     SongManager::instance->m_songVolume = (float)sanitizedVolume / 100.0f;
-    AudioSystem::instance->SetVolume(SongManager::instance->m_activeSong->m_fmodChannel, SongManager::instance->m_songVolume);
-
-    Console::instance->PrintLine(Stringf("Volume level set to %i%%", sanitizedVolume), RGBA::GOLD);
+    if (SongManager::instance->m_activeSong && SongManager::instance->m_activeSong->m_fmodChannel)
+    {
+        AudioSystem::instance->SetVolume(SongManager::instance->m_activeSong->m_fmodChannel, SongManager::instance->m_songVolume);
+        Console::instance->PrintLine(Stringf("Volume level set to %i%%", sanitizedVolume), RGBA::GOLD);
+    }
+    else
+    {
+        Console::instance->PrintLine(Stringf("No song is currently playing. Cannot set the volume."), RGBA::GOLD);
+    }
 }
 
 //-----------------------------------------------------------------------------------
