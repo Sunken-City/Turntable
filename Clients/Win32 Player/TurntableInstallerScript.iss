@@ -2,7 +2,7 @@
 
 [Setup]
 AppName=Turntable
-AppVersion=0.1
+AppVersion=0.2
 DefaultDirName={pf64}\Turntable
 DefaultGroupName=Turntable
 OutputBaseFilename=TurntableInstaller
