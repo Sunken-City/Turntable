@@ -484,13 +484,13 @@ CONSOLE_COMMAND(play)
         Console::instance->PrintLine("play <filename> (rpm)", RGBA::RED);
         return;
     }
-    std::string filepath = args.GetStringArgument(0);
+    std::wstring filepath = args.GetWStringArgument(0);
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
         //Try again with the current working directory added to the path
         std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        filepath = cwd + L"\\" + filepath;
         song = AudioSystem::instance->CreateOrGetSound(filepath);
 
         if (song == MISSING_SOUND_ID)
@@ -522,13 +522,13 @@ CONSOLE_COMMAND(addtoqueue)
         Console::instance->PrintLine("addtoqueue <filename>", RGBA::RED);
         return;
     }
-    std::string filepath = args.GetStringArgument(0);
+    std::wstring filepath = args.GetWStringArgument(0);
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
         //Try again with the current working directory added to the path
         std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        filepath = cwd + L"\\" + filepath;
         song = AudioSystem::instance->CreateOrGetSound(filepath);
 
         if (song == MISSING_SOUND_ID)
@@ -551,13 +551,13 @@ CONSOLE_COMMAND(playnext)
         Console::instance->PrintLine("playnext <filename>", RGBA::RED);
         return;
     }
-    std::string filepath = args.GetStringArgument(0);
+    std::wstring filepath = args.GetWStringArgument(0);
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
         //Try again with the current working directory added to the path
         std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = std::string(cwd.begin(), cwd.end()) + "\\" + filepath;
+        filepath = cwd + L"\\" + filepath;
         song = AudioSystem::instance->CreateOrGetSound(filepath);
 
         if (song == MISSING_SOUND_ID)

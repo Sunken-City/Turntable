@@ -10,16 +10,17 @@ class Song
 public:
     //CONSTRUCTORS/////////////////////////////////////////////////////////////////////
     Song(const std::string& fullPathToFile);
+    Song(const std::wstring& fullPathToFile);
     ~Song();
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
-    void SetMetadataFromFile(const std::string& fileName);
+    void SetMetadataFromFile(const std::wstring& fileName);
     void Update(float deltaSeconds);
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     //Metadata
     Texture* m_albumArt = nullptr;
-    std::string m_filePath;
+    std::wstring m_filePath;
     std::string m_fileName;
     std::string m_fileExtension;
     std::string m_artist;
