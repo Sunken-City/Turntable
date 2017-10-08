@@ -247,16 +247,16 @@ void SongManager::CheckForHotkeys()
         return;
     }
 
-    if (InputSystem::instance->WasKeyJustPressed(' '))
+    if (InputSystem::instance->WasKeyJustPressed(' ') || InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::PLAY_PAUSE))
     {
         OnTogglePlayPause();
     }
 
-    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::LEFT))
+    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::LEFT) || InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::PREV_TRACK))
     {
         OnSkipBack();
     }
-    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::RIGHT))
+    if (InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::RIGHT) || InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::NEXT_TRACK))
     {
         OnSkipNext();
     }
