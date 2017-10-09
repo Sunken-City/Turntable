@@ -395,7 +395,7 @@ void SongManager::SavePlaylist(const std::string& name)
 }
 
 //-----------------------------------------------------------------------------------
-bool SongManager::CheckForPlaylist(const std::string& name)
+bool SongManager::CheckForPlaylistOnDisk(const std::string& name)
 {
     std::string appdata = GetAppDataDirectory();
     EnsureDirectoryExists(appdata + "\\Turntable");
@@ -415,6 +415,7 @@ XMLNode SongManager::OpenPlaylist(const std::string& name)
     //Opens a playlist for writing
     XMLNode playlist;
 
+    CheckForPlaylistOnDisk(name); //TODO: Use this to decide if we should create a new playlist or load an existing one 
     playlist = XMLNode::createXMLTopNode("Playlist");
 
     return playlist;
