@@ -78,6 +78,7 @@ void SongManager::Update(float deltaSeconds)
 
         if (m_activeSong && !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
         {
+            AwardExpForSongProgress(true); //Since the playback position is no longer at the end of the song, forcibly give experience here.
             m_eventSongFinished.Trigger();
         }
     }
@@ -173,6 +174,9 @@ void SongManager::OnSongPlaybackFinished()
     {
         return;
     }
+
+    AwardExpForSongProgress();
+
     if (m_loopMode == SONG_LOOP)
     {
         Play(m_activeSong);
@@ -197,6 +201,23 @@ void SongManager::OnSongPlaybackFinished()
 }
 
 //-----------------------------------------------------------------------------------
+void SongManager::AwardExpForSongProgress(bool isSongFinished)
+{
+    unsigned int currentSongLengthSeconds = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_fmodID) / 1000;
+    unsigned int currentPlaybackPositionSeconds = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel) / 1000;
+    unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
+    float songLengthMultiplier = (float)m_activeSong->m_lengthInSeconds / 60.0f;
+    float levelMultiplier = (float)level / 100.0f;
+    float songProgressMultiplier = isSongFinished ? 1.0f : static_cast<float>(currentPlaybackPositionSeconds) / static_cast<float>(currentSongLengthSeconds);
+    float totalMultiplier = (songLengthMultiplier + levelMultiplier) * songProgressMultiplier;
+
+    if (totalMultiplier > 0.0f) //Don't give experience if we have none to give.
+    {
+        AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_PLAY, totalMultiplier);
+    }
+}
+
+//-----------------------------------------------------------------------------------
 void SongManager::OnSongBeginPlay()
 {
     float songLengthMultiplier = (float)m_activeSong->m_lengthInSeconds / 60.0f;
@@ -206,7 +227,6 @@ void SongManager::OnSongBeginPlay()
     {
         AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_NEW_SONG);
     }
-    AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_PLAY, songLengthMultiplier + levelMultiplier);
 
     IncrementPlaycount(m_activeSong->m_filePath);
     ++m_activeSong->m_playcount;
@@ -368,6 +388,7 @@ void OnSkipBack(NamedProperties& params)
     {
         return;
     }
+    SongManager::instance->AwardExpForSongProgress();
     AudioSystem::instance->SetPlaybackPositionMS(SongManager::instance->m_activeSong->m_fmodChannel, 0);
 }
 
