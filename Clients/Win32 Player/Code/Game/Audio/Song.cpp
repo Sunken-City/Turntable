@@ -133,6 +133,7 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
         m_title = m_fileName;
         m_year = 0;
         m_trackNum = 0;
+        m_lengthInSeconds = AudioSystem::instance->GetSoundLengthMS(m_fmodID) / 1000;
 
         m_playcount = 0;
         m_samplerate = AudioSystem::instance->GetFrequency(m_fmodID); //This should return -1 since it's a MIDI
