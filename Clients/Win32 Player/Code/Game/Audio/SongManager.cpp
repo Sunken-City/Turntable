@@ -623,10 +623,15 @@ CONSOLE_COMMAND(loadplaylist)
 {
     if (!(args.HasArgs(1)))
     {
-        Console::instance->PrintLine("loadplaylist <filename>", RGBA::RED);
+        Console::instance->PrintLine("loadplaylist <name>", RGBA::RED);
         return;
     }
 
+    if (!SongManager::instance->CheckForPlaylistOnDisk(args.GetStringArgument(0).c_str()))
+    {
+        Console::instance->PrintLine("Could not load playlist from disk.", RGBA::RED);
+        return;
+    }
     std::string appdata = GetAppDataDirectory();
     std::string filePath = Stringf("%s\\Turntable\\Playlists\\%s.xml", appdata.c_str(), args.GetStringArgument(0).c_str());
     XMLNode root = XMLUtils::OpenXMLDocument(filePath);
@@ -639,7 +644,7 @@ CONSOLE_COMMAND(saveplaylist)
 {
     if (!(args.HasArgs(1)))
     {
-        Console::instance->PrintLine("saveplaylist <filename>", RGBA::RED);
+        Console::instance->PrintLine("saveplaylist <name>", RGBA::RED);
         return;
     }
 
