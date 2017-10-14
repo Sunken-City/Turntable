@@ -2,6 +2,7 @@
 #include <deque>
 #include "Engine\Core\Events\Event.hpp"
 #include "Engine\Core\Events\NamedProperties.hpp"
+#include "SongCache.hpp"
 
 class Song;
 struct XMLNode;
@@ -55,6 +56,7 @@ public:
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::deque<Song*> m_songQueue;
+    SongCache m_songCache;
     Event<> m_eventSongFinished;
     Event<> m_eventSongBeginPlay;
     Song* m_activeSong = nullptr;

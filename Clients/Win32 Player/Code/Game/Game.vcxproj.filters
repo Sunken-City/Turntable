@@ -19,6 +19,7 @@
     <ClCompile Include="Audio\SongManager.cpp" />
     <ClCompile Include="UserData\UserProfile.cpp" />
     <ClCompile Include="UserData\AchievementManager.cpp" />
+    <ClCompile Include="Audio\SongCache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TheGame.hpp">
@@ -30,6 +31,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="UserData\UserProfile.hpp" />
     <ClInclude Include="UserData\AchievementManager.hpp" />
+    <ClInclude Include="Audio\SongCache.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Turntable.rc" />

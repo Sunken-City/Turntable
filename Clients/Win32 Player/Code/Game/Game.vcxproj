@@ -100,6 +100,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Audio\Song.cpp" />
+    <ClCompile Include="Audio\SongCache.cpp" />
     <ClCompile Include="Audio\SongManager.cpp" />
     <ClCompile Include="Main_Win32.cpp" />
     <ClCompile Include="Renderables\VinylRecord.cpp" />
@@ -109,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\Song.hpp" />
+    <ClInclude Include="Audio\SongCache.hpp" />
     <ClInclude Include="Audio\SongManager.hpp" />
     <ClInclude Include="Renderables\VinylRecord.hpp" />
     <ClInclude Include="resource.h" />
