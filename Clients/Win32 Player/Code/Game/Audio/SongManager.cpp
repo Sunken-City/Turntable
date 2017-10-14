@@ -513,6 +513,7 @@ CONSOLE_COMMAND(play)
         return;
     }
     std::wstring filepath = args.GetWStringArgument(0);
+    SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
     SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
     if (song == MISSING_SOUND_ID)
     {
