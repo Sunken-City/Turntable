@@ -110,7 +110,7 @@ void SongManager::Update(float deltaSeconds)
             m_songQueue.pop_front();
             Play(nextSongInQueue);
         }
-        else if (initialState == Song::State::NOT_LOADED)
+        else if (initialState == Song::State::NOT_LOADED && !m_recordCracklesHandle)
         {
             StartLoadingSound();
         }
