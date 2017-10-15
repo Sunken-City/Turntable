@@ -57,6 +57,7 @@ void SongManager::Update(float deltaSeconds)
             if (AudioSystem::instance->IsPlaying(m_recordCracklesHandle))
             {
                 AudioSystem::instance->SetLooping(m_recordCracklesHandle, false);
+                AudioSystem::instance->SetVolume(m_recordCracklesHandle, Clamp01(AudioSystem::instance->GetVolume(m_recordCracklesHandle) - deltaSeconds));
             }
             else
             {
@@ -109,14 +110,20 @@ void SongManager::Update(float deltaSeconds)
             m_songQueue.pop_front();
             Play(nextSongInQueue);
         }
-        if (initialState == Song::State::NOT_LOADED)
+        else if (initialState == Song::State::NOT_LOADED)
         {
-            AudioSystem::instance->PlaySound(m_needleDropSound);
-            AudioSystem::instance->PlayLoopingSound(m_recordCracklesSound);
-            m_recordCracklesHandle = AudioSystem::instance->GetChannel(m_recordCracklesSound);
+            StartLoadingSound();
         }
         
     }
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::StartLoadingSound()
+{
+    AudioSystem::instance->PlaySound(m_needleDropSound);
+    AudioSystem::instance->PlayLoopingSound(m_recordCracklesSound);
+    m_recordCracklesHandle = AudioSystem::instance->GetChannel(m_recordCracklesSound);
 }
 
 //-----------------------------------------------------------------------------------
@@ -218,16 +225,7 @@ void SongManager::OnSongPlaybackFinished()
     else
     {
         StopSong();
-        if (m_songQueue.size() > 0)
-        {
-            m_activeSong = m_songQueue.front();
-            m_songQueue.pop_front();
-            if (m_activeSong)
-            {
-                Play(m_activeSong);
-            }
-        }
-        else
+        if (m_songQueue.size() == 0)
         {
             StopAll();
         }
@@ -481,7 +479,10 @@ void SongManager::LoadPlaylist(const XMLNode& playlist)
         {
             continue;
         }
-        Song* nextSong = new Song(currentSongNode.getAttribute("FilePath"));
+        std::string path = currentSongNode.getAttribute("FilePath");
+        std::wstring widePath = std::wstring(path.begin(), path.end());
+        SongID id = m_songCache.RequestSongLoad(widePath);
+        Song* nextSong = new Song(widePath, id);
         m_songQueue.push_back(nextSong);
     }
 }
@@ -570,6 +571,7 @@ CONSOLE_COMMAND(play)
     }
     SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
 
+    SongManager::instance->StartLoadingSound();
     Song* newSong = new Song(filepath, songID);
     SongManager::instance->FlushSongQueue();
     SongManager::instance->AddToQueue(newSong);
@@ -595,23 +597,16 @@ CONSOLE_COMMAND(addtoqueue)
         return;
     }
     std::wstring filepath = args.GetWStringArgument(0);
-    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-    if (song == MISSING_SOUND_ID)
+    if (!SongManager::instance->CheckForSongOnDisk(filepath))
     {
-        //Try again with the current working directory added to the path
-        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = cwd + L"\\" + filepath;
-        song = AudioSystem::instance->CreateOrGetSound(filepath);
-
-        if (song == MISSING_SOUND_ID)
-        {
-            Console::instance->PrintLine("Could not find file.", RGBA::RED);
-            return;
-        }
+        Console::instance->PrintLine("Could not find file.", RGBA::RED);
+        return;
     }
+    SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
 
-    Song* newSong = new Song(filepath);
+    Song* newSong = new Song(filepath, songID);
     SongManager::instance->AddToQueue(newSong);
+
     Console::instance->PrintLine(Stringf("Added %s to the queue at position %i.", newSong->m_title.c_str(), SongManager::instance->GetQueueLength()));
 }
 
@@ -624,22 +619,14 @@ CONSOLE_COMMAND(playnext)
         return;
     }
     std::wstring filepath = args.GetWStringArgument(0);
-    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-    if (song == MISSING_SOUND_ID)
+    if (!SongManager::instance->CheckForSongOnDisk(filepath))
     {
-        //Try again with the current working directory added to the path
-        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = cwd + L"\\" + filepath;
-        song = AudioSystem::instance->CreateOrGetSound(filepath);
-
-        if (song == MISSING_SOUND_ID)
-        {
-            Console::instance->PrintLine("Could not find file.", RGBA::RED);
-            return;
-        }
+        Console::instance->PrintLine("Could not find file.", RGBA::RED);
+        return;
     }
+    SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
 
-    Song* newSong = new Song(filepath);
+    Song* newSong = new Song(filepath, songID);
     SongManager::instance->PlayNext(newSong);
     Console::instance->PrintLine(Stringf("Added %s to the top of the queue.", newSong->m_title.c_str()));
 }

@@ -18,25 +18,6 @@
 #include "SongManager.hpp"
 
 //-----------------------------------------------------------------------------------
-Song::Song(const std::string& fullPathToFile)
-{
-    m_filePath = std::wstring(fullPathToFile.begin(), fullPathToFile.end());
-    m_fileExtension = GetFileExtension(fullPathToFile);
-    m_fileName = GetFileName(fullPathToFile);
-    SetMetadataFromFile(m_filePath);
-}
-
-//-----------------------------------------------------------------------------------
-Song::Song(const std::wstring& fullPathToFile)
-{
-    m_filePath = fullPathToFile;
-    std::string strFilePath = std::string(fullPathToFile.begin(), fullPathToFile.end());
-    m_fileExtension = GetFileExtension(strFilePath);
-    m_fileName = GetFileName(strFilePath);
-    SetMetadataFromFile(m_filePath);
-}
-
-//-----------------------------------------------------------------------------------
 Song::Song(const std::wstring& fullPathToFile, SongID songID)
     : m_filePath(fullPathToFile)
     , m_songID(songID)

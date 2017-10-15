@@ -44,6 +44,7 @@ public:
     bool CheckForPlaylistOnDisk(const std::string& name) const;
     bool CheckForSongOnDisk(std::wstring& filepath) const;
     void LoadPlaylist(const XMLNode& playlist);
+    void StartLoadingSound();
 
     //EVENTS/////////////////////////////////////////////////////////////////////
     void OnSongPlaybackFinished();
