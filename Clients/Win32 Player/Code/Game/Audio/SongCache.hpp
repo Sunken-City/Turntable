@@ -7,8 +7,8 @@ typedef size_t SongID;
 struct SongResourceInfo
 {
     SongID m_songID = 0;
-    FMOD::Sound* m_songData = nullptr;
-    AudioChannelHandle m_audioChannel = nullptr;
+    RawSoundHandle m_songData = nullptr;
+    double m_timeLastAccessedMS = -1.0f;
 };
 
 class SongCache
@@ -20,7 +20,7 @@ public:
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     SongID RequestSongLoad(const std::wstring& filePath);
-    AudioChannelHandle RequestChannelHandle(const SongID songID);
+    RawSoundHandle RequestSoundHandle(const SongID songID);
 
 private:
     SongID CalculateSongID(const std::wstring& filePath);

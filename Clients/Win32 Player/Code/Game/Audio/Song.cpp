@@ -23,7 +23,6 @@ Song::Song(const std::string& fullPathToFile)
     m_filePath = std::wstring(fullPathToFile.begin(), fullPathToFile.end());
     m_fileExtension = GetFileExtension(fullPathToFile);
     m_fileName = GetFileName(fullPathToFile);
-    m_fmodID = AudioSystem::instance->CreateOrGetSound(m_filePath);
     SetMetadataFromFile(m_filePath);
 }
 
@@ -34,7 +33,17 @@ Song::Song(const std::wstring& fullPathToFile)
     std::string strFilePath = std::string(fullPathToFile.begin(), fullPathToFile.end());
     m_fileExtension = GetFileExtension(strFilePath);
     m_fileName = GetFileName(strFilePath);
-    m_fmodID = AudioSystem::instance->CreateOrGetSound(fullPathToFile);
+    SetMetadataFromFile(m_filePath);
+}
+
+//-----------------------------------------------------------------------------------
+Song::Song(const std::wstring& fullPathToFile, SongID songID)
+    : m_filePath(fullPathToFile)
+    , m_songID(songID)
+{
+    std::string strFilePath = std::string(fullPathToFile.begin(), fullPathToFile.end());
+    m_fileExtension = GetFileExtension(strFilePath);
+    m_fileName = GetFileName(strFilePath);
     SetMetadataFromFile(m_filePath);
 }
 
@@ -128,15 +137,15 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
     if (m_fileExtension == "mid" || m_fileExtension == "midi")
     {
         m_artist = "Unknown";
-        m_album = "Unkown";
+        m_album = "Unknown";
         m_genre = "MIDI";
         m_title = m_fileName;
         m_year = 0;
         m_trackNum = 0;
-        m_lengthInSeconds = AudioSystem::instance->GetSoundLengthMS(m_fmodID) / 1000;
+        //m_lengthInSeconds = AudioSystem::instance->GetSoundLengthMS(m_fmodID) / 1000;
 
         m_playcount = 0;
-        m_samplerate = AudioSystem::instance->GetFrequency(m_fmodID); //This should return -1 since it's a MIDI
+        //m_samplerate = AudioSystem::instance->GetFrequency(m_fmodID); //This should return -1 since it's a MIDI
         m_ignoresFrequency = true;
     }
     else
@@ -161,4 +170,18 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
 void Song::Update(float deltaSeconds)
 {
     UNUSED(deltaSeconds);
+}
+
+//-----------------------------------------------------------------------------------
+void Song::RequestSongHandle()
+{
+    m_songHandle = SongManager::instance->m_songCache.RequestSoundHandle(m_songID);
+    if (m_songHandle)
+    {
+        m_state = READY_TO_PLAY;
+    }
+    else
+    {
+        m_state = LOADING;
+    }
 }
