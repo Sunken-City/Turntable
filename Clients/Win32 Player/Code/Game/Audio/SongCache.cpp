@@ -2,18 +2,20 @@
 #include "ThirdParty/fmod/fmod.h"
 #include "ThirdParty/fmod/fmod.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Time/Time.hpp"
 
 //-----------------------------------------------------------------------------------
 FMOD_RESULT F_CALLBACK DefaultNonblockingCallback(FMOD_SOUND* newSong, FMOD_RESULT result)
 {
-    if (newSong)
-    {
-        FMOD::Sound* song = (FMOD::Sound*)newSong;
-        void* userData = nullptr;
-        song->getUserData(&userData);
-        SongResourceInfo* songResource = (SongResourceInfo*)userData;
-        songResource->m_songData = song;
-    }
+    ASSERT_OR_DIE(newSong, "Failed to load a song, check the FMOD result and add in error handling for this case <3");
+
+    FMOD::Sound* song = (FMOD::Sound*)newSong; //Converting from the C api to the C++ api
+    void* userData = nullptr;
+    song->getUserData(&userData);
+    SongResourceInfo* songResource = (SongResourceInfo*)userData;
+    songResource->m_songData = (void*)song;
+    songResource->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
+
     return result;
 }
 
@@ -39,6 +41,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     if (found != m_songCache.end())
     {
         songResourceInfo = &found->second;
+        songResourceInfo->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
     }
     else
     {
@@ -46,23 +49,24 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         songResourceInfo = &m_songCache[songID];
     }
 
-    AudioSystem::instance->LoadAudioChannelAsync(filePath, &DefaultNonblockingCallback, (void*)songResourceInfo);
+    AudioSystem::instance->LoadRawSoundAsync(filePath, &DefaultNonblockingCallback, (void*)songResourceInfo);
     return songID;
 }
 
 //-----------------------------------------------------------------------------------
-AudioChannelHandle SongCache::RequestChannelHandle(const SongID songID)
+RawSoundHandle SongCache::RequestSoundHandle(const SongID songID)
 {
-    AudioChannelHandle channel = nullptr;
+    RawSoundHandle song = nullptr;
 
     std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
-        channel = info.m_audioChannel;
+        song = info.m_songData;
+        info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
     }
 
-    return channel;
+    return song;
 }
 
 //-----------------------------------------------------------------------------------

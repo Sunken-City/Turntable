@@ -20,6 +20,8 @@ SongManager* SongManager::instance = nullptr;
 
 //-----------------------------------------------------------------------------------
 SongManager::SongManager()
+    : m_needleDropSound(AudioSystem::instance->CreateOrGetSound("Data/SFX/needleDrop.ogg"))
+    , m_recordCracklesSound(AudioSystem::instance->CreateOrGetSound("Data/SFX/crackles.ogg"))
 {
     m_eventSongFinished.RegisterMethod(this, &SongManager::OnSongPlaybackFinished);
     m_eventSongBeginPlay.RegisterMethod(this, &SongManager::OnSongBeginPlay);
@@ -50,6 +52,19 @@ void SongManager::Update(float deltaSeconds)
     UNUSED(deltaSeconds);
     if (m_activeSong)
     {
+        if (m_recordCracklesHandle)
+        {
+            if (AudioSystem::instance->IsPlaying(m_recordCracklesHandle))
+            {
+                AudioSystem::instance->SetLooping(m_recordCracklesHandle, false);
+            }
+            else
+            {
+                //This SHOULD be okay, since FMOD is supposed to manage the lifecycle of these channels. http://www.fmod.org/questions/question/forum-39357
+                m_recordCracklesHandle = nullptr;
+            }
+        }
+
         if (m_wiggleRPM)
         {
             float wiggleAmount = MathUtils::GetRandomFloat(-m_wiggleDelta, m_wiggleDelta);
@@ -61,12 +76,12 @@ void SongManager::Update(float deltaSeconds)
             static float currentFrequencyMultiplier = 1.0f;
             float targetFrequencyMultiplier = m_currentRPM / TheGame::instance->m_currentRecord->m_baseRPM;
             currentFrequencyMultiplier = Lerp(0.1f, currentFrequencyMultiplier, targetFrequencyMultiplier);
-            AudioSystem::instance->SetMIDISpeed(m_activeSong->m_fmodID, currentFrequencyMultiplier);
+            AudioSystem::instance->SetMIDISpeed(m_activeSong->m_audioChannelHandle, currentFrequencyMultiplier);
         }
         else
         {
             m_currentFrequency = Lerp(0.1f, m_currentFrequency, m_targetFrequency);
-            AudioSystem::instance->SetFrequency(m_activeSong->m_fmodID, m_currentFrequency);
+            AudioSystem::instance->SetFrequency(m_activeSong->m_audioChannelHandle, m_currentFrequency);
         }
 
         CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
@@ -77,11 +92,30 @@ void SongManager::Update(float deltaSeconds)
             AchievementManager::instance->IncrementLifetimeSeconds(deltaSeconds);
         }
 
-        if (m_activeSong && !AudioSystem::instance->IsPlaying(m_activeSong->m_fmodChannel))
+        if (m_activeSong && !AudioSystem::instance->IsPlaying(m_activeSong->m_audioChannelHandle))
         {
             AwardExpForSongProgress(true); //Since the playback position is no longer at the end of the song, forcibly give experience here.
             m_eventSongFinished.Trigger();
         }
+    }
+    else if (m_songQueue.size() > 0)
+    {
+        Song* nextSongInQueue = m_songQueue[0];
+        Song::State initialState = nextSongInQueue->m_state;
+        nextSongInQueue->RequestSongHandle();
+
+        if (nextSongInQueue->m_state == Song::READY_TO_PLAY)
+        {
+            m_songQueue.pop_front();
+            Play(nextSongInQueue);
+        }
+        if (initialState == Song::State::NOT_LOADED)
+        {
+            AudioSystem::instance->PlaySound(m_needleDropSound);
+            AudioSystem::instance->PlayLoopingSound(m_recordCracklesSound);
+            m_recordCracklesHandle = AudioSystem::instance->GetChannel(m_recordCracklesSound);
+        }
+        
     }
 }
 
@@ -95,14 +129,13 @@ void SongManager::Play(Song* songToPlay)
     m_activeSong = songToPlay;
     m_baseFrequency = (float)m_activeSong->m_samplerate;
 
-    AudioSystem::instance->PlayLoopingSound(songToPlay->m_fmodID, m_songVolume); //TODO: Find out why PlaySound causes a linker error here
-    AudioSystem::instance->SetLooping(songToPlay->m_fmodID, false);
-    m_activeSong->m_fmodChannel = AudioSystem::instance->GetChannel(m_activeSong->m_fmodID);
+    m_activeSong->m_audioChannelHandle = AudioSystem::instance->PlayRawSong(m_activeSong->m_songHandle, m_songVolume);
+    AudioSystem::instance->SetLooping(m_activeSong->m_audioChannelHandle, false);
 
     if (SongManager::instance->m_targetFrequency < 0)
     {
-        unsigned int endOfSongTimestampMS = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_fmodID) - 200;
-        AudioSystem::instance->SetPlaybackPositionMS(m_activeSong->m_fmodChannel, endOfSongTimestampMS);
+        unsigned int endOfSongTimestampMS = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_songHandle) - 200;
+        AudioSystem::instance->SetPlaybackPositionMS(m_activeSong->m_audioChannelHandle, endOfSongTimestampMS);
     }
     
     m_eventSongBeginPlay.Trigger();
@@ -126,7 +159,7 @@ void SongManager::StopAll()
     Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
     if (IsPlaying())
     {
-        AudioSystem::instance->StopChannel(AudioSystem::instance->GetChannel(m_activeSong->m_fmodID));
+        AudioSystem::instance->StopChannel(m_activeSong->m_songHandle);
     }
     TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
 
@@ -146,7 +179,7 @@ bool SongManager::IsPlaying()
     {
         return false;
     }
-    AudioChannelHandle channel = AudioSystem::instance->GetChannel(m_activeSong->m_fmodID);
+    AudioChannelHandle channel = m_activeSong->m_audioChannelHandle;
     return (channel && AudioSystem::instance->IsPlaying(channel));
 }
 
@@ -204,8 +237,8 @@ void SongManager::OnSongPlaybackFinished()
 //-----------------------------------------------------------------------------------
 void SongManager::AwardExpForSongProgress(bool isSongFinished)
 {
-    unsigned int currentSongLengthSeconds = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_fmodID) / 1000;
-    unsigned int currentPlaybackPositionSeconds = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel) / 1000;
+    unsigned int currentSongLengthSeconds = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_songHandle) / 1000;
+    unsigned int currentPlaybackPositionSeconds = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_audioChannelHandle) / 1000;
     unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
     float songLengthMultiplier = (float)m_activeSong->m_lengthInSeconds / 60.0f;
     float levelMultiplier = (float)level / 100.0f;
@@ -237,7 +270,7 @@ void SongManager::OnSongBeginPlay()
 //-----------------------------------------------------------------------------------
 void SongManager::StopSong()
 {
-    AudioSystem::instance->StopChannel(AudioSystem::instance->GetChannel(m_activeSong->m_fmodID));
+    AudioSystem::instance->StopChannel(m_activeSong->m_audioChannelHandle);
     if (m_activeSong)
     {
         delete m_activeSong;
@@ -355,8 +388,8 @@ void SongManager::UpdateUIWidgetText()
         return;
     }
 
-    unsigned int currentSongLengthSeconds = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_fmodID) / 1000;
-    unsigned int currentPlaybackPositionSeconds = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_fmodChannel) / 1000;
+    unsigned int currentSongLengthSeconds = AudioSystem::instance->GetSoundLengthMS(m_activeSong->m_songHandle) / 1000;
+    unsigned int currentPlaybackPositionSeconds = AudioSystem::instance->GetPlaybackPositionMS(m_activeSong->m_audioChannelHandle) / 1000;
     std::string playingTime = Stringf("%02i:%02i / %02i:%02i", currentPlaybackPositionSeconds / 60, currentPlaybackPositionSeconds % 60, currentSongLengthSeconds / 60, currentSongLengthSeconds % 60);
     std::string rpm = Stringf("RPM: %i", (int)m_currentRPM);
 
@@ -395,18 +428,33 @@ void SongManager::SavePlaylist(const std::string& name)
 }
 
 //-----------------------------------------------------------------------------------
-bool SongManager::CheckForPlaylistOnDisk(const std::string& name)
+bool SongManager::CheckForPlaylistOnDisk(const std::string& name) const
 {
     std::string appdata = GetAppDataDirectory();
     EnsureDirectoryExists(appdata + "\\Turntable");
     EnsureDirectoryExists(appdata + "\\Turntable\\Playlists");
     std::string fullPath = appdata + "\\Turntable\\Playlists\\" + name + ".xml";
-    if (!FileExists(fullPath))
-    {
-        return false;
-    }
 
-    return true;
+    return FileExists(fullPath);
+}
+
+//-----------------------------------------------------------------------------------
+//This updates the filepath if you find it in the cwd path instead of the normal path.
+bool SongManager::CheckForSongOnDisk(std::wstring& filepath) const
+{
+    bool foundFile = FileExists(filepath);
+    if (!foundFile)
+    {
+        //Check with the cwd path as well.
+        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
+        std::wstring cwdFilepath = cwd + L"\\" + filepath;
+        if (FileExists(cwdFilepath))
+        {
+            filepath = cwdFilepath;
+            foundFile = true;
+        }
+    }
+    return foundFile;
 }
 
 //-----------------------------------------------------------------------------------
@@ -473,7 +521,7 @@ void OnSkipBack(NamedProperties& params)
         return;
     }
     SongManager::instance->AwardExpForSongProgress();
-    AudioSystem::instance->SetPlaybackPositionMS(SongManager::instance->m_activeSong->m_fmodChannel, 0);
+    AudioSystem::instance->SetPlaybackPositionMS(SongManager::instance->m_activeSong->m_audioChannelHandle, 0);
 }
 
 //-----------------------------------------------------------------------------------
@@ -512,25 +560,20 @@ CONSOLE_COMMAND(play)
         Console::instance->PrintLine("play <filename> (rpm)", RGBA::RED);
         return;
     }
+
     std::wstring filepath = args.GetWStringArgument(0);
-    SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
-    SoundID song = AudioSystem::instance->CreateOrGetSound(filepath);
-    if (song == MISSING_SOUND_ID)
+
+    if (!SongManager::instance->CheckForSongOnDisk(filepath))
     {
-        //Try again with the current working directory added to the path
-        std::wstring cwd = Console::instance->GetCurrentWorkingDirectory();
-        filepath = cwd + L"\\" + filepath;
-        song = AudioSystem::instance->CreateOrGetSound(filepath);
-
-        if (song == MISSING_SOUND_ID)
-        {
-            Console::instance->PrintLine("Could not find file.", RGBA::RED);
-            return;
-        }
+        Console::instance->PrintLine("Could not find file.", RGBA::RED);
+        return;
     }
+    SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
 
-    Song* newSong = new Song(filepath);
-    SongManager::instance->Play(newSong);
+    Song* newSong = new Song(filepath, songID);
+    SongManager::instance->FlushSongQueue();
+    SongManager::instance->AddToQueue(newSong);
+    SongManager::instance->m_baseFrequency = (float)newSong->m_samplerate;
 
     if (args.HasArgs(2))
     {
@@ -720,9 +763,9 @@ CONSOLE_COMMAND(setvolume)
     SongManager::instance->m_songVolume = (float)sanitizedVolume / 100.0f;
     Console::instance->PrintLine(Stringf("Volume level set to %i%%", sanitizedVolume), RGBA::GOLD);
 
-    if (SongManager::instance->m_activeSong && SongManager::instance->m_activeSong->m_fmodChannel)
+    if (SongManager::instance->m_activeSong && SongManager::instance->m_activeSong->m_audioChannelHandle)
     {
-    AudioSystem::instance->SetVolume(SongManager::instance->m_activeSong->m_fmodChannel, SongManager::instance->m_songVolume);
+    AudioSystem::instance->SetVolume(SongManager::instance->m_activeSong->m_audioChannelHandle, SongManager::instance->m_songVolume);
     }
 }
 

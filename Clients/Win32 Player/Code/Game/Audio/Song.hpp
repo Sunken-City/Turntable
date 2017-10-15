@@ -4,18 +4,29 @@
 #include "ThirdParty/taglib/include/taglib/fileref.h"
 #include <string>
 #include "Engine/Audio/Audio.hpp"
+#include "Game/Audio/SongCache.hpp"
 
 class Song
 {
 public:
+    enum State
+    {
+        NOT_LOADED,
+        LOADING,
+        READY_TO_PLAY,
+        NUM_STATES
+    };
+
     //CONSTRUCTORS/////////////////////////////////////////////////////////////////////
     Song(const std::string& fullPathToFile);
     Song(const std::wstring& fullPathToFile);
+    Song(const std::wstring& fullPathToFile, SongID songID);
     ~Song();
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     void SetMetadataFromFile(const std::wstring& fileName);
     void Update(float deltaSeconds);
+    void RequestSongHandle();
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     //Metadata
@@ -38,6 +49,8 @@ public:
     bool m_ignoresFrequency = false; //MIDI's can't have frequency set on them without failing to play.
 
     //Variables
-    AudioChannelHandle m_fmodChannel = nullptr;
-    SoundID m_fmodID = MISSING_SOUND_ID;
+    AudioChannelHandle m_audioChannelHandle = nullptr;
+    RawSoundHandle m_songHandle = nullptr;
+    SongID m_songID = 0;
+    State m_state = NOT_LOADED;
 };

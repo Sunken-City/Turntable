@@ -41,7 +41,8 @@ public:
     void SavePlaylist(const std::string& name);
     void AddToPlaylist(XMLNode& playlist, Song* currentSong);
     XMLNode OpenPlaylist(const std::string& name);
-    bool CheckForPlaylistOnDisk(const std::string& name);
+    bool CheckForPlaylistOnDisk(const std::string& name) const;
+    bool CheckForSongOnDisk(std::wstring& filepath) const;
     void LoadPlaylist(const XMLNode& playlist);
 
     //EVENTS/////////////////////////////////////////////////////////////////////
@@ -60,6 +61,9 @@ public:
     Event<> m_eventSongFinished;
     Event<> m_eventSongBeginPlay;
     Song* m_activeSong = nullptr;
+    SoundID m_needleDropSound;
+    SoundID m_recordCracklesSound;
+    AudioChannelHandle m_recordCracklesHandle = nullptr;
     float m_currentRPM = 0.0f;
     float m_lastRPM = 0.0f; //Cached value of previous rpm before pausing
     LoopMode m_loopMode = NO_LOOP;
