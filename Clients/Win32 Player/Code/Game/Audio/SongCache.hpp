@@ -9,6 +9,9 @@ struct SongResourceInfo
     SongID m_songID = 0;
     RawSoundHandle m_songData = nullptr;
     double m_timeLastAccessedMS = -1.0f;
+    int m_loadErrorCode = 0;
+
+    bool IsValid() { return m_loadErrorCode == 0; };
 };
 
 class SongCache
@@ -21,6 +24,8 @@ public:
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     SongID RequestSongLoad(const std::wstring& filePath);
     RawSoundHandle RequestSoundHandle(const SongID songID);
+    bool IsValid(const SongID songID);
+    void PrintErrorInConsole(const SongID songID);
 
 private:
     SongID CalculateSongID(const std::wstring& filePath);

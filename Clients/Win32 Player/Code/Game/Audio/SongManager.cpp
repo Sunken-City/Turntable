@@ -108,7 +108,17 @@ void SongManager::Update(float deltaSeconds)
         if (nextSongInQueue->m_state == Song::READY_TO_PLAY)
         {
             m_songQueue.pop_front();
-            Play(nextSongInQueue);
+            if (m_songCache.IsValid(nextSongInQueue->m_songID))
+            {
+                Play(nextSongInQueue);
+            }
+            else
+            {
+                //Something happened while loading this song. Log it and continue.
+                Console::instance->PrintLine(Stringf("Error while loading song %s. Skipping to next song in queue. Reason:", nextSongInQueue->m_fileName), RGBA::RED);
+                m_songCache.PrintErrorInConsole(nextSongInQueue->m_songID);
+                delete nextSongInQueue;
+            }
         }
         else if (initialState == Song::State::NOT_LOADED && !m_recordCracklesHandle)
         {
