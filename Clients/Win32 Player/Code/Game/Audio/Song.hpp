@@ -18,8 +18,6 @@ public:
     };
 
     //CONSTRUCTORS/////////////////////////////////////////////////////////////////////
-    Song(const std::string& fullPathToFile);
-    Song(const std::wstring& fullPathToFile);
     Song(const std::wstring& fullPathToFile, SongID songID);
     ~Song();
 
