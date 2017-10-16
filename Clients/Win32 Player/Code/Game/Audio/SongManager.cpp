@@ -792,3 +792,29 @@ CONSOLE_COMMAND(wigglerpm)
         }
     }
 }
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(setmusicroot)
+{
+    if (!(args.HasArgs(1)))
+    {
+        Console::instance->PrintLine("setmusicroot <Full Directory Path>", RGBA::RED);
+        return;
+    }
+    std::wstring filepath = args.GetWStringArgument(0);
+    if (!DirectoryExists(filepath))
+    {
+        Console::instance->PrintLine("Could not find directory.", RGBA::RED);
+        return;
+    }
+
+    AchievementManager::instance->m_currentProfile->m_musicRootPath = std::string(filepath.begin(), filepath.end());
+    Console::instance->PrintLine(Stringf("Music folder root is now at %s.", AchievementManager::instance->m_currentProfile->m_musicRootPath.c_str()));
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(getmusicroot)
+{
+    UNUSED(args)
+    Console::instance->PrintLine(Stringf("Music folder root is %s.", AchievementManager::instance->m_currentProfile->m_musicRootPath.c_str()));
+}

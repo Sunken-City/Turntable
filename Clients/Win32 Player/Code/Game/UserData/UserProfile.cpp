@@ -58,7 +58,8 @@ void UserProfile::SaveToDisk(const std::string& profileName /*= "Default"*/)
 {
     XMLNode root = XMLNode::createXMLTopNode("UserProfile");
     root.addAttribute("Name", profileName.c_str()); //Todo: Add support for multiple profiles.
-    root.addAttribute("Version", USER_PROFILE_VERSION_STRING); //Todo: Add support for multiple profiles.
+    root.addAttribute("Version", USER_PROFILE_VERSION_STRING); //Todo: Add support for versioning.
+    root.addAttribute("MusicRoot", m_musicRootPath.c_str());
     XMLNode expNode = root.addChild("Stats");
     expNode.addAttribute("Exp", Stringf("%i", m_experience).c_str());
     expNode.addAttribute("Level", Stringf("%i", m_level).c_str());
@@ -87,7 +88,10 @@ UserProfile* UserProfile::LoadFromDisk(const std::string& profileName /*= "Defau
 
     XMLNode root = XMLUtils::OpenXMLDocument(fullPath);
     //TODO: check for version attribute and multiple profile names.
-    XMLNode expNode = XMLUtils::GetChildNodeAtPosition(root, "UserProfile").getChildNode("Stats");
+    XMLNode userProfile = XMLUtils::GetChildNodeAtPosition(root, "UserProfile");
+    const char* musicRoot = userProfile.getAttribute("MusicRoot");
+    loadedProfile->m_musicRootPath = musicRoot ? std::string(musicRoot) : "";
+    XMLNode expNode = userProfile.getChildNode("Stats");
     loadedProfile->m_experience = std::stoi(expNode.getAttribute("Exp"));
     loadedProfile->m_level = std::stoi(expNode.getAttribute("Level"));
     loadedProfile->m_numTokens = std::stoi(expNode.getAttribute("Tokens"));
