@@ -26,6 +26,7 @@ private:
 
 public:
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
+    std::string m_musicRootPath;
     unsigned int m_experience = 0;
     unsigned int m_level = 0;
     unsigned int m_numTokens = 0;
