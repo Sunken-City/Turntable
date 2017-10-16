@@ -45,6 +45,7 @@ public:
     bool CheckForSongOnDisk(std::wstring& filepath) const;
     void LoadPlaylist(const XMLNode& playlist);
     void StartLoadingSound();
+    void QueueRandomSong(bool playWholeAlbum = false);
 
     //EVENTS/////////////////////////////////////////////////////////////////////
     void OnSongPlaybackFinished();

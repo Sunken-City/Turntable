@@ -562,6 +562,64 @@ void OnTogglePlayPause(NamedProperties& params)
     }
 }
 
+//-----------------------------------------------------------------------------------
+void SongManager::QueueRandomSong(bool playWholeAlbum /*= false*/)
+{
+    std::string& musicRoot = AchievementManager::instance->m_currentProfile->m_musicRootPath;
+    std::wstring currentMusicRoot = std::wstring(musicRoot.begin(), musicRoot.end());
+    if (currentMusicRoot.empty())
+    {
+        Console::instance->PrintLine("Please set a root music directory with setmusicroot first.", RGBA::RED);
+        return;
+    }
+
+    bool foundAlbum = false;
+    do 
+    {
+        std::vector<std::wstring> folders = EnumerateWideDirectories(currentMusicRoot);
+        foundAlbum = folders.size() == 0;
+
+        if (!foundAlbum)
+        {
+            unsigned int randDirectory = MathUtils::GetRandomInt(0, folders.size() - 1);
+            currentMusicRoot = WStringf(L"%s\\%s", currentMusicRoot.c_str(), folders[randDirectory].c_str());
+        }
+    } while (!foundAlbum);
+
+    std::vector<std::wstring> mp3s = EnumerateWideFiles(currentMusicRoot, L"*.mp3");
+    std::vector<std::wstring> flacs = EnumerateWideFiles(currentMusicRoot, L"*.flac");
+    std::vector<std::wstring> oggs = EnumerateWideFiles(currentMusicRoot, L"*.ogg");
+    std::vector<std::wstring> wavs = EnumerateWideFiles(currentMusicRoot, L"*.wav");
+                     
+    std::vector<std::wstring> songs;
+    songs.reserve(mp3s.size() + flacs.size() + oggs.size() + wavs.size());
+    songs.insert(songs.end(), mp3s.begin(), mp3s.end());
+    songs.insert(songs.end(), flacs.begin(), flacs.end());
+    songs.insert(songs.end(), oggs.begin(), oggs.end());
+    songs.insert(songs.end(), wavs.begin(), wavs.end());
+
+    if (songs.size() == 0)
+    {
+        Console::instance->PrintLine("Tried to load directory %s but it had no songs.", RGBA::RED);
+        return;
+    }
+
+    if (playWholeAlbum)
+    {
+        for (std::wstring& song : songs)
+        {
+            std::wstring songPath = WStringf(L"%s\\%s", currentMusicRoot.c_str(), song.c_str());
+            Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", songPath.c_str()), true);
+        }
+    }
+    else
+    {
+        unsigned int randSong = MathUtils::GetRandomInt(0, songs.size() - 1);
+        std::wstring songPath = WStringf(L"%s\\%s", currentMusicRoot.c_str(), songs[randSong].c_str());
+        Console::instance->RunCommand(WStringf(L"play \"%s\"", songPath.c_str()), true);
+    }
+}
+
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(play)
@@ -817,4 +875,31 @@ CONSOLE_COMMAND(getmusicroot)
 {
     UNUSED(args)
     Console::instance->PrintLine(Stringf("Music folder root is %s.", AchievementManager::instance->m_currentProfile->m_musicRootPath.c_str()));
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(playme)
+{
+    if (!(args.HasArgs(1)))
+    {
+        Console::instance->PrintLine("playme <'song' | 'album'>", RGBA::RED);
+        return;
+    }
+    std::string command = args.GetStringArgument(0);
+    ToLower(command);
+
+    if (command == "song" | command == "asong")
+    {
+        SongManager::instance->QueueRandomSong(false);
+    }
+    else if (command == "album" | command == "analbum")
+    {
+        SongManager::instance->QueueRandomSong(true);
+    }
+    else
+    {
+        Console::instance->PrintLine("playme <'song' | 'album'>", RGBA::RED);
+        Console::instance->PrintLine("Please type in song or album to find a random song or album to play.", RGBA::RED);
+        return;
+    }
 }
