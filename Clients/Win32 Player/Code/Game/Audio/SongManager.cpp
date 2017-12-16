@@ -62,10 +62,11 @@ void SongManager::Update(float deltaSeconds)
             else
             {
                 //This SHOULD be okay, since FMOD is supposed to manage the lifecycle of these channels. http://www.fmod.org/questions/question/forum-39357
+                //The song object itself stays around in memory (which is what requires release() to be called)
                 m_recordCracklesHandle = nullptr;
             }
         }
-
+        
         if (m_wiggleRPM)
         {
             float wiggleAmount = MathUtils::GetRandomFloat(-m_wiggleDelta, m_wiggleDelta);

@@ -13,7 +13,14 @@ FMOD_RESULT F_CALLBACK DefaultNonblockingCallback(FMOD_SOUND* newSong, FMOD_RESU
     void* userData = nullptr;
     song->getUserData(&userData);
     SongResourceInfo* songResource = (SongResourceInfo*)userData;
-    songResource->m_songData = (void*)song;
+    if (songResource->m_songData)
+    {
+        song->release();
+    }
+    else
+    {
+        songResource->m_songData = (void*)song;
+    }
     songResource->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
     songResource->m_loadErrorCode = result;
 
