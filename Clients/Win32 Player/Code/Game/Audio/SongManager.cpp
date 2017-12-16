@@ -265,7 +265,8 @@ void SongManager::OnSongBeginPlay()
 {
     float songLengthMultiplier = (float)m_activeSong->m_lengthInSeconds / 60.0f;
     unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
-    float levelMultiplier = (float)level / 100.0f;
+    //float levelMultiplier = (float)level / 100.0f;
+
     if (m_activeSong->m_playcount == 0)
     {
         AchievementManager::instance->AddExperience(ExperienceValues::EXP_FOR_NEW_SONG);
@@ -416,7 +417,7 @@ void SongManager::SavePlaylist(const std::string& name)
     if (m_songQueue.size() != 0)
     {
         XMLNode playlist = OpenPlaylist(name);
-        for (int i = 0; i < m_songQueue.size(); ++i)
+        for (unsigned int i = 0; i < m_songQueue.size(); ++i)
         {
             AddToPlaylist(playlist, m_songQueue.at(i));
         }
@@ -483,7 +484,7 @@ void SongManager::LoadPlaylist(const XMLNode& playlist)
 {
     //Loads a playlist into the queue
     std::vector<XMLNode> songs = XMLUtils::GetChildren(playlist);
-    for (int i = 0; i < songs.size(); ++i)
+    for (unsigned int i = 0; i < songs.size(); ++i)
     {
         XMLNode& currentSongNode = songs[i];
         if (currentSongNode.isEmpty() || currentSongNode.IsContentEmpty())

@@ -131,5 +131,6 @@ void AchievementManager::IncrementLifetimeSeconds(float deltaSeconds)
 //EVENTS/////////////////////////////////////////////////////////////////////
 void OnLevelUp(NamedProperties& params /*= NamedProperties::NONE*/)
 {
+    UNUSED(params);
     Console::instance->PrintLine(Stringf("CONGRATULATIONS! You are now level %i!", AchievementManager::instance->m_currentProfile->m_level), RGBA::GOLD);
 }

@@ -69,7 +69,7 @@ void HandleFileDrop(WPARAM wParam)
     while (--numFilesInDrop > 0)
     {
         DragQueryFile(fileDrop, ++fileNumberToQuery, tcharFilePath, MAX_PATH);
-        std::wstring filePath(tcharFilePath);
+        filePath = std::wstring(tcharFilePath);
         Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", filePath.c_str()));
     }
     DragFinish(fileDrop);

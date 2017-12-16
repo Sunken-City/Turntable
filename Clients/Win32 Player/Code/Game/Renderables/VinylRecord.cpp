@@ -58,7 +58,7 @@ float VinylRecord::GetRPMFromType(Type type)
     case Type::RPM_33_FLAT:
         return 33.333333f;
     default:
-        break;
+        ERROR_AND_DIE("No RPM information for type. (Did you just add a new type of record?)");
     }
 }
 

@@ -50,7 +50,7 @@ unsigned int UserProfile::CalculateExperienceRequiredForLevel(unsigned int level
 //-----------------------------------------------------------------------------------
 unsigned int UserProfile::CalculateLevelFromExperience(unsigned int experience)
 {
-    return (EXPERIENCE_CURVE_CONSTANT * sqrt(experience));
+    return static_cast<unsigned int>(EXPERIENCE_CURVE_CONSTANT * sqrt(experience));
 }
 
 //-----------------------------------------------------------------------------------
