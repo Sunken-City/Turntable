@@ -177,7 +177,7 @@ void SongManager::StopAll()
     Console::instance->PrintLine("Stopping the music. Party's over, people. :c", RGBA::GBLIGHTGREEN);
     if (IsPlaying())
     {
-        AudioSystem::instance->StopChannel(m_activeSong->m_songHandle);
+        AudioSystem::instance->StopChannel(m_activeSong->m_audioChannelHandle);
     }
     TheGame::instance->m_currentRecord->m_currentRotationRate = 0;
 
