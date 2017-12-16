@@ -6,6 +6,7 @@ typedef size_t SongID;
 
 struct SongResourceInfo
 {
+    std::wstring m_filePath = L"UNINITIALIZED_PATH";
     SongID m_songID = 0;
     RawSoundHandle m_songData = nullptr;
     double m_timeLastAccessedMS = -1.0f;

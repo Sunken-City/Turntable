@@ -48,6 +48,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     {
         m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
         songResourceInfo = &m_songCache[songID];
+        songResourceInfo->m_filePath = filePath;
     }
 
     AudioSystem::instance->LoadRawSoundAsync(filePath, &DefaultNonblockingCallback, (void*)songResourceInfo);
@@ -63,8 +64,20 @@ RawSoundHandle SongCache::RequestSoundHandle(const SongID songID)
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
-        song = info.m_songData;
-        info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
+        if (info.m_loadErrorCode == FMOD_ERR_FILE_BAD)
+        {
+            //We have an issue where the load fails inconsistently (in release only!) with certain file loads.
+            //I discovered that if you just keep trying to reload it, you'll have a few failures, then a success.
+            //I've been hunting through FMOD documentation, but I can't figure out what this error means, 
+            // nor why this problem even occurs in the first place. 
+            //TODO: Figure out WHY this happens and WHY this fixes it.
+            AudioSystem::instance->LoadRawSoundAsync(info.m_filePath, &DefaultNonblockingCallback, (void*)&info);
+        }
+        else
+        {
+            song = info.m_songData;
+            info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
+        }
     }
 
     return song;

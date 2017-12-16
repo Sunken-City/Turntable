@@ -41,6 +41,7 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
     //which could be wrong in some edge cases
     m_bitdepth = 16;
 
+
     if (m_fileExtension == "flac")
     {
         TagLib::FLAC::File flacFile(fileName.c_str());
