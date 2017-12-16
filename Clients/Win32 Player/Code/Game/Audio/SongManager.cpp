@@ -63,6 +63,7 @@ void SongManager::Update(float deltaSeconds)
             {
                 //This SHOULD be okay, since FMOD is supposed to manage the lifecycle of these channels. http://www.fmod.org/questions/question/forum-39357
                 //The song object itself stays around in memory (which is what requires release() to be called)
+                AudioSystem::instance->StopChannel(m_recordCracklesHandle);
                 m_recordCracklesHandle = nullptr;
             }
         }
@@ -116,7 +117,7 @@ void SongManager::Update(float deltaSeconds)
             else
             {
                 //Something happened while loading this song. Log it and continue.
-                Console::instance->PrintLine(Stringf("Error while loading song %s. Skipping to next song in queue. Reason:", nextSongInQueue->m_fileName), RGBA::RED);
+                Console::instance->PrintLine(Stringf("Error while loading song %s. Skipping to next song in queue. Reason:", nextSongInQueue->m_fileName.c_str()), RGBA::RED);
                 m_songCache.PrintErrorInConsole(nextSongInQueue->m_songID);
                 delete nextSongInQueue;
             }

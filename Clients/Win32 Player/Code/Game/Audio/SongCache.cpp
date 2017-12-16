@@ -36,7 +36,6 @@ SongCache::SongCache()
 //-----------------------------------------------------------------------------------
 SongCache::~SongCache()
 {
-
 }
 
 //-----------------------------------------------------------------------------------
@@ -118,4 +117,10 @@ void SongCache::PrintErrorInConsole(const SongID songID)
 size_t SongCache::CalculateSongID(const std::wstring& filePath)
 {
     return std::hash<std::wstring>{}(filePath);
+}
+
+//-----------------------------------------------------------------------------------
+SongResourceInfo::~SongResourceInfo()
+{
+    AudioSystem::instance->ReleaseRawSong(m_songData);
 }

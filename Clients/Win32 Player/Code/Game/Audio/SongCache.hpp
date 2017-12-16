@@ -6,6 +6,8 @@ typedef size_t SongID;
 
 struct SongResourceInfo
 {
+    ~SongResourceInfo();
+
     std::wstring m_filePath = L"UNINITIALIZED_PATH";
     SongID m_songID = 0;
     RawSoundHandle m_songData = nullptr;
@@ -32,7 +34,7 @@ private:
     SongID CalculateSongID(const std::wstring& filePath);
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
-    const unsigned int MAX_MEMORY_THRESHOLD = 1e9;
+    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)1e9; //1 GB
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::map<SongID, SongResourceInfo> m_songCache;
