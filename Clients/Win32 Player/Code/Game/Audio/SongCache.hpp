@@ -29,6 +29,7 @@ public:
     RawSoundHandle RequestSoundHandle(const SongID songID);
     bool IsValid(const SongID songID);
     void PrintErrorInConsole(const SongID songID);
+    void Flush();
 
 private:
     SongID CalculateSongID(const std::wstring& filePath);

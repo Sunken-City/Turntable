@@ -36,6 +36,7 @@ SongCache::SongCache()
 //-----------------------------------------------------------------------------------
 SongCache::~SongCache()
 {
+
 }
 
 //-----------------------------------------------------------------------------------
@@ -117,6 +118,12 @@ void SongCache::PrintErrorInConsole(const SongID songID)
 size_t SongCache::CalculateSongID(const std::wstring& filePath)
 {
     return std::hash<std::wstring>{}(filePath);
+}
+
+//-----------------------------------------------------------------------------------
+void SongCache::Flush()
+{
+    m_songCache.clear();
 }
 
 //-----------------------------------------------------------------------------------
