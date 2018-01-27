@@ -15,6 +15,7 @@
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
+#include "Engine/Renderer/Texture.hpp"
 #include "SongManager.hpp"
 
 //-----------------------------------------------------------------------------------
@@ -166,4 +167,17 @@ void Song::RequestSongHandle()
     {
         m_state = LOADING;
     }
+}
+
+//-----------------------------------------------------------------------------------
+void Song::GenerateProceduralAlbumArt()
+{
+    size_t hashedSongInfo = std::hash<std::string>{}(m_artist + m_album + m_title);
+    unsigned char redByte = static_cast<unsigned char>(hashedSongInfo & 0xFF);
+    unsigned char greenByte = static_cast<unsigned char>((hashedSongInfo & 0xFF00) >> 8);
+    unsigned char blueByte = static_cast<unsigned char>((hashedSongInfo & 0xFF0000) >> 16);
+    unsigned char imageBytes[] = { redByte, greenByte, blueByte, 0xFF };
+    unsigned long size = 4;
+
+    m_albumArt = Texture::CreateTextureFromData(Stringf("AlbumArt:%i", hashedSongInfo), imageBytes, 4, Vector2Int::ONE);
 }
