@@ -630,6 +630,12 @@ void SongManager::QueueRandomSong(bool playWholeAlbum /*= false*/)
     }
 }
 
+//-----------------------------------------------------------------------------------
+void SongManager::CreateDSP(FMOD_DSP_TYPE type)
+{
+
+}
+
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(play)
@@ -911,5 +917,27 @@ CONSOLE_COMMAND(playme)
         Console::instance->PrintLine("playme <'song' | 'album'>", RGBA::RED);
         Console::instance->PrintLine("Please type in song or album to find a random song or album to play.", RGBA::RED);
         return;
+    }
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(equalizer)
+{
+    if (!(args.HasArgs(3)))
+    {
+        Console::instance->PrintLine("equalizer <bass +/-dB> <mid  +/-dB> <high +/-dB>", RGBA::RED);
+        return;
+    }
+    int low = args.GetIntArgument(0);
+    int mid = args.GetIntArgument(1);
+    int high = args.GetIntArgument(2);
+    
+    if (SongManager::instance->m_activeSong && SongManager::instance->m_activeSong->m_audioChannelHandle)
+    {
+        FMOD::Channel* channel = (FMOD::Channel*) SongManager::instance->m_activeSong->m_audioChannelHandle;
+        AudioSystem::instance->CreateDSPByType(FMOD_DSP_TYPE_PARAMEQ, SongManager::instance->m_dsp);
+        channel->addDSP(*SongManager::instance->m_dsp, SongManager::instance->m_dspConnection);
+        *SongManager::instance->m_dspConnection->setParameter(0, 1000);
+
     }
 }
