@@ -46,6 +46,7 @@ public:
     void LoadPlaylist(const XMLNode& playlist);
     void StartLoadingSound();
     void QueueRandomSong(bool playWholeAlbum = false);
+    void LoadAlbumArt(Song* songToPlay);
 
     //EVENTS/////////////////////////////////////////////////////////////////////
     void OnSongPlaybackFinished();

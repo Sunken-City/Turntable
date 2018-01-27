@@ -159,17 +159,7 @@ void SongManager::Play(Song* songToPlay)
     
     m_eventSongBeginPlay.Trigger();
     SetNowPlayingTextFromMetadata(m_activeSong);
-
-    //Load album art if we haven't already
-    if (!m_activeSong->m_albumArt)
-    {
-        m_activeSong->m_albumArt = GetImageFromFileMetadata(songToPlay->m_filePath);
-    }
-    if (m_activeSong->m_albumArt)
-    {
-        TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(m_activeSong->m_albumArt);
-        TheGame::instance->m_fboMaterial->SetNormalTexture(m_activeSong->m_albumArt);
-    }
+    LoadAlbumArt(songToPlay);
 }
 
 //-----------------------------------------------------------------------------------
@@ -507,6 +497,23 @@ void SongManager::AddToPlaylist(XMLNode& playlist, Song* currentSong)
     XMLNode songNode = playlist.addChild("Song");
     std::string strFilePath = std::string(currentSong->m_filePath.begin(), currentSong->m_filePath.end());
     songNode.addAttribute("FilePath", strFilePath.c_str());
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::LoadAlbumArt(Song* songToPlay)
+{
+    if (!songToPlay->m_albumArt)
+    {
+        songToPlay->m_albumArt = GetImageFromFileMetadata(songToPlay->m_filePath);
+    }
+
+    //If we failed to load album art, generate some instead.
+    if (!songToPlay->m_albumArt)
+    {
+        songToPlay->GenerateProceduralAlbumArt();
+    }
+    TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(songToPlay->m_albumArt);
+    TheGame::instance->m_fboMaterial->SetNormalTexture(songToPlay->m_albumArt);
 }
 
 //UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////

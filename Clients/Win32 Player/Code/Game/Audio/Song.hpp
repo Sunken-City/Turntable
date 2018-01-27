@@ -25,6 +25,7 @@ public:
     void SetMetadataFromFile(const std::wstring& fileName);
     void Update(float deltaSeconds);
     void RequestSongHandle();
+    void GenerateProceduralAlbumArt();
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     //Metadata
