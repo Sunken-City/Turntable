@@ -67,6 +67,8 @@ public:
     SoundID m_needleDropSound;
     SoundID m_recordCracklesSound;
     AudioChannelHandle m_recordCracklesHandle = nullptr;
+	DSPHandle** m_dsp;
+    DSPConnection** m_dspConnection;
     float m_currentRPM = 0.0f;
     float m_lastRPM = 0.0f; //Cached value of previous rpm before pausing
     LoopMode m_loopMode = NO_LOOP;
