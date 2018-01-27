@@ -176,31 +176,22 @@ void Song::RequestSongHandle()
 //-----------------------------------------------------------------------------------
 void Song::GenerateProceduralAlbumArt()
 {
-    size_t hashedArtistInfo = std::hash<std::string>{}(m_artist);
-    size_t hashedTitleInfo = std::hash<std::string>{}(m_title);
-    size_t hashedAlbumInfo = std::hash<std::string>{}(m_album);
-    size_t hashedGenreInfo = std::hash<std::string>{}(m_genre);
+    static Material* m_proceduralGenerationMaterials[] = {
+    new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtHex.frag"),
+        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        ),
+
+    new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtSquare.frag"),
+        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        )
+    };
+    static unsigned int NUM_MATERIALS = sizeof(m_proceduralGenerationMaterials) / sizeof(Material*);
+
     size_t hashedSongInfo = std::hash<std::string>{}(m_artist + m_title + m_album + m_genre);
 
-    unsigned char redArtistByte = static_cast<unsigned char>(hashedArtistInfo & 0xFF);
-    unsigned char greenArtistByte = static_cast<unsigned char>((hashedArtistInfo & 0xFF00) >> 8);
-    unsigned char blueArtistByte = static_cast<unsigned char>((hashedArtistInfo & 0xFF0000) >> 16);
-    unsigned char redTitleByte = static_cast<unsigned char>(hashedTitleInfo & 0xFF);
-    unsigned char greenTitleByte = static_cast<unsigned char>((hashedTitleInfo & 0xFF00) >> 8);
-    unsigned char blueTitleByte = static_cast<unsigned char>((hashedTitleInfo & 0xFF0000) >> 16);
-    unsigned char redAlbumByte = static_cast<unsigned char>(hashedAlbumInfo & 0xFF);
-    unsigned char greenAlbumByte = static_cast<unsigned char>((hashedAlbumInfo & 0xFF00) >> 8);
-    unsigned char blueAlbumByte = static_cast<unsigned char>((hashedAlbumInfo & 0xFF0000) >> 16);
-    unsigned char redGenreByte = static_cast<unsigned char>(hashedGenreInfo & 0xFF);
-    unsigned char greenGenreByte = static_cast<unsigned char>((hashedGenreInfo & 0xFF00) >> 8);
-    unsigned char blueGenreByte = static_cast<unsigned char>((hashedGenreInfo & 0xFF0000) >> 16);
-
-    unsigned char imageBytes[] = { redArtistByte, greenArtistByte, blueArtistByte, 0xFF ,
-                                   redTitleByte, greenTitleByte, blueTitleByte, 0xFF ,
-                                   redAlbumByte, greenAlbumByte, blueAlbumByte, 0xFF ,
-                                   redGenreByte, greenGenreByte, blueGenreByte, 0xFF };
-
-    Vector2Int textureSize(64, 64);
+    Vector2Int textureSize(256, 256);
     Texture* currentColorTargets[] = { new Texture(textureSize.x, textureSize.y, Texture::TextureFormat::RGBA8) };
     Framebuffer* albumArtBuffer = Framebuffer::FramebufferCreate(1, currentColorTargets, nullptr);
     Renderer::instance->BindFramebuffer(albumArtBuffer);
@@ -213,28 +204,29 @@ void Song::GenerateProceduralAlbumArt()
     Mesh* albumArtMesh = new Mesh();
     builder.Begin();
     {
-        builder.SetColor(RGBA::CreateFromUChars(redArtistByte, greenArtistByte, blueArtistByte, 0xFF)); //RGBA::WHITE);//
+        builder.SetColor(RGBA::WHITE);
         builder.SetUV(uvMins);
         builder.AddVertex(Vector3(bounds.mins.x, bounds.mins.y, 0.0f));
-        builder.SetColor(RGBA::CreateFromUChars(redTitleByte, greenTitleByte, blueTitleByte, 0xFF));
         builder.SetUV(Vector2(uvMaxs.x, uvMins.y));
         builder.AddVertex(Vector3(bounds.maxs.x, bounds.mins.y, 0.0f));
-        builder.SetColor(RGBA::CreateFromUChars(redAlbumByte, greenAlbumByte, blueAlbumByte, 0xFF));
         builder.SetUV(uvMaxs);
         builder.AddVertex(Vector3(bounds.maxs.x, bounds.maxs.y, 0.0f));
-        builder.SetColor(RGBA::CreateFromUChars(redGenreByte, greenGenreByte, blueGenreByte, 0xFF));
         builder.SetUV(Vector2(uvMins.x, uvMaxs.y));
         builder.AddVertex(Vector3(bounds.mins.x, bounds.maxs.y, 0.0f));
         builder.AddQuadIndices(3, 2, 0, 1);
     }
     builder.End();
     builder.CopyToMesh(albumArtMesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
-    //Renderer::instance->m_defaultMaterial->SetDiffuseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"));
-    MeshRenderer meshRenderer(albumArtMesh, Renderer::instance->m_defaultMaterial);
+
+    Material* material = m_proceduralGenerationMaterials[hashedSongInfo % (NUM_MATERIALS)];
+    material->SetIntUniform(std::hash<std::string>{}("gHashVal"), hashedSongInfo);
+
+    MeshRenderer meshRenderer(albumArtMesh, material);
     meshRenderer.Render();
 
     Renderer::instance->EndOrtho();
     Renderer::instance->BindFramebuffer(nullptr);
 
+    Texture::RegisterTexture(Stringf("AlbumArt:%i", hashedSongInfo), currentColorTargets[0]);
     m_albumArt = currentColorTargets[0];//Texture::CreateTextureFromData(Stringf("AlbumArt:%i", hashedSongInfo), imageBytes, 4, textureSize);
 }
