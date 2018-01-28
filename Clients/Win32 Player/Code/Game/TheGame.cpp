@@ -68,6 +68,7 @@ float spinFactor = 1.f;
 static float animTime = 0.0f;
 
 TheGame::TheGame()
+    : m_jobConsumer(std::vector<JobType>(JobType::GENERIC_SLOW))
 {
     SongManager::instance = new SongManager();
     AchievementManager::instance = new AchievementManager();
@@ -215,6 +216,8 @@ void TheGame::Update(float deltaSeconds)
         m_currentRecord->m_vinyl->m_meshRenderer.m_material = m_uvDebugMaterial;
         m_currentRecord->m_vinylLabel->m_meshRenderer.m_material = m_uvDebugMaterial;
     }
+
+    m_jobConsumer.Consume();
 }
 
 //-----------------------------------------------------------------------------------
