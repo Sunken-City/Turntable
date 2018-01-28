@@ -5,26 +5,24 @@
 #include "Engine/Time/Time.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/Console.hpp"
+#include "Engine/Core/JobSystem.hpp"
+#include "../TheGame.hpp"
 
 //-----------------------------------------------------------------------------------
-FMOD_RESULT F_CALLBACK DefaultNonblockingCallback(FMOD_SOUND* newSong, FMOD_RESULT result)
+void LoadSongJob(Job* job)
 {
-    FMOD::Sound* song = (FMOD::Sound*)newSong; //Converting from the C api to the C++ api
-    void* userData = nullptr;
-    song->getUserData(&userData);
-    SongResourceInfo* songResource = (SongResourceInfo*)userData;
-    if (songResource->m_songData)
-    {
-        song->release();
-    }
-    else
-    {
-        songResource->m_songData = (void*)song;
-    }
-    songResource->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
-    songResource->m_loadErrorCode = result;
+    SongResourceInfo* songResource = (SongResourceInfo*)job->data;
+    RawSoundHandle song = nullptr;
+    unsigned int errorValue = 0;
 
-    return result;
+    while (song == nullptr)
+    {
+        song = AudioSystem::instance->LoadRawSound(songResource->m_filePath, errorValue);
+        ASSERT_RECOVERABLE(errorValue == 0 || errorValue == 19, "Hit an unexpected error code while loading a file");
+    }
+
+    songResource->m_songData = (void*)song;
+    songResource->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
 }
 
 //-----------------------------------------------------------------------------------
@@ -58,7 +56,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         songResourceInfo->m_filePath = filePath;
     }
 
-    AudioSystem::instance->LoadRawSoundAsync(filePath, &DefaultNonblockingCallback, (void*)songResourceInfo);
+    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
     return songID;
 }
 
@@ -71,20 +69,8 @@ RawSoundHandle SongCache::RequestSoundHandle(const SongID songID)
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
-        if (info.m_loadErrorCode == FMOD_ERR_FILE_BAD)
-        {
-            //We have an issue where the load fails inconsistently (in release only!) with certain file loads.
-            //I discovered that if you just keep trying to reload it, you'll have a few failures, then a success.
-            //I've been hunting through FMOD documentation, but I can't figure out what this error means, 
-            // nor why this problem even occurs in the first place. 
-            //TODO: Figure out WHY this happens and WHY this fixes it.
-            AudioSystem::instance->LoadRawSoundAsync(info.m_filePath, &DefaultNonblockingCallback, (void*)&info);
-        }
-        else
-        {
-            song = info.m_songData;
-            info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
-        }
+        song = info.m_songData;
+        info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
     }
 
     return song;

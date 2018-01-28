@@ -255,9 +255,7 @@ void CreateOpenGLWindow(HINSTANCE applicationInstanceHandle)
     static const int attributes[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
         WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-        
-//         WGL_CONTEXT_FLAGS_ARB, 0,
-//         WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+
         NULL
     };
     g_openGLRenderingContext = createContextAttribsARBpointer(g_displayDeviceContext, NULL, attributes);
@@ -340,6 +338,8 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     InputSystem::instance = new InputSystem(g_hWnd, 0, WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT);
     Console::instance = new Console();
     UISystem::instance = new UISystem();
+    JobSystem::instance = new JobSystem(0);
+    JobSystem::instance->Initialize();
     TheGame::instance = new TheGame();
 }
 
@@ -356,6 +356,9 @@ void Shutdown()
 {
     delete TheGame::instance;
     TheGame::instance = nullptr;
+    JobSystem::instance->Shutdown();
+    delete JobSystem::instance;
+    JobSystem::instance = nullptr;
     delete UISystem::instance;
     UISystem::instance = nullptr;
     delete Console::instance;

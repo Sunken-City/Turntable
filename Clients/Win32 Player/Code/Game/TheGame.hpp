@@ -3,6 +3,7 @@
 #include "Engine/Math/Vector3.hpp"
 #include "Engine/Math/Vector4.hpp"
 #include "Engine/Renderer/Light.hpp"
+#include "Engine/Core/JobSystem.hpp"
 
 class Framebuffer;
 class Texture;
@@ -52,6 +53,7 @@ public:
     MeshRenderer* m_quadForFBO = nullptr;
 
 private:
+    JobConsumer m_jobConsumer;
     Material* m_currentMaterial = nullptr;
     Material* m_testMaterial = nullptr;
     Material* m_uvDebugMaterial = nullptr;
