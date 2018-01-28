@@ -630,12 +630,6 @@ void SongManager::QueueRandomSong(bool playWholeAlbum /*= false*/)
     }
 }
 
-//-----------------------------------------------------------------------------------
-void SongManager::CreateDSP(FMOD_DSP_TYPE type)
-{
-
-}
-
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(play)
@@ -925,19 +919,23 @@ CONSOLE_COMMAND(equalizer)
 {
     if (!(args.HasArgs(3)))
     {
-        Console::instance->PrintLine("equalizer <bass +/-dB> <mid  +/-dB> <high +/-dB>", RGBA::RED);
+        Console::instance->PrintLine("equalizer <frequency 20-22000> <range 1-5> <volume +/-dB>", RGBA::RED);
         return;
     }
-    int low = args.GetIntArgument(0);
-    int mid = args.GetIntArgument(1);
-    int high = args.GetIntArgument(2);
+    float freq = args.GetFloatArgument(0);
+    float range = args.GetFloatArgument(1);
+    float vol = args.GetFloatArgument(2);
     
     if (SongManager::instance->m_activeSong && SongManager::instance->m_activeSong->m_audioChannelHandle)
     {
         FMOD::Channel* channel = (FMOD::Channel*) SongManager::instance->m_activeSong->m_audioChannelHandle;
-        AudioSystem::instance->CreateDSPByType(FMOD_DSP_TYPE_PARAMEQ, SongManager::instance->m_dsp);
-        channel->addDSP(*SongManager::instance->m_dsp, SongManager::instance->m_dspConnection);
-        *SongManager::instance->m_dspConnection->setParameter(0, 1000);
-
+        AudioSystem::instance->CreateDSPByType(FMOD_DSP_TYPE_PARAMEQ, &SongManager::instance->m_dsp);
+        channel->addDSP(SongManager::instance->m_dsp, &SongManager::instance->m_dspConnection);
+        SongManager::instance->m_dsp->setParameter(0, freq);
+        SongManager::instance->m_dsp->setParameter(1, range);
+        SongManager::instance->m_dsp->setParameter(2, vol);
+        return;
     }
+
+    Console::instance->PrintLine("Equalizer can only be applied while a song is playing.", RGBA::RED);
 }
