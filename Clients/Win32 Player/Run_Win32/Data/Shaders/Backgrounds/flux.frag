@@ -13,9 +13,10 @@ out vec4 outColor;
 void main(void)
 {
   vec2 uv = passUV0;
-  if(fract(uv.y * uv.x + uv.x / uv.y * 100000.0f + gTime) - 0.9f >= 0.01f)
+  float remainder = fract(uv.y * uv.x + uv.x / uv.y * 100000.0f + gTime) - 0.9f;
+  if(remainder >= 0.01f)
   {
-    outColor = vec4(1,1,1,1);
+    outColor = mix(vec4(1,1,1,1), vec4(0,0,1,1), abs((uv.x - 0.8f) * 8.0f) * abs((uv.y - 0.5f) * 8.0f));
   }
   else
   {
