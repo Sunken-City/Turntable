@@ -27,7 +27,7 @@ public:
     void Begin3DPerspective() const;
     void End3DPerspective() const;
     void RenderAxisLines() const;
-    void SetUpShader();
+    void SetUpShaders();
     void RenderLoadedMesh() const;
     void RenderPostProcess() const;
     void LoadDefaultScene();
@@ -40,11 +40,13 @@ public:
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     static constexpr float RPS_45 = (45.0f * 360.0f) / 60.0f;
     static constexpr float RPS_33 = (33.333333333f * 360.0f) / 60.0f;
+    static constexpr unsigned int NUM_PROC_GEN_MATERIALS = 2;
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     Framebuffer* m_fbo = nullptr;
     VinylRecord* m_currentRecord = nullptr;
     Material* m_fboMaterial = nullptr;
+    Material* m_proceduralGenerationMaterials[NUM_PROC_GEN_MATERIALS];
     Texture* m_blankFBOColorTexture = nullptr;
     Texture* m_blankFBODepthTexture = nullptr;
     MeshRenderer* m_quadForFBO = nullptr;

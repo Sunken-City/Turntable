@@ -75,7 +75,7 @@ TheGame::TheGame()
     UISystem::instance->LoadAndParseUIXML("Data/UI/PlayerLayout.xml");
 
     InitializeRand();
-    SetUpShader();
+    SetUpShaders();
     m_blankFBOColorTexture = new Texture(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT, Texture::TextureFormat::RGBA8);
     m_blankFBODepthTexture = new Texture(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT, Texture::TextureFormat::D24S8);
     m_fbo = Framebuffer::FramebufferCreate(1, &m_blankFBOColorTexture, m_blankFBODepthTexture);
@@ -124,6 +124,11 @@ TheGame::~TheGame()
     delete m_testMaterial;
     delete m_uvDebugMaterial;
     delete m_normalDebugMaterial;
+    for (unsigned int i = 0; i < NUM_PROC_GEN_MATERIALS; ++i)
+    {
+        delete m_proceduralGenerationMaterials[i]->m_shaderProgram;
+        delete m_proceduralGenerationMaterials[i];
+    }
     Framebuffer::FramebufferDelete(m_fbo);
 }
 
@@ -296,7 +301,7 @@ void TheGame::RenderAxisLines() const
 }
 
 //-----------------------------------------------------------------------------------
-void TheGame::SetUpShader()
+void TheGame::SetUpShaders()
 {
     m_testMaterial = new Material(
         new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/fixedVertexFormat.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
@@ -314,6 +319,16 @@ void TheGame::SetUpShader()
     );
     m_testMaterial->SetDiffuseTexture("Data/Images/Logos/Logo.png");
     m_currentMaterial = m_testMaterial;
+
+    m_proceduralGenerationMaterials[0] = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtHex.frag"),
+            RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+            );
+
+    m_proceduralGenerationMaterials[1] = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtSquare.frag"),
+        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
 }
 
 //-----------------------------------------------------------------------------------

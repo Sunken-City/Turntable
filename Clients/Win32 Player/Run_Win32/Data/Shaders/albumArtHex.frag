@@ -10,12 +10,13 @@ in vec4 passColor;
 
 out vec4 outColor;
 
+
 vec2 getHexagonIndex(vec2 uv)
 {
 	float skewFactor = 0.5773503; //sqrt(3)/3
 
 	//Skew the UVs so that when we use mod to make a "checkerboard", we end up with diamonds, not squares
-	vec2 skewedUVs = vec2( uv.x * 2.0 * skewFactor, uv.y + (uv.x * skewFactor) );
+	vec2 skewedUVs = vec2( uv.x * 2.0 * skewFactor, uv.y + uv.x * skewFactor );
 
 	//The Integer portion of the UVs are a set of vertical stripes
 	vec2 uvInt = floor(skewedUVs);
@@ -27,8 +28,8 @@ vec2 getHexagonIndex(vec2 uv)
 	//Create a chain of diamonds, each filling up 1/3 of a hexagon, adjacent to the first and slightly offset
 	float diamonds2 = step(2.0, diamonds1);
 
-	//Merge the two strands, creating an inverted string of diamonds
-	float bothDiamonds = diamonds1 + diamonds2;
+	//Create an inverted chain of diamonds, conveniently equivalent to a combination of both above chains
+	float bothDiamonds = step(1.0, diamonds1);
 
 	//Generates a grid of triangles
 	vec2 triangles = step(uvFrac.xy, uvFrac.yx);
@@ -51,8 +52,8 @@ void main(void)
 	float scale = 8.0f;
   vec2 uv = passUV0 * 8.0f;
 
-  vec2 hexagonIndices = getHexagonIndex(uv);
-  int squareNumber = int(hexagonIndices.x) + int(hexagonIndices.y * scale);
+  vec2 hex = getHexagonIndex(uv);
+  int squareNumber = int(hex.x) + int(hex.y * scale);
 
 	float red = (gHashVal & 0xFF) / 256.0f;
 	float green = ((gHashVal & 0xFF00) >> 8) / 256.0f;
