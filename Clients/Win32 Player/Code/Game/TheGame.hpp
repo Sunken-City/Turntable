@@ -52,7 +52,6 @@ public:
     MeshRenderer* m_quadForFBO = nullptr;
 
 private:
-    Texture* m_pauseTexture = nullptr;
     Material* m_currentMaterial = nullptr;
     Material* m_testMaterial = nullptr;
     Material* m_uvDebugMaterial = nullptr;

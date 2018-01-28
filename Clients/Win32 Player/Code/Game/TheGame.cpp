@@ -68,7 +68,6 @@ float spinFactor = 1.f;
 static float animTime = 0.0f;
 
 TheGame::TheGame()
-: m_pauseTexture(Texture::CreateOrGetTexture("Data/Images/Test.png"))
 {
     SongManager::instance = new SongManager();
     AchievementManager::instance = new AchievementManager();
@@ -83,7 +82,7 @@ TheGame::TheGame()
     //Set up a random background shader for the FBO from the backgrounds folder.
     //std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds", "*.frag");
     //int shaderIndex = MathUtils::GetRandomInt(0, backgroundShaders.size() - 1);
-    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
+    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
     m_fboMaterial->SetNormalTexture(Texture::CreateOrGetTexture("Data/Images/Logos/Logo.png"));
@@ -480,7 +479,7 @@ CONSOLE_COMMAND(setbackground)
     delete TheGame::instance->m_fboMaterial->m_shaderProgram;
     delete TheGame::instance->m_fboMaterial;
 
-    TheGame::instance->m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/Post/post.vert", fileName.c_str()),
+    TheGame::instance->m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/post.vert", fileName.c_str()),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     TheGame::instance->m_fboMaterial->SetDiffuseTexture(TheGame::instance->m_blankFBOColorTexture);
     TheGame::instance->m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
