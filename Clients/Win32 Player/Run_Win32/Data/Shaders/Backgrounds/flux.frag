@@ -1,0 +1,24 @@
+#version 410 core
+
+uniform sampler2D gDiffuseTexture;
+uniform sampler2D gNormalTexture;
+uniform float gTime;
+uniform float gPixelationFactor;
+
+in vec2 passUV0;
+in vec3 passPosition;
+
+out vec4 outColor;
+
+void main(void)
+{
+  vec2 uv = passUV0;
+  if(fract(uv.y * uv.x + uv.x / uv.y * 100000.0f + gTime) - 0.9f >= 0.01f)
+  {
+    outColor = vec4(1,1,1,1);
+  }
+  else
+  {
+    outColor = vec4(0,0,0,1);
+  }
+}
