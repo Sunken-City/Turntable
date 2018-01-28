@@ -18,6 +18,11 @@ void LoadSongJob(Job* job)
     while (song == nullptr)
     {
         song = AudioSystem::instance->LoadRawSound(songResource->m_filePath, errorValue);
+        if (errorValue == 43)
+        {
+            Console::instance->PrintLine("ERROR: OUT OF MEMORY, CAN'T LOAD SONG", RGBA::RED);
+            return;
+        }
         ASSERT_RECOVERABLE(errorValue == 0 || errorValue == 19, "Hit an unexpected error code while loading a file");
     }
 

@@ -74,7 +74,7 @@ void SongManager::Update(float deltaSeconds)
             SetRPM(m_currentRPM + wiggleAmount);
         }
 
-        if (m_activeSong->m_ignoresFrequency)
+        if (m_activeSong->m_ignoresFrequency && AudioSystem::instance->IsPlaying(m_activeSong))
         {
             static float currentFrequencyMultiplier = 1.0f;
             float targetFrequencyMultiplier = m_currentRPM / TheGame::instance->m_currentRecord->m_baseRPM;
@@ -616,10 +616,19 @@ void SongManager::QueueRandomSong(bool playWholeAlbum /*= false*/)
 
     if (playWholeAlbum)
     {
+        bool isPlaying = SongManager::instance->IsPlaying();
         for (std::wstring& song : songs)
         {
             std::wstring songPath = WStringf(L"%s\\%s", currentMusicRoot.c_str(), song.c_str());
-            Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", songPath.c_str()), true);
+            if (!isPlaying)
+            {
+                Console::instance->RunCommand(WStringf(L"play \"%s\"", songPath.c_str()), true);
+                isPlaying = true;
+            }
+            else
+            {
+                Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", songPath.c_str()), true);
+            }
         }
     }
     else
@@ -888,27 +897,27 @@ CONSOLE_COMMAND(getmusicroot)
 }
 
 //-----------------------------------------------------------------------------------
-CONSOLE_COMMAND(playme)
+CONSOLE_COMMAND(playmea)
 {
     if (!(args.HasArgs(1)))
     {
-        Console::instance->PrintLine("playme <'song' | 'album'>", RGBA::RED);
+        Console::instance->PrintLine("playmea <'song' | 'album'>", RGBA::RED);
         return;
     }
     std::string command = args.GetStringArgument(0);
     ToLower(command);
 
-    if (command == "song" | command == "asong")
+    if (command == "song")
     {
         SongManager::instance->QueueRandomSong(false);
     }
-    else if (command == "album" | command == "analbum")
+    else if (command == "album" | command == "nalbum")
     {
         SongManager::instance->QueueRandomSong(true);
     }
     else
     {
-        Console::instance->PrintLine("playme <'song' | 'album'>", RGBA::RED);
+        Console::instance->PrintLine("playmea <'song' | 'album'>", RGBA::RED);
         Console::instance->PrintLine("Please type in song or album to find a random song or album to play.", RGBA::RED);
         return;
     }
