@@ -939,3 +939,27 @@ CONSOLE_COMMAND(equalizer)
 
     Console::instance->PrintLine("Equalizer can only be applied while a song is playing.", RGBA::RED);
 }
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(rate)
+{
+    if (!(args.HasArgs(1)))
+    {
+        Console::instance->PrintLine("rate <rating 0-5>", RGBA::RED);
+        return;
+    }
+    int rating = args.GetIntArgument(0);
+
+    if (rating < 0 || rating > 5)
+    {
+        Console::instance->PrintLine("Rating must be a value 0-5.", RGBA::RED);
+    }
+
+    if (SongManager::instance->m_activeSong)
+    {
+        SetRating(SongManager::instance->m_activeSong->m_fileName, rating);
+        return;
+    }
+    
+    Console::instance->PrintLine("Rating can only be applied while a song is playing.", RGBA::RED);
+}

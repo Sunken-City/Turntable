@@ -64,6 +64,18 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
             m_playcount = 0;
         }
 
+        auto ratingPropertyIter = map.find("POPM");
+        if (ratingPropertyIter != map.end())
+        {
+            bool wasInt = false;
+            m_rating = ratingPropertyIter->second.toString().toInt(&wasInt);
+            ASSERT_OR_DIE(&wasInt, "Tried to grab the rating, but found a non-integer value in the POPM field.");
+        }
+        else
+        {
+            m_rating = 0;
+        }
+
         m_bitdepth = flacFile.audioProperties()->bitsPerSample();
     }
     else if (m_fileExtension == "mp3")
@@ -82,6 +94,18 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
         {
             m_playcount = 0;
         }
+
+        auto ratingPropertyIter = map.find("POPM");
+        if (ratingPropertyIter != map.end())
+        {
+            bool wasInt = false;
+            m_rating = ratingPropertyIter->second.toString().toInt(&wasInt);
+            ASSERT_OR_DIE(&wasInt, "Tried to grab the rating, but found a non-integer value in the POPM field.");
+        }
+        else
+        {
+            m_rating = 0;
+        }
     }
     else if (m_fileExtension == "wav")
     {
@@ -98,6 +122,18 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
         else
         {
             m_playcount = 0;
+        }
+
+        auto ratingPropertyIter = map.find("POPM");
+        if (ratingPropertyIter != map.end())
+        {
+            bool wasInt = false;
+            m_rating = ratingPropertyIter->second.toString().toInt(&wasInt);
+            ASSERT_OR_DIE(&wasInt, "Tried to grab the rating, but found a non-integer value in the POPM field.");
+        }
+        else
+        {
+            m_rating = 0;
         }
 
         m_bitdepth = wavFile.audioProperties()->bitsPerSample();
@@ -118,6 +154,18 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
         {
             m_playcount = 0;
         }
+
+        auto ratingPropertyIter = map.find("POPM");
+        if (ratingPropertyIter != map.end())
+        {
+            bool wasInt = false;
+            m_rating = ratingPropertyIter->second.toString().toInt(&wasInt);
+            ASSERT_OR_DIE(&wasInt, "Tried to grab the rating, but found a non-integer value in the POPM field.");
+        }
+        else
+        {
+            m_rating = 0;
+        }
     }
 
     //Midis have no metadata, so let's fill it out manually.
@@ -132,6 +180,7 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
         //m_lengthInSeconds = AudioSystem::instance->GetSoundLengthMS(m_fmodID) / 1000;
 
         m_playcount = 0;
+        m_rating = 0;
         //m_samplerate = AudioSystem::instance->GetFrequency(m_fmodID); //This should return -1 since it's a MIDI
         m_ignoresFrequency = true;
     }

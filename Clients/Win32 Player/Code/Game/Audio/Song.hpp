@@ -40,6 +40,7 @@ public:
     int m_trackNum;
     int m_year;
     int m_playcount;
+    int m_rating;
     int m_lengthInSeconds;
     int m_bitdepth;
     int m_samplerate;
