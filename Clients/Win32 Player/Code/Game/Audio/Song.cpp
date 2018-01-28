@@ -1,5 +1,15 @@
 #include "Game/Audio/Song.hpp"
+#include "Game/Audio/SongManager.hpp"
+#include "Game/TheGame.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
+#include "Engine/Input/Console.hpp"
+#include "Engine/Core/StringUtils.hpp"
+#include "Engine/Input/InputOutputUtils.hpp"
+#include "Engine/Renderer/Texture.hpp"
+#include "Engine/Renderer/Framebuffer.hpp"
+#include "Engine/Renderer/MeshBuilder.hpp"
+#include "Engine/Renderer/AABB2.hpp"
+#include "Engine/Renderer/MeshRenderer.hpp"
 #include "ThirdParty/taglib/include/taglib/mpegfile.h"
 #include "ThirdParty/taglib/include/taglib/id3v2tag.h"
 #include "ThirdParty/taglib/include/taglib/attachedpictureframe.h"
@@ -12,15 +22,6 @@
 #include "ThirdParty/taglib/include/taglib/rifffile.h"
 #include "ThirdParty/taglib/include/taglib/oggflacfile.h"
 #include "ThirdParty/taglib/include/taglib/vorbisfile.h"
-#include "Engine/Input/Console.hpp"
-#include "Engine/Core/StringUtils.hpp"
-#include "Engine/Input/InputOutputUtils.hpp"
-#include "Engine/Renderer/Texture.hpp"
-#include "SongManager.hpp"
-#include "Engine/Renderer/Framebuffer.hpp"
-#include "Engine/Renderer/MeshBuilder.hpp"
-#include "Engine/Renderer/AABB2.hpp"
-#include "Engine/Renderer/MeshRenderer.hpp"
 
 //-----------------------------------------------------------------------------------
 Song::Song(const std::wstring& fullPathToFile, SongID songID)
@@ -176,19 +177,6 @@ void Song::RequestSongHandle()
 //-----------------------------------------------------------------------------------
 void Song::GenerateProceduralAlbumArt()
 {
-    static Material* m_proceduralGenerationMaterials[] = {
-    new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtHex.frag"),
-        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        ),
-
-    new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtSquare.frag"),
-        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
-        )
-    };
-    static unsigned int NUM_MATERIALS = sizeof(m_proceduralGenerationMaterials) / sizeof(Material*);
-
     size_t hashedSongInfo = std::hash<std::string>{}(m_artist + m_title + m_album + m_genre);
 
     Vector2Int textureSize(256, 256);
@@ -218,7 +206,7 @@ void Song::GenerateProceduralAlbumArt()
     builder.End();
     builder.CopyToMesh(albumArtMesh, &Vertex_PCUTB::Copy, sizeof(Vertex_PCUTB), &Vertex_PCUTB::BindMeshToVAO);
 
-    Material* material = m_proceduralGenerationMaterials[hashedSongInfo % (NUM_MATERIALS)];
+    Material* material = TheGame::instance->m_proceduralGenerationMaterials[hashedSongInfo % (TheGame::instance->NUM_PROC_GEN_MATERIALS)];
     material->SetIntUniform(std::hash<std::string>{}("gHashVal"), hashedSongInfo);
 
     MeshRenderer meshRenderer(albumArtMesh, material);
@@ -226,7 +214,10 @@ void Song::GenerateProceduralAlbumArt()
 
     Renderer::instance->EndOrtho();
     Renderer::instance->BindFramebuffer(nullptr);
+    delete albumArtMesh;
+    delete albumArtBuffer;
 
-    Texture::RegisterTexture(Stringf("AlbumArt:%i", hashedSongInfo), currentColorTargets[0]);
-    m_albumArt = currentColorTargets[0];//Texture::CreateTextureFromData(Stringf("AlbumArt:%i", hashedSongInfo), imageBytes, 4, textureSize);
+    //This registers the texture for cleanup later on when we shut down the game.
+    Texture::RegisterTexture(Stringf("AlbumArt:%i", hashedSongInfo), currentColorTargets[0]); 
+    m_albumArt = currentColorTargets[0];
 }
