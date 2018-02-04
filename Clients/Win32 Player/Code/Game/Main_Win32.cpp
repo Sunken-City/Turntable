@@ -24,6 +24,8 @@
 #include "Audio/SongManager.hpp"
 #include <gl/GL.h>
 #include "ThirdParty/OpenGL/wglext.h"
+#include "Engine/Input/InputOutputUtils.hpp"
+#include "Engine/Audio/AudioMetadataUtils.hpp"
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -57,7 +59,25 @@ void HandleFileDrop(WPARAM wParam)
 
     DragQueryFile(fileDrop, fileNumberToQuery, tcharFilePath, MAX_PATH);
     std::wstring filePath(tcharFilePath);
-    if (!SongManager::instance->IsPlaying())
+    if (IsDirectory(filePath))
+    {
+        std::vector<std::wstring> playableFiles = GetSupportedFiles(filePath);
+        bool isPlaying = SongManager::instance->IsPlaying();
+        for (std::wstring& file : playableFiles)
+        {
+            std::wstring fullFilePath = filePath + L"\\" + file;
+            if (!isPlaying)
+            {
+                Console::instance->RunCommand(WStringf(L"play \"%s\"", fullFilePath.c_str()));
+                isPlaying = true;
+            }
+            else
+            {
+                Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", fullFilePath.c_str()));
+            }
+        }
+    }
+    else if (!SongManager::instance->IsPlaying())
     {
         Console::instance->RunCommand(WStringf(L"play \"%s\"", filePath.c_str()), true);
     }
