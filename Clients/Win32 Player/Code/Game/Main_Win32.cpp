@@ -90,7 +90,19 @@ void HandleFileDrop(WPARAM wParam)
     {
         DragQueryFile(fileDrop, ++fileNumberToQuery, tcharFilePath, MAX_PATH);
         filePath = std::wstring(tcharFilePath);
-        Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", filePath.c_str()));
+        if (IsDirectory(filePath))
+        {
+            std::vector<std::wstring> playableFiles = GetSupportedFiles(filePath);
+            for (std::wstring& file : playableFiles)
+            {
+                std::wstring fullFilePath = filePath + L"\\" + file;
+                Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", fullFilePath.c_str()));
+            }
+        }
+        else
+        {
+            Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", filePath.c_str()));
+        }
     }
     DragFinish(fileDrop);
 }
