@@ -61,7 +61,7 @@ void HandleFileDrop(WPARAM wParam)
     std::wstring filePath(tcharFilePath);
     if (IsDirectory(filePath))
     {
-        std::vector<std::wstring> playableFiles = GetSupportedFiles(filePath);
+        std::vector<std::wstring> playableFiles = GetSupportedAudioFiles(filePath);
         bool isPlaying = SongManager::instance->IsPlaying();
         for (std::wstring& file : playableFiles)
         {
@@ -92,7 +92,7 @@ void HandleFileDrop(WPARAM wParam)
         filePath = std::wstring(tcharFilePath);
         if (IsDirectory(filePath))
         {
-            std::vector<std::wstring> playableFiles = GetSupportedFiles(filePath);
+            std::vector<std::wstring> playableFiles = GetSupportedAudioFiles(filePath);
             for (std::wstring& file : playableFiles)
             {
                 std::wstring fullFilePath = filePath + L"\\" + file;
