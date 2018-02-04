@@ -323,12 +323,32 @@ void TheGame::SetUpShaders()
     m_currentMaterial = m_testMaterial;
 
     m_proceduralGenerationMaterials[0] = new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtHex.frag"),
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/AlbumArtGen/albumArtHex.frag"),
             RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
             );
 
     m_proceduralGenerationMaterials[1] = new Material(
-        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/albumArtSquare.frag"),
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/AlbumArtGen/albumArtSquare.frag"),
+        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+
+    m_proceduralGenerationMaterials[2] = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/AlbumArtGen/albumArtCheckerboard.frag"),
+        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+
+    m_proceduralGenerationMaterials[3] = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/AlbumArtGen/albumArtZigZag.frag"),
+        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+
+    m_proceduralGenerationMaterials[4] = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/AlbumArtGen/albumArtScales.frag"),
+        RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
+        );
+
+    m_proceduralGenerationMaterials[5] = new Material(
+        new ShaderProgram("Data/Shaders/fixedVertexFormat.vert", "Data/Shaders/AlbumArtGen/albumArtTriangles.frag"),
         RenderState(RenderState::DepthTestingMode::OFF, RenderState::FaceCullingMode::CULL_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND)
         );
 }

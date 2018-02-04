@@ -502,7 +502,7 @@ void SongManager::AddToPlaylist(XMLNode& playlist, Song* currentSong)
 //-----------------------------------------------------------------------------------
 void SongManager::LoadAlbumArt(Song* songToPlay)
 {
-    if (!songToPlay->m_albumArt)
+    if (!songToPlay->m_albumArt && m_loadAlbumArt)
     {
         songToPlay->m_albumArt = GetImageFromFileMetadata(songToPlay->m_filePath);
     }
@@ -737,6 +737,22 @@ CONSOLE_COMMAND(printqueue)
 }
 
 //-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(printplaylists)
+{
+    std::string filePath = Stringf("%s\\Turntable\\Playlists\\", GetAppDataDirectory().c_str());
+    std::vector<std::string> playlists = EnumerateFiles(filePath, "*.xml");
+    if (playlists.size() == 0)
+    {
+        Console::instance->PrintLine("(NONE)", RGBA::MAROON);
+        return;
+    }
+    for (std::string& playlist : playlists)
+    {
+        Console::instance->PrintLine(playlist, RGBA::JOLTIK_PURPLE);
+    }
+}
+
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(loadplaylist)
 {
     if (!(args.HasArgs(1)))
@@ -867,6 +883,20 @@ CONSOLE_COMMAND(wigglerpm)
         {
             Console::instance->PrintLine("RPM wiggling disabled!", RGBA::MAROON);
         }
+    }
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(togglealbumart)
+{
+    SongManager::instance->m_loadAlbumArt = !SongManager::instance->m_loadAlbumArt;
+    if (SongManager::instance->m_loadAlbumArt)
+    {
+        Console::instance->PrintLine("Loading Album Art enabled!", RGBA::VAPORWAVE);
+    }
+    else
+    {
+        Console::instance->PrintLine("Loading Album Art disabled!", RGBA::CHOCOLATE);
     }
 }
 
