@@ -502,7 +502,7 @@ void SongManager::AddToPlaylist(XMLNode& playlist, Song* currentSong)
 //-----------------------------------------------------------------------------------
 void SongManager::LoadAlbumArt(Song* songToPlay)
 {
-    if (!songToPlay->m_albumArt)
+    if (!songToPlay->m_albumArt && m_loadAlbumArt)
     {
         songToPlay->m_albumArt = GetImageFromFileMetadata(songToPlay->m_filePath);
     }
@@ -867,6 +867,20 @@ CONSOLE_COMMAND(wigglerpm)
         {
             Console::instance->PrintLine("RPM wiggling disabled!", RGBA::MAROON);
         }
+    }
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(togglealbumart)
+{
+    SongManager::instance->m_loadAlbumArt = !SongManager::instance->m_loadAlbumArt;
+    if (SongManager::instance->m_loadAlbumArt)
+    {
+        Console::instance->PrintLine("Loading Album Art enabled!", RGBA::VAPORWAVE);
+    }
+    else
+    {
+        Console::instance->PrintLine("Loading Album Art disabled!", RGBA::CHOCOLATE);
     }
 }
 

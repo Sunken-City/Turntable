@@ -11,7 +11,7 @@ in vec4 passColor;
 out vec4 outColor;
 
 
-vec2 getHexagonIndex(vec2 uv)
+vec2 getZigZagIndex(vec2 uv)
 {
 	float skewFactor = 0.5773503; //sqrt(3)/3
 
@@ -25,34 +25,21 @@ vec2 getHexagonIndex(vec2 uv)
 	//Create a chain of diamonds, each filling up 1/3 of a hexagon
 	float diamonds1 = mod(uvInt.x + uvInt.y, 3.0);
 
-	//Create a chain of diamonds, each filling up 1/3 of a hexagon, adjacent to the first and slightly offset
-	float diamonds2 = step(2.0, diamonds1);
-
 	//Create an inverted chain of diamonds, conveniently equivalent to a combination of both above chains
 	float bothDiamonds = step(1.0, diamonds1);
-
-	//Generates a grid of triangles
-	vec2 triangles = step(uvFrac.xy, uvFrac.yx);
-
-	//Isolates out 1/3 of the triangles
-	vec2 isolatedTriangles = diamonds2 * triangles;
 
 	//Combining the vertical stripes and the diamonds creates a zig-zag pattern
 	vec2 zigZag = uvInt + bothDiamonds;
 
-	//This zig-zag pattern is close to our hexagons, but there's 1/6th of the hexagon that's translated.
-	//Luckily, this matches up with our isolated triangle pattern from before, and by subtracting them,
-	//we manage to invert the colors of that last 1/6th, completing both the hexagonal regions.
-	//We now have the coordinates of each hexagon in the image.
-	return vec2(zigZag - isolatedTriangles);
+	return zigZag;
 }
 
 void main(void)
 {
-	float scale = 8.0f;
-  vec2 uv = passUV0 * 8.0f;
+	float scale = 8.0f * (((gHashVal % 3) + 1) / 2.0f);
+  vec2 uv = passUV0 * scale;
 
-  vec2 hex = getHexagonIndex(uv);
+  vec2 hex = getZigZagIndex(uv);
   int squareNumber = int(hex.x) + int(hex.y * scale);
 
 	float red = (gHashVal & 0xFF) / 256.0f;
@@ -62,5 +49,7 @@ void main(void)
 	float red2 = ((gHashVal & 0xFF000000) >> 24) / 256.0f;
 	float green2 = ((gHashVal & 0xFF000) >> 12) / 256.0f;
 	float blue2 = ((gHashVal & 0xFF0) >> 4) / 256.0f;
-  outColor = mix(vec4(red, green, blue, 1.0), vec4(red2, green2, blue2, 1.0), (squareNumber % (gHashVal % 10)) / 8.0f);
+
+	//Two of the patterns output here look like scales, so use one of those two.
+  outColor = mix(vec4(red, green, blue, 1.0), vec4(red2, green2, blue2, 1.0), (squareNumber % (8 / ((gHashVal % 2) + 1))) / 8.0f);
 }

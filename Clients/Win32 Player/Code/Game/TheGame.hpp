@@ -41,7 +41,7 @@ public:
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     static constexpr float RPS_45 = (45.0f * 360.0f) / 60.0f;
     static constexpr float RPS_33 = (33.333333333f * 360.0f) / 60.0f;
-    static constexpr unsigned int NUM_PROC_GEN_MATERIALS = 2;
+    static constexpr unsigned int NUM_PROC_GEN_MATERIALS = 6;
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     Framebuffer* m_fbo = nullptr;
