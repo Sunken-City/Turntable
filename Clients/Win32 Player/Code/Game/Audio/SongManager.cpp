@@ -475,18 +475,24 @@ void SongManager::LoadPlaylist(const XMLNode& playlist)
 {
     //Loads a playlist into the queue
     std::vector<XMLNode> songs = XMLUtils::GetChildren(playlist);
-    for (unsigned int i = 0; i < songs.size(); ++i)
+    bool isPlaying = SongManager::instance->IsPlaying();
+    for (XMLNode& currentSongNode : songs)
     {
-        XMLNode& currentSongNode = songs[i];
         if (currentSongNode.isEmpty() || currentSongNode.IsContentEmpty())
         {
             continue;
         }
         std::string path = currentSongNode.getAttribute("FilePath");
-        std::wstring widePath = std::wstring(path.begin(), path.end());
-        SongID id = m_songCache.RequestSongLoad(widePath);
-        Song* nextSong = new Song(widePath, id);
-        m_songQueue.push_back(nextSong);
+        std::wstring songPath = std::wstring(path.begin(), path.end());
+        if (!isPlaying)
+        {
+            Console::instance->RunCommand(WStringf(L"play \"%s\"", songPath.c_str()), true);
+            isPlaying = true;
+        }
+        else
+        {
+            Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", songPath.c_str()), true);
+        }
     }
 }
 
