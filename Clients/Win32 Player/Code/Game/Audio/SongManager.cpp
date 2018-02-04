@@ -737,6 +737,22 @@ CONSOLE_COMMAND(printqueue)
 }
 
 //-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(printplaylists)
+{
+    std::string filePath = Stringf("%s\\Turntable\\Playlists\\", GetAppDataDirectory().c_str());
+    std::vector<std::string> playlists = EnumerateFiles(filePath, "*.xml");
+    if (playlists.size() == 0)
+    {
+        Console::instance->PrintLine("(NONE)", RGBA::MAROON);
+        return;
+    }
+    for (std::string& playlist : playlists)
+    {
+        Console::instance->PrintLine(playlist, RGBA::JOLTIK_PURPLE);
+    }
+}
+
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(loadplaylist)
 {
     if (!(args.HasArgs(1)))
