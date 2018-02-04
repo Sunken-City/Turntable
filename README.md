@@ -111,10 +111,6 @@ loadmesh -> Debug command for loading in a mesh.
 
 [Github](https://github.com/weruder)
 
-**Regan Carver**: Programmer
-
-[Github](https://github.com/dolphiniac)
-
 ## **Special Thanks & Credits:**
 
 **Heather Tierney**: for 3D modeling and texturing the records and their sleeves.
