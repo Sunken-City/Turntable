@@ -17,16 +17,20 @@
   <Title name="Prodigy"/>
   <Title name="DJ"/>
   <Title name="Fanatic"/>
+  <Title name="Pirate"/>
+  <Title name="Expert"/>
   <Title name="Bass Blaster"/>
   <Title name="Maniac"/>
+  <Title name="Knight"/>
   <Title name="Maestro"/>
-  <Title name="Expert"/>
   <Title name="Music Lover"/>
   <Title name="Virtuoso"/>
   <Title name="Wizard"/>
   <Title name="Audiophile"/>
   <Title name="Beat Baller"/>
   <Title name="Audible Ace"/>
+  <Title name="Sage"/>
+  <Title name="Master"/>
   <Title name="WAV Warrior"/>
   <Title name="MP3 Martial Artist"/>
   <Title name="OGG Overlord"/>
@@ -39,5 +43,6 @@
   <Title name="Music is my Life"/>
   <Title name="Good Boy"/>
   <Title name="Person with Ears"/>
+  <Title name="Bee"/>
   <Title name="LoopMaster"/>
 </Titles>
