@@ -76,8 +76,8 @@ void VinylRecord::Update(float deltaSeconds)
     m_innerMaterial->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
     m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
     m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
-    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 150.0f);
-    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 200.0f);
+    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
+    m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 50.2f);
     m_innerMaterial->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
 
     m_outerMaterial->SetVec4Uniform(std::hash<std::string>{}("gColor"), RGBA::WHITE.ToVec4());
@@ -88,8 +88,8 @@ void VinylRecord::Update(float deltaSeconds)
     m_outerMaterial->SetVec3Uniform(std::hash<std::string>{}("gCameraPosition"), ForwardRenderer::instance->GetMainCamera()->m_position);
     m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gLightIntensity"), 150.0f);
     m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gSpecularPower"), 8.0f);
-    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 150.0f);
-    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 200.0f);
+    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMinFogDistance"), 50.0f);
+    m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gMaxFogDistance"), 50.2f);
     m_outerMaterial->SetFloatUniform(std::hash<std::string>{}("gTime"), (float)GetCurrentTimeSeconds());
 
 }

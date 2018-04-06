@@ -21,7 +21,6 @@ in vec4 passColor;
 in vec2 passUV0;
 in vec3 passPosition;
 in vec3 passNormal;
-in vec4 gl_FragCoord;
 
 out vec4 outColor;
 
@@ -83,29 +82,16 @@ void main(void)
   float distanceToPixel = distance(passPosition, gCameraPosition);
   if(distanceToPixel > gMaxFogDistance)
   {
-    float lineFrequency = 150.0f;
-    float lineScale = 0.3f;
-    vec2 uv = gl_FragCoord.xy / vec2(1600, 900);
-    uv *= lineFrequency;
-
-    float difference = abs(fract(uv.y - uv.x));
-
-    if(difference < lineScale)
-    {
-      outColor = vec4(vec3(0.1), outColor.a);
-    }
-    else
-    {
-      outColor = vec4(vec3(0.2), outColor.a);
-    }
+    outColor = vec4(gFogColor.rgb, outColor.a);
   }
   else if(distanceToPixel > gMinFogDistance)
   {
-    outColor = vec4(vec3(0.1), outColor.a);
-    //float fogRatio = (distanceToPixel - gMinFogDistance) / (gMaxFogDistance - gMinFogDistance);
-    //float inverseFogRatio = 1.0f - fogRatio;
-    //outColor = vec4((gFogColor.rgb * fogRatio) + (outColor.rgb * inverseFogRatio), outColor.a);
+    float fogRatio = (distanceToPixel - gMinFogDistance) / (gMaxFogDistance - gMinFogDistance);
+    float inverseFogRatio = 1.0f - fogRatio;
+    outColor = vec4((gFogColor.rgb * fogRatio) + (outColor.rgb * inverseFogRatio), outColor.a);
   }
+
+  //outColor += vec4(light_intensity, 1.0f);
 }
 
   //DEBUG: See the actual color of the light on a plain black/white texture.
