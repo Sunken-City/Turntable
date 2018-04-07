@@ -125,15 +125,15 @@ void VinylRecord::InitializeMeshes()
         Mesh* outerMesh = nullptr;
         if (m_type == RPM_45_FLAT)
         {
-            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpmflat_1.picomesh");
-            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpmflat_0.picomesh");
+            innerMesh = MeshBuilder::LoadMesh("data/models/45rpmflat_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/models/45rpmflat_0.picomesh");
         }
         else
         {
-            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_1.picomesh");
-            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45rpm_0.picomesh");
+            innerMesh = MeshBuilder::LoadMesh("data/models/45rpm_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/models/45rpm_0.picomesh");
         }
-        Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/45sleeve_0.picomesh");
+        Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/models/45sleeve_0.picomesh");
 
         m_innerMaterial = new Material(
             new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
@@ -172,15 +172,15 @@ void VinylRecord::InitializeMeshes()
         Mesh* outerMesh = nullptr;
         if (m_type == RPM_33_FLAT)
         {
-            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpmflat_1.picomesh");
-            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpmflat_0.picomesh");
+            innerMesh = MeshBuilder::LoadMesh("data/models/33rpmflat_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/models/33rpmflat_0.picomesh");
         }
         else
         {
-            innerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_1.picomesh");
-            outerMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33rpm_0.picomesh");
+            innerMesh = MeshBuilder::LoadMesh("data/models/33rpm_1.picomesh");
+            outerMesh = MeshBuilder::LoadMesh("data/models/33rpm_0.picomesh");
         }
-        Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/fbx/vinyl/33sleeve_0.picomesh");
+        Mesh* sleeveMesh = MeshBuilder::LoadMesh("data/models/33sleeve_0.picomesh");
 
         m_innerMaterial = new Material(
             new ShaderProgram("Data/Shaders/basicLight.vert", "Data/Shaders/basicLight.frag"), //SkinDebug fixedVertexFormat timeBased basicLight multiLight
