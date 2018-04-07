@@ -322,8 +322,8 @@ void Update()
     float deltaSeconds = (float)( timeNow - s_timeLastFrameStarted );
     s_timeLastFrameStarted = timeNow;
 
-    AudioSystem::instance->Update(deltaSeconds);
     InputSystem::instance->Update(deltaSeconds);
+    AudioSystem::instance->Update(deltaSeconds);
     Console::instance->Update(deltaSeconds);
     TheGame::instance->Update(deltaSeconds);
     UISystem::instance->Update(deltaSeconds);
@@ -352,7 +352,7 @@ void Render()
 //-----------------------------------------------------------------------------------------------
 void RunFrame()
 {
-    InputSystem::instance->AdvanceFrameNumber();
+    InputSystem::instance->AdvanceFrame();
     RunMessagePump();
     Update();
     Render();

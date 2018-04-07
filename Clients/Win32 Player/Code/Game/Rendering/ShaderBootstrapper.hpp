@@ -8,7 +8,7 @@ class ShaderBootstrapper
 public:
     static ShaderProgram* compileShader(const char* vertexShaderPath, const char* fragmentShaderPath);
     static void initializeUniforms(ShaderProgram* program);
-    static void updateUniforms(ShaderProgram* program);
+    static void updateUniforms(ShaderProgram* program, float deltaSeconds);
 
 private:
     static const char* shaderHeader;

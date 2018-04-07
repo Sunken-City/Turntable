@@ -15,6 +15,8 @@ const char* ShaderBootstrapper::shaderHeader =
 "#version 410 core\n"
 "uniform vec3 iResolution;"
 "uniform float iTime;"
+"uniform float iFrame;"
+"uniform float iTimeDelta;"
 "uniform vec4 iMouse;"
 "out vec4 outColor;\n";
 
@@ -48,21 +50,25 @@ void ShaderBootstrapper::initializeUniforms(ShaderProgram* program)
 {
     program->SetVec3Uniform("iResolution", Vector3(static_cast<float>(WINDOW_PHYSICAL_WIDTH), static_cast<float>(WINDOW_PHYSICAL_HEIGHT), 0.5));
     program->SetFloatUniform("iTime", static_cast<float>(GetCurrentTimeSeconds()));
+    program->SetFloatUniform("iTimeDelta", 0.0f);
+    program->SetFloatUniform("iFrame", 0.0f);
     program->SetVec4Uniform("iMouse", Vector4(0.0f));
 }
 
 //-----------------------------------------------------------------------------------
-void ShaderBootstrapper::updateUniforms(ShaderProgram* program)
+void ShaderBootstrapper::updateUniforms(ShaderProgram* program, float deltaSeconds)
 {
+    //Calculate mouse vector
     bool isClicking = InputSystem::instance->IsMouseButtonDown(InputSystem::LEFT_MOUSE_BUTTON);
     Vector2Int lastClickedPos = InputSystem::instance->GetMouseLastClickedPos();
     Vector2 currentPos = isClicking ? Vector2(InputSystem::instance->GetMousePos()) : Vector2(lastClickedPos);
     Vector2 dragPos = isClicking ? Vector2(lastClickedPos) : Vector2(-lastClickedPos);
-
     //Change the origin from top-left to bottom-left
     currentPos.y = static_cast<float>(WINDOW_PHYSICAL_HEIGHT) - currentPos.y;
     dragPos.y = isClicking ? static_cast<float>(WINDOW_PHYSICAL_HEIGHT) - dragPos.y : -(static_cast<float>(WINDOW_PHYSICAL_HEIGHT) - (-dragPos.y));
 
     program->SetFloatUniform("iTime", static_cast<float>(GetCurrentTimeSeconds()));
+    program->SetFloatUniform("iTimeDelta", deltaSeconds);
+    program->SetFloatUniform("iFrame", static_cast<float>(GetFrameNumber() - program->m_frameCreated));
     program->SetVec4Uniform("iMouse", Vector4(currentPos, dragPos));
 }

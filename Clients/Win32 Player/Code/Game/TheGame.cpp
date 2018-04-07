@@ -162,7 +162,7 @@ void TheGame::Update(float deltaSeconds)
     m_currentRecord->Update(deltaSeconds);
     SongManager::instance->Update(deltaSeconds);
 
-    ShaderBootstrapper::updateUniforms(m_quadForFBO->m_material->m_shaderProgram);
+    ShaderBootstrapper::updateUniforms(m_quadForFBO->m_material->m_shaderProgram, deltaSeconds);
 
     if (!Console::instance->IsActive() && InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
