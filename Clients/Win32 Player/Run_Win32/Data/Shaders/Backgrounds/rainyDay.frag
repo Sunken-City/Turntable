@@ -12,16 +12,16 @@ out vec4 outColor;
 
 void main(void)
 {
-  vec4 earthboundBlue = vec4(0.407, 0.659, 0.847, 1.0);
-  vec4 earthboundGreen = vec4(0.500, 0.847, 0.565, 1.0);
+  vec4 lightBlue = vec4(0.49, 0.796, 0.745, 1.0);
+  vec4 darkBlue = vec4(0.0, 0.224, 0.431, 1.0);
   float timeFactor = gTime / 20.0f;
   vec2 uv = (passUV0 + vec2(timeFactor, timeFactor)) * vec2(16, 9);
   if(abs(fract(uv.y) - fract(uv.x)) < 0.1f)
   {
-    outColor = earthboundBlue;
+    outColor = lightBlue;
   }
   else
   {
-    outColor = earthboundGreen;
+    outColor = darkBlue;
   }
 }
