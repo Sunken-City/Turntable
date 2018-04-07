@@ -81,11 +81,9 @@ TheGame::TheGame()
     m_blankFBODepthTexture = new Texture(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT, Texture::TextureFormat::D24S8);
     m_fbo = Framebuffer::FramebufferCreate(1, &m_blankFBOColorTexture, m_blankFBODepthTexture);
 
-    //Set up a random background shader for the FBO from the backgrounds folder.
-    //std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds", "*.frag");
-    //int shaderIndex = MathUtils::GetRandomInt(0, backgroundShaders.size() - 1);
-    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/basic.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
+    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/basic.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
+    ShaderBootstrapper::initializeUniforms(m_fboMaterial->m_shaderProgram);
     m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
     m_fboMaterial->SetNormalTexture(Texture::CreateOrGetTexture("Data/Images/Logos/Logo.png"));
     m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
@@ -163,7 +161,8 @@ void TheGame::Update(float deltaSeconds)
 {
     m_currentRecord->Update(deltaSeconds);
     SongManager::instance->Update(deltaSeconds);
-    m_quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
+
+    ShaderBootstrapper::updateUniforms(m_quadForFBO->m_material->m_shaderProgram);
 
     if (!Console::instance->IsActive() && InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
@@ -503,8 +502,9 @@ CONSOLE_COMMAND(setbackground)
     delete TheGame::instance->m_fboMaterial->m_shaderProgram;
     delete TheGame::instance->m_fboMaterial;
 
-    TheGame::instance->m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/post.vert", fileName.c_str()),
+    TheGame::instance->m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", fileName.c_str()),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
+    ShaderBootstrapper::initializeUniforms(TheGame::instance->m_fboMaterial->m_shaderProgram);
     TheGame::instance->m_fboMaterial->SetDiffuseTexture(TheGame::instance->m_blankFBOColorTexture);
     TheGame::instance->m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
 
