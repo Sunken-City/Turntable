@@ -17,6 +17,7 @@ const char* ShaderBootstrapper::shaderHeader =
 "uniform float iTime;"
 "uniform float iFrame;"
 "uniform float iTimeDelta;"
+"uniform float iFrameRate;"
 "uniform vec4 iMouse;"
 "out vec4 outColor;\n";
 
@@ -48,10 +49,11 @@ ShaderProgram* ShaderBootstrapper::compileShader(const char* vertexShaderPath, c
 //-----------------------------------------------------------------------------------
 void ShaderBootstrapper::initializeUniforms(ShaderProgram* program)
 {
-    program->SetVec3Uniform("iResolution", Vector3(static_cast<float>(WINDOW_PHYSICAL_WIDTH), static_cast<float>(WINDOW_PHYSICAL_HEIGHT), 0.5));
+    program->SetVec3Uniform("iResolution", Vector3(static_cast<float>(WINDOW_PHYSICAL_WIDTH), static_cast<float>(WINDOW_PHYSICAL_HEIGHT), 1.0f));
     program->SetFloatUniform("iTime", static_cast<float>(GetCurrentTimeSeconds()));
     program->SetFloatUniform("iTimeDelta", 0.0f);
     program->SetFloatUniform("iFrame", 0.0f);
+    program->SetFloatUniform("iFrameRate", GetCurrentFrameRate());
     program->SetVec4Uniform("iMouse", Vector4(0.0f));
 }
 
@@ -70,5 +72,6 @@ void ShaderBootstrapper::updateUniforms(ShaderProgram* program, float deltaSecon
     program->SetFloatUniform("iTime", static_cast<float>(GetCurrentTimeSeconds()));
     program->SetFloatUniform("iTimeDelta", deltaSeconds);
     program->SetFloatUniform("iFrame", static_cast<float>(GetFrameNumber() - program->m_frameCreated));
+    program->SetFloatUniform("iFrameRate", GetCurrentFrameRate());
     program->SetVec4Uniform("iMouse", Vector4(currentPos, dragPos));
 }

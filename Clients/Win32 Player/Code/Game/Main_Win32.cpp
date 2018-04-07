@@ -321,6 +321,7 @@ void Update()
     double timeNow = GetCurrentTimeSeconds();
     float deltaSeconds = (float)( timeNow - s_timeLastFrameStarted );
     s_timeLastFrameStarted = timeNow;
+    UpdateFrameRate(deltaSeconds);
 
     InputSystem::instance->Update(deltaSeconds);
     AudioSystem::instance->Update(deltaSeconds);
