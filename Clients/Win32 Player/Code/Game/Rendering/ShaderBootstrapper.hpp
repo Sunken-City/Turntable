@@ -6,8 +6,9 @@ class ShaderProgram;
 class ShaderBootstrapper
 {
 public:
-	static ShaderProgram* compileShader(const char* vertexShader, const char* fragmentShader);
+	static ShaderProgram* compileShader(const char* vertexShaderPath, const char* fragmentShaderPath);
 
 private:
+	static const char* shaderHeader;
 	static const char* mainFunction;
 };

@@ -84,7 +84,7 @@ TheGame::TheGame()
     //Set up a random background shader for the FBO from the backgrounds folder.
     //std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds", "*.frag");
     //int shaderIndex = MathUtils::GetRandomInt(0, backgroundShaders.size() - 1);
-    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
+    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/basic.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
     m_fboMaterial->SetNormalTexture(Texture::CreateOrGetTexture("Data/Images/Logos/Logo.png"));
