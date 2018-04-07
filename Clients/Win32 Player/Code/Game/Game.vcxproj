@@ -105,6 +105,7 @@
     <ClCompile Include="Audio\SongManager.cpp" />
     <ClCompile Include="Main_Win32.cpp" />
     <ClCompile Include="Renderables\VinylRecord.cpp" />
+    <ClCompile Include="Rendering\ShaderBootstrapper.cpp" />
     <ClCompile Include="TheGame.cpp" />
     <ClCompile Include="UserData\AchievementManager.cpp" />
     <ClCompile Include="UserData\UserProfile.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="Audio\SongCache.hpp" />
     <ClInclude Include="Audio\SongManager.hpp" />
     <ClInclude Include="Renderables\VinylRecord.hpp" />
+    <ClInclude Include="Rendering\ShaderBootstrapper.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TheGame.hpp" />
     <ClInclude Include="UserData\AchievementManager.hpp" />

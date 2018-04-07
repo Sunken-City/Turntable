@@ -28,11 +28,8 @@
 #include "Engine/Input/InputDevices/MouseInputDevice.hpp"
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
 #include "Engine/Renderer/3D/Scene3D.hpp"
-#include "Renderables/VinylRecord.hpp"
 #include "Engine/UI/UISystem.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
-#include "Audio/SongManager.hpp"
-#include "Audio/Song.hpp"
 #include "ThirdParty/taglib/include/taglib/tag.h"
 #include "ThirdParty/taglib/include/taglib/fileref.h"
 #include "ThirdParty/taglib/include/taglib/tfile.h"
@@ -42,6 +39,10 @@
 #include "ThirdParty/taglib/include/taglib/wavfile.h"
 #include "ThirdParty/taglib/include/taglib/mpegfile.h"
 #include <vector>
+#include "Audio/SongManager.hpp"
+#include "Audio/Song.hpp"
+#include "Renderables/VinylRecord.hpp"
+#include "Game/Rendering/ShaderBootstrapper.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -83,7 +84,7 @@ TheGame::TheGame()
     //Set up a random background shader for the FBO from the backgrounds folder.
     //std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds", "*.frag");
     //int shaderIndex = MathUtils::GetRandomInt(0, backgroundShaders.size() - 1);
-    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
+    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
     m_fboMaterial->SetNormalTexture(Texture::CreateOrGetTexture("Data/Images/Logos/Logo.png"));
