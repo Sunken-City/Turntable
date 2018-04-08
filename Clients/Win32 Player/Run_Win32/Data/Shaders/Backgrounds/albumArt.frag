@@ -1,25 +1,13 @@
-#version 410 core
-
-uniform sampler2D gDiffuseTexture;
-uniform sampler2D gNormalTexture;
-uniform float gTime;
-uniform float gPixelationFactor;
-
-in vec2 passUV0;
-in vec3 passPosition;
-
-out vec4 outColor;
-
-void main(void)
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   float scalingFactor = 0.5f;
   vec2 aspectRatio = vec2(16, 9) * scalingFactor;
   float slowDownFactor = 20.0f;
-  float timeFactor = gTime / slowDownFactor;
+  float timeFactor = iTime / slowDownFactor;
 
-  vec2 uv = (passUV0 + vec2(timeFactor, timeFactor));
+  vec2 uv = (fragCoord/iResolution.xy + vec2(timeFactor, timeFactor));
   uv = uv * aspectRatio; //Multiply by the aspect ratio to make our checkerboard squares square
   uv.y *= -1.0f; //STBI correction
 
-  outColor = texture(gNormalTexture, uv);
+  fragColor = texture(iChannel0, uv);
 }

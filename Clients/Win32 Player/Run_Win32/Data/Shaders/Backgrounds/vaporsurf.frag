@@ -1,21 +1,11 @@
-#version 410 core
 
-uniform sampler2D gDiffuseTexture;
-uniform sampler2D gNormalTexture;
-uniform float gTime;
-uniform float gPixelationFactor;
-
-in vec2 passUV0;
-in vec3 passPosition;
-
-out vec4 outColor;
-
-void main(void)
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+  vec2 passUV = fragCoord/iResolution.xy;
   vec2 aspectRatio = vec2(16, 9) * 3.0f;
-  float timeFactor = gTime / 20.0f;
+  float timeFactor = iTime / 20.0f;
 
-  vec2 uv = ((passUV0 * passUV0.x * passUV0.y) + vec2(timeFactor, timeFactor));
+  vec2 uv = ((passUV * passUV.x * passUV.y) + vec2(timeFactor, timeFactor));
   uv = uv * aspectRatio; //Multiply by the aspect ratio to make our checkerboard squares square
 
   int xCoordinate = int(round(uv.x));
@@ -24,7 +14,7 @@ void main(void)
 
   squareNumber += yCoordinate % 2; //Change the colors every other row
 
-  outColor = mix(vec4(0.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.51f, 0.61f, 1.0f), squareNumber % 2);
+  fragColor = mix(vec4(0.0f, 0.0f, 0.0f, 1.0f), vec4(1.0f, 0.51f, 0.61f, 1.0f), squareNumber % 2);
 
 
 }

@@ -15,6 +15,7 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "../UserData/UserProfile.hpp"
+#include "Engine/Time/Time.hpp"
 
 SongManager* SongManager::instance = nullptr;
 

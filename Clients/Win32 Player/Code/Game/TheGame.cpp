@@ -28,11 +28,8 @@
 #include "Engine/Input/InputDevices/MouseInputDevice.hpp"
 #include "Engine/Renderer/3D/ForwardRenderer.hpp"
 #include "Engine/Renderer/3D/Scene3D.hpp"
-#include "Renderables/VinylRecord.hpp"
 #include "Engine/UI/UISystem.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
-#include "Audio/SongManager.hpp"
-#include "Audio/Song.hpp"
 #include "ThirdParty/taglib/include/taglib/tag.h"
 #include "ThirdParty/taglib/include/taglib/fileref.h"
 #include "ThirdParty/taglib/include/taglib/tfile.h"
@@ -42,6 +39,10 @@
 #include "ThirdParty/taglib/include/taglib/wavfile.h"
 #include "ThirdParty/taglib/include/taglib/mpegfile.h"
 #include <vector>
+#include "Audio/SongManager.hpp"
+#include "Audio/Song.hpp"
+#include "Renderables/VinylRecord.hpp"
+#include "Game/Rendering/ShaderBootstrapper.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -80,14 +81,12 @@ TheGame::TheGame()
     m_blankFBODepthTexture = new Texture(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT, Texture::TextureFormat::D24S8);
     m_fbo = Framebuffer::FramebufferCreate(1, &m_blankFBOColorTexture, m_blankFBODepthTexture);
 
-    //Set up a random background shader for the FBO from the backgrounds folder.
-    //std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds", "*.frag");
-    //int shaderIndex = MathUtils::GetRandomInt(0, backgroundShaders.size() - 1);
-    m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"), //Stringf("Data/Shaders/Backgrounds/%s", backgroundShaders[shaderIndex].c_str()).c_str()
+    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/basic.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
+    m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
+    ShaderBootstrapper::initializeUniforms(m_fboMaterial);
     m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
     m_fboMaterial->SetNormalTexture(Texture::CreateOrGetTexture("Data/Images/Logos/Logo.png"));
-    m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
 
     MeshBuilder builder;
     builder.AddQuad(Vector3(-1, -1, 0), Vector3::UP, 2.0f, Vector3::RIGHT, 2.0f);
@@ -162,7 +161,8 @@ void TheGame::Update(float deltaSeconds)
 {
     m_currentRecord->Update(deltaSeconds);
     SongManager::instance->Update(deltaSeconds);
-    m_quadForFBO->m_material->SetFloatUniform("gTime", (float)GetCurrentTimeSeconds());
+
+    ShaderBootstrapper::updateUniforms(m_quadForFBO->m_material, deltaSeconds);
 
     if (!Console::instance->IsActive() && InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
@@ -502,10 +502,11 @@ CONSOLE_COMMAND(setbackground)
     delete TheGame::instance->m_fboMaterial->m_shaderProgram;
     delete TheGame::instance->m_fboMaterial;
 
-    TheGame::instance->m_fboMaterial = new Material(new ShaderProgram("Data/Shaders/post.vert", fileName.c_str()),
+    TheGame::instance->m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", fileName.c_str()),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     TheGame::instance->m_fboMaterial->SetDiffuseTexture(TheGame::instance->m_blankFBOColorTexture);
     TheGame::instance->m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
+    ShaderBootstrapper::initializeUniforms(TheGame::instance->m_fboMaterial);
 
     if (SongManager::instance->m_activeSong && SongManager::instance->m_activeSong->m_albumArt)
     {
