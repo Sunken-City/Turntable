@@ -83,7 +83,7 @@ TheGame::TheGame()
 
     m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/basic2.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
-    ShaderBootstrapper::initializeUniforms(m_fboMaterial->m_shaderProgram);
+    ShaderBootstrapper::initializeUniforms(m_fboMaterial);
     m_fboMaterial->SetDiffuseTexture(m_blankFBOColorTexture);
     m_fboMaterial->SetNormalTexture(Texture::CreateOrGetTexture("Data/Images/Logos/Logo.png"));
     m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
@@ -162,7 +162,7 @@ void TheGame::Update(float deltaSeconds)
     m_currentRecord->Update(deltaSeconds);
     SongManager::instance->Update(deltaSeconds);
 
-    ShaderBootstrapper::updateUniforms(m_quadForFBO->m_material->m_shaderProgram, deltaSeconds);
+    ShaderBootstrapper::updateUniforms(m_quadForFBO->m_material, deltaSeconds);
 
     if (!Console::instance->IsActive() && InputSystem::instance->WasKeyJustPressed(InputSystem::ExtraKeys::TILDE))
     {
@@ -504,7 +504,7 @@ CONSOLE_COMMAND(setbackground)
 
     TheGame::instance->m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", fileName.c_str()),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
-    ShaderBootstrapper::initializeUniforms(TheGame::instance->m_fboMaterial->m_shaderProgram);
+    ShaderBootstrapper::initializeUniforms(TheGame::instance->m_fboMaterial);
     TheGame::instance->m_fboMaterial->SetDiffuseTexture(TheGame::instance->m_blankFBOColorTexture);
     TheGame::instance->m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
 

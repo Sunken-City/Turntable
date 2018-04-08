@@ -1,5 +1,6 @@
 #include "Game/Rendering/ShaderBootstrapper.hpp"
 
+#include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/ShaderProgram.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
@@ -7,10 +8,15 @@
 #include "Engine/Math/Vector3.hpp"
 #include "Engine/Math/Vector4.hpp"
 #include "Engine/Time/Time.hpp"
+#include "Game/TheGame.hpp"
+#include "Game/Renderables/VinylRecord.hpp"
 #include "Game/Audio/SongManager.hpp"
 #include "Game/Audio/Song.hpp"
 #include <chrono>
 #include <ctime>
+#include <gl/GL.h>
+#include <gl/GLU.h>
+#include "Engine/Renderer/OpenGLExtensions.hpp"
 
 extern int WINDOW_PHYSICAL_WIDTH;
 extern int WINDOW_PHYSICAL_HEIGHT;
@@ -27,6 +33,7 @@ const char* ShaderBootstrapper::shaderHeader =
 "uniform vec4 iDate;"
 "uniform float iSampleRate;"
 "uniform vec3 iChannelResolution[4];"
+"uniform sampler2D iChannel0;"
 "out vec4 outColor;\n";
 
 const char* ShaderBootstrapper::mainFunction =
@@ -55,8 +62,9 @@ ShaderProgram* ShaderBootstrapper::compileShader(const char* vertexShaderPath, c
 }
 
 //-----------------------------------------------------------------------------------
-void ShaderBootstrapper::initializeUniforms(ShaderProgram* program)
+void ShaderBootstrapper::initializeUniforms(Material* material)
 {
+    ShaderProgram* program = material->m_shaderProgram;
     float iChannelTime[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     Vector3 iChannelResolution[4] = { Vector3::ZERO, Vector3::ZERO, Vector3::ZERO, Vector3::ZERO };
     std::time_t timeNow = std::time(nullptr);
@@ -74,12 +82,21 @@ void ShaderBootstrapper::initializeUniforms(ShaderProgram* program)
     program->SetVec4Uniform("iDate", Vector4(static_cast<float>(time.tm_year - 1), static_cast<float>(time.tm_mon - 1), static_cast<float>(time.tm_mday), static_cast<float>(time.tm_sec))); //TODO: include fractional part of sec.
     program->SetFloatUniform("iSampleRate", 0.0f);
     program->SetVec3Uniform("iChannelResolution", iChannelResolution, 4);
-    //program->SetUniform("iChannelResolution", iChannelResolution, 4);
+
+    if (TheGame::instance)
+    {
+        glActiveTexture(GL_TEXTURE0 + 4);
+        glBindTexture(GL_TEXTURE_2D, TheGame::instance->m_currentRecord->m_innerMaterial->m_diffuseID);
+        glBindSampler(0, material->m_samplerID);
+        program->SetIntUniform("iChannel0", 4);
+    }
 }
 
 //-----------------------------------------------------------------------------------
-void ShaderBootstrapper::updateUniforms(ShaderProgram* program, float deltaSeconds)
+void ShaderBootstrapper::updateUniforms(Material* material, float deltaSeconds)
 {
+    ShaderProgram* program = material->m_shaderProgram;
+
     //Calculate mouse vector
     bool isClicking = InputSystem::instance->IsMouseButtonDown(InputSystem::LEFT_MOUSE_BUTTON);
     Vector2Int lastClickedPos = InputSystem::instance->GetMouseLastClickedPos();
@@ -114,4 +131,8 @@ void ShaderBootstrapper::updateUniforms(ShaderProgram* program, float deltaSecon
     program->SetVec4Uniform("iDate", Vector4(static_cast<float>(time.tm_year - 1), static_cast<float>(time.tm_mon - 1), static_cast<float>(time.tm_mday), static_cast<float>(time.tm_sec))); //TODO: include fractional part of sec.
     program->SetFloatUniform("iSampleRate", sampleRate);
 
+    glActiveTexture(GL_TEXTURE0 + 4);
+    glBindTexture(GL_TEXTURE_2D, TheGame::instance->m_currentRecord->m_innerMaterial->m_diffuseID);
+    glBindSampler(0, material->m_samplerID);
+    program->SetIntUniform("iChannel0", 4);
 }
