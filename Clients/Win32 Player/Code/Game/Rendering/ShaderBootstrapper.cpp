@@ -34,6 +34,7 @@ const char* ShaderBootstrapper::shaderHeader =
 "uniform float iSampleRate;"
 "uniform vec3 iChannelResolution[4];"
 "uniform sampler2D iChannel0;"
+"in vec2 passUV0;"
 "out vec4 outColor;\n";
 
 const char* ShaderBootstrapper::mainFunction =
@@ -87,7 +88,7 @@ void ShaderBootstrapper::initializeUniforms(Material* material)
     {
         glActiveTexture(GL_TEXTURE0 + 4);
         glBindTexture(GL_TEXTURE_2D, TheGame::instance->m_currentRecord->m_innerMaterial->m_diffuseID);
-        glBindSampler(0, material->m_samplerID);
+        glBindSampler(4, material->m_samplerID);
         program->SetIntUniform("iChannel0", 4);
     }
 }
@@ -133,6 +134,6 @@ void ShaderBootstrapper::updateUniforms(Material* material, float deltaSeconds)
 
     glActiveTexture(GL_TEXTURE0 + 4);
     glBindTexture(GL_TEXTURE_2D, TheGame::instance->m_currentRecord->m_innerMaterial->m_diffuseID);
-    glBindSampler(0, material->m_samplerID);
+    glBindSampler(4, material->m_samplerID);
     program->SetIntUniform("iChannel0", 4);
 }
