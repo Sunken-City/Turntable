@@ -43,6 +43,7 @@ const Vector2 TOP_RIGHT = Vector2(VIEW_RIGHT, VIEW_TOP);
 
 bool g_isQuitting = false;
 bool g_isFullscreen = false;
+bool g_uiHidden = false;
 HWND g_hWnd = nullptr;
 HDC g_displayDeviceContext = nullptr;
 HGLRC g_openGLRenderingContext = nullptr;
@@ -128,10 +129,12 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure(HWND windowHandle, UINT wmMessa
 
     case WM_CHAR:
         InputSystem::instance->SetLastPressedChar(asKey);
+        g_uiHidden = false;
         break;
 
     case WM_KEYDOWN:
         InputSystem::instance->SetKeyDownStatus(asKey, true);
+        g_uiHidden = false;
         if (asKey == VK_ESCAPE)
         {
             g_isQuitting = true;
@@ -340,11 +343,14 @@ void Render()
     Renderer::instance->FrameBufferCopyToBack(TheGame::instance->m_fbo, TheGame::instance->m_fbo->m_pixelWidth, TheGame::instance->m_fbo->m_pixelHeight);
     TheGame::instance->m_fbo->Unbind();
 
-    Renderer::instance->m_defaultMaterial->m_renderState.depthTestingMode = RenderState::DepthTestingMode::ON;
-    TheGame::instance->Render();
-    Renderer::instance->m_defaultMaterial->m_renderState.depthTestingMode = RenderState::DepthTestingMode::OFF;
-    UISystem::instance->Render();
-    Console::instance->Render();
+    if (g_uiHidden == false)
+    {
+        Renderer::instance->m_defaultMaterial->m_renderState.depthTestingMode = RenderState::DepthTestingMode::ON;
+        TheGame::instance->Render();
+        Renderer::instance->m_defaultMaterial->m_renderState.depthTestingMode = RenderState::DepthTestingMode::OFF;
+        UISystem::instance->Render();
+        Console::instance->Render();
+    }
 
     SwapBuffers(g_displayDeviceContext);
 }

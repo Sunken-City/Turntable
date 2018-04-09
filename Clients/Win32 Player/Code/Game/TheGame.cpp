@@ -58,6 +58,7 @@ extern std::vector<AnimationMotion*>* g_loadedMotions;
 extern int g_numLoadedMeshes;
 extern int WINDOW_PHYSICAL_WIDTH;
 extern int WINDOW_PHYSICAL_HEIGHT;
+extern bool g_uiHidden;
 
 unsigned int samplerID;
 unsigned int diffuseID;
@@ -137,7 +138,7 @@ void TheGame::PrintConsoleWelcome()
 {
     //Unicode support motivation
     Console::instance->PrintLine("Welcome to Turntable!", RGBA::GOLD);
-    Console::instance->PrintLine("Version 0.2 - Andante", RGBA::GOLD);
+    Console::instance->PrintLine("Version 0.3 - Rilassato", RGBA::GOLD);
     Console::instance->PrintLine("Type 'help' for a list of commands", RGBA::GOLD);
     
 //     Console::instance->PrintLine("████████╗██╗   ██╗██████╗ ███╗   ██╗████████╗ █████╗ ██████╗ ██╗     ███████╗", RGBA::YELLOW);
@@ -552,4 +553,11 @@ CONSOLE_COMMAND(setbackground)
     TheGame::instance->m_quadForFBO->m_material = TheGame::instance->m_fboMaterial;
 
     Console::instance->PrintLine("Successfuly changed background!", RGBA::FOREST_GREEN);
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(hideui)
+{
+    UNUSED(args);
+    g_uiHidden = true;
 }
