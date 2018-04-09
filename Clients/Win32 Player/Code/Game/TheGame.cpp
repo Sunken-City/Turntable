@@ -82,7 +82,7 @@ TheGame::TheGame()
     m_blankFBODepthTexture = new Texture(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT, Texture::TextureFormat::D24S8);
     m_fbo = Framebuffer::FramebufferCreate(1, &m_blankFBOColorTexture, m_blankFBODepthTexture);
 
-    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/basic.frag"),
+    m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", "Data/Shaders/Backgrounds/earthbound.frag"),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));
     ShaderBootstrapper::initializeUniforms(m_fboMaterial);
