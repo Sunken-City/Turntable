@@ -96,6 +96,7 @@ TheGame::TheGame()
     m_quadForFBO->m_material->SetFloatUniform("gPixelationFactor", 8.0f);
     Console::instance->m_backgroundTexture = Texture::CreateOrGetTexture("Data/Images/Logos/turntableSplash.png");
 
+    InitializeUserDirectories();
     PrintConsoleWelcome();    
     LoadDefaultScene(); 
     InitializeMainCamera();
@@ -145,6 +146,16 @@ void TheGame::PrintConsoleWelcome()
 //     Console::instance->PrintLine("   ██║   ██║   ██║██╔══██╗██║╚██╗██║   ██║   ██╔══██║██╔══██╗██║     ██╔══╝  ", RGBA::YELLOW);
 //     Console::instance->PrintLine("   ██║   ╚██████╔╝██║  ██║██║ ╚████║   ██║   ██║  ██║██████╔╝███████╗███████╗", RGBA::YELLOW);
 //     Console::instance->PrintLine("   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝", RGBA::YELLOW);
+}
+
+//-----------------------------------------------------------------------------------
+void TheGame::InitializeUserDirectories()
+{
+    //Ensure that our directory strucutre exists for user data.
+    std::string appdata = GetAppDataDirectory();
+    EnsureDirectoryExists(appdata + "\\Turntable");
+    EnsureDirectoryExists(appdata + "\\Turntable\\Playlists");
+    EnsureDirectoryExists(appdata + "\\Turntable\\Shaders");
 }
 
 //-----------------------------------------------------------------------------------
@@ -476,10 +487,27 @@ CONSOLE_COMMAND(getsongmetadata)
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(printbackgrounds)
 {
+    Console::instance->PrintLine("Turntable Shaders:", RGBA::JOLTIK_YELLOW);
     std::vector<std::string> backgroundShaders = EnumerateFiles("Data/Shaders/Backgrounds/", "*.frag");
     for (std::string& shader : backgroundShaders)
     {
         Console::instance->PrintLine(shader, RGBA::JOLTIK_PURPLE);
+    }
+
+    Console::instance->PrintLine("User-Defined Shaders:", RGBA::JOLTIK_YELLOW);
+    std::string appdata = GetAppDataDirectory();
+    std::string userFilePath = Stringf("%s\\Turntable\\Shaders\\", appdata.c_str());
+    std::vector<std::string> userBackgroundShaders = EnumerateFiles(userFilePath, "*.frag");
+    if (userBackgroundShaders.empty())
+    {
+        Console::instance->PrintLine(Stringf("<None> (You can add some in the folder at %s)", userFilePath.c_str()), RGBA::KHAKI);
+    }
+    else
+    {
+        for (std::string& shader : userBackgroundShaders)
+        {
+            Console::instance->PrintLine(shader, RGBA::JOLTIK_PURPLE);
+        }
     }
 }
 
@@ -492,8 +520,12 @@ CONSOLE_COMMAND(setbackground)
         return;
     }
     std::string shaderName = args.GetStringArgument(0);
-    std::string fileName = Stringf("Data/Shaders/Backgrounds/%s.frag", shaderName.c_str());
-    if (!FileExists(fileName))
+
+    std::string appdata = GetAppDataDirectory();
+    std::string userFilePath = Stringf("%s\\Turntable\\Shaders\\%s.frag", appdata.c_str(), shaderName.c_str());
+    std::string turntableFilePath = Stringf("Data/Shaders/Backgrounds/%s.frag", shaderName.c_str());
+    std::string filePath = FileExists(userFilePath) ? userFilePath : turntableFilePath;
+    if (!FileExists(filePath))
     {
         Console::instance->PrintLine("Could not find background shader with that name.", RGBA::RED);
         return;
@@ -502,7 +534,7 @@ CONSOLE_COMMAND(setbackground)
     delete TheGame::instance->m_fboMaterial->m_shaderProgram;
     delete TheGame::instance->m_fboMaterial;
 
-    TheGame::instance->m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", fileName.c_str()),
+    TheGame::instance->m_fboMaterial = new Material(ShaderBootstrapper::compileShader("Data/Shaders/post.vert", filePath.c_str()),
         RenderState(RenderState::DepthTestingMode::ON, RenderState::FaceCullingMode::RENDER_BACK_FACES, RenderState::BlendMode::ALPHA_BLEND));
     TheGame::instance->m_fboMaterial->SetDiffuseTexture(TheGame::instance->m_blankFBOColorTexture);
     TheGame::instance->m_fboMaterial->ReplaceSampler(Renderer::instance->CreateSampler(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT));

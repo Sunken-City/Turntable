@@ -34,6 +34,7 @@ public:
     void LoadDefaultScene();
     float CalculateRotationRateFromRPM(float RPM) { return (RPM * 360) / 60; }
     void PrintConsoleWelcome();
+    void InitializeUserDirectories();
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static TheGame* instance;
