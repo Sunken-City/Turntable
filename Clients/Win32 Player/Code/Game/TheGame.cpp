@@ -521,6 +521,7 @@ CONSOLE_COMMAND(setbackground)
         return;
     }
     std::string shaderName = args.GetStringArgument(0);
+    shaderName = shaderName.substr(shaderName.size() - 5, 5) == ".frag" ? shaderName.substr(0, shaderName.size() - 5) : shaderName;
 
     std::string appdata = GetAppDataDirectory();
     std::string userFilePath = Stringf("%s\\Turntable\\Shaders\\%s.frag", appdata.c_str(), shaderName.c_str());
