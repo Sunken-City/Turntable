@@ -106,10 +106,10 @@ TheGame::TheGame()
 //-----------------------------------------------------------------------------------
 TheGame::~TheGame()
 {
-    delete SongManager::instance;
-    SongManager::instance = nullptr;
     delete AchievementManager::instance;
     AchievementManager::instance = nullptr;
+    delete SongManager::instance;
+    SongManager::instance = nullptr;
     delete m_currentRecord;
     delete m_fbo->m_colorTargets[0];
     delete m_fbo->m_depthStencilTarget;

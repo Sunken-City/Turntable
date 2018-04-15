@@ -7,6 +7,7 @@
 #include "ThirdParty/Parsers/XMLParser.hpp"
 #include "Engine/Input/XMLUtils.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
+#include "../Audio/SongManager.hpp"
 
 //-----------------------------------------------------------------------------------
 UserProfile::UserProfile()
@@ -67,6 +68,9 @@ void UserProfile::SaveToDisk(const std::string& profileName /*= "Default"*/)
     expNode.addAttribute("LifetimePlaycounts", Stringf("%i", m_lifetimePlaycounts).c_str());
     expNode.addAttribute("LifetimeSeconds", Stringf("%i", m_lifetimeSecondsListened).c_str());
 
+    XMLNode settingsNode = root.addChild("Settings");
+    settingsNode.addAttribute("SongVolume", Stringf("%f", SongManager::instance->m_songVolume).c_str());
+
     std::string saveDirectory = GetAppDataDirectory();
     EnsureDirectoryExists(saveDirectory + "\\Turntable");
     EnsureDirectoryExists(saveDirectory + "\\Turntable\\UserProfiles");
@@ -97,6 +101,11 @@ UserProfile* UserProfile::LoadFromDisk(const std::string& profileName /*= "Defau
     loadedProfile->m_numTokens = std::stoi(expNode.getAttribute("Tokens"));
     loadedProfile->m_lifetimePlaycounts = std::stoi(expNode.getAttribute("LifetimePlaycounts"));
     loadedProfile->m_lifetimeSecondsListened = std::stoi(expNode.getAttribute("LifetimeSeconds"));
+
+    XMLNode settingsNode = userProfile.getChildNode("Settings");
+    if (!settingsNode.IsContentEmpty()) {
+        SongManager::instance->m_songVolume = std::stof(settingsNode.getAttribute("SongVolume"));
+    }
 
     return loadedProfile;
 }
