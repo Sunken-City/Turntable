@@ -405,21 +405,15 @@ void SongManager::SavePlaylist(const std::string& name)
     //Saves the current song queue to an XML formatted playlist in the user's AppData directory
     std::string appdata = GetAppDataDirectory();
     std::string savePath = Stringf("%s\\Turntable\\Playlists\\%s.xml", appdata.c_str(), name.c_str());
-
-    if (m_songQueue.size() != 0)
+    if (m_activeSong || m_songQueue.size() != 0)
     {
         XMLNode playlist = OpenPlaylist(name);
+
+        AddToPlaylist(playlist, m_activeSong);
         for (unsigned int i = 0; i < m_songQueue.size(); ++i)
         {
             AddToPlaylist(playlist, m_songQueue.at(i));
         }
-
-        playlist.writeToFile(savePath.c_str());
-    }
-    else if (m_activeSong)
-    {
-        XMLNode playlist = OpenPlaylist(name);
-        AddToPlaylist(playlist, m_activeSong);
 
         playlist.writeToFile(savePath.c_str());
     }
