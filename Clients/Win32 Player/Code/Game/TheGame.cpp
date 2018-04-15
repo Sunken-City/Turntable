@@ -562,3 +562,11 @@ CONSOLE_COMMAND(hideui)
     UNUSED(args);
     g_uiHidden = true;
 }
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(savedata)
+{
+    UNUSED(args);
+    AchievementManager::instance->m_currentProfile->SaveToDisk();
+    Console::instance->PrintLine("User data saved!", RGBA::FOREST_GREEN);
+}
