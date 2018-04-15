@@ -775,6 +775,25 @@ CONSOLE_COMMAND(loadplaylist)
 }
 
 //-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(deleteplaylist)
+{
+    if (!(args.HasArgs(1)))
+    {
+        Console::instance->PrintLine("deleteplaylist <name>", RGBA::RED);
+        return;
+    }
+
+    if (!SongManager::instance->CheckForPlaylistOnDisk(args.GetStringArgument(0).c_str()))
+    {
+        Console::instance->PrintLine("Could not find playlist on disk.", RGBA::RED);
+        return;
+    }
+    std::string appdata = GetAppDataDirectory();
+    std::string filePath = Stringf("%s\\Turntable\\Playlists\\%s.xml", appdata.c_str(), args.GetStringArgument(0).c_str());
+    //DeleteFile(filePath.c_str());
+}
+
+//-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(saveplaylist)
 {
     if (!(args.HasArgs(1)))
