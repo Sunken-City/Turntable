@@ -35,6 +35,7 @@ public:
     float CalculateRotationRateFromRPM(float RPM) { return (RPM * 360) / 60; }
     void PrintConsoleWelcome();
     void InitializeUserDirectories();
+    void ShutdownTasks();
 
     //STATIC VARIABLES/////////////////////////////////////////////////////////////////////
     static TheGame* instance;

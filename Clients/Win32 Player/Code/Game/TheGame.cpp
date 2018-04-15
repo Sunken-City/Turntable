@@ -106,6 +106,7 @@ TheGame::TheGame()
 //-----------------------------------------------------------------------------------
 TheGame::~TheGame()
 {
+    ShutdownTasks();
     delete AchievementManager::instance;
     AchievementManager::instance = nullptr;
     delete SongManager::instance;
@@ -157,6 +158,13 @@ void TheGame::InitializeUserDirectories()
     EnsureDirectoryExists(appdata + "\\Turntable");
     EnsureDirectoryExists(appdata + "\\Turntable\\Playlists");
     EnsureDirectoryExists(appdata + "\\Turntable\\Shaders");
+}
+
+//-----------------------------------------------------------------------------------
+void TheGame::ShutdownTasks()
+{
+    SongManager::instance->SavePlaylist("LastPlaying");
+    AchievementManager::instance->m_currentProfile->SaveToDisk();
 }
 
 //-----------------------------------------------------------------------------------
