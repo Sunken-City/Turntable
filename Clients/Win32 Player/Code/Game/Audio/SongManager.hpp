@@ -46,7 +46,9 @@ public:
     bool CheckForSongOnDisk(std::wstring& filepath) const;
     void LoadPlaylist(const XMLNode& playlist);
     void StartLoadingSound();
+    void FindRandomAlbum(std::wstring& currentMusicRoot, std::vector<std::wstring>& songs) const;
     void QueueRandomSong(bool playWholeAlbum = false);
+    void QueueRandomSongsForDuration(float numMinutes);
     void LoadAlbumArt(Song* songToPlay);
     Song* GetNextUnloadedSong();
     int GetSongPositionInQueue(Song* song);

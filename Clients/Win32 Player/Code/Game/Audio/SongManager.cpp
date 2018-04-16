@@ -694,31 +694,9 @@ void SongManager::QueueRandomSong(bool playWholeAlbum /*= false*/)
         return;
     }
 
-    bool foundAlbum = false;
-    do 
-    {
-        std::vector<std::wstring> folders = EnumerateWideDirectories(currentMusicRoot);
-        foundAlbum = folders.size() == 0;
-
-        if (!foundAlbum)
-        {
-            unsigned int randDirectory = MathUtils::GetRandomInt(0, folders.size() - 1);
-            currentMusicRoot = WStringf(L"%s\\%s", currentMusicRoot.c_str(), folders[randDirectory].c_str());
-        }
-    } while (!foundAlbum);
-
-    std::vector<std::wstring> mp3s = EnumerateWideFiles(currentMusicRoot, L"*.mp3");
-    std::vector<std::wstring> flacs = EnumerateWideFiles(currentMusicRoot, L"*.flac");
-    std::vector<std::wstring> oggs = EnumerateWideFiles(currentMusicRoot, L"*.ogg");
-    std::vector<std::wstring> wavs = EnumerateWideFiles(currentMusicRoot, L"*.wav");
-                     
-    std::vector<std::wstring> songs;
-    songs.reserve(mp3s.size() + flacs.size() + oggs.size() + wavs.size());
-    songs.insert(songs.end(), mp3s.begin(), mp3s.end());
-    songs.insert(songs.end(), flacs.begin(), flacs.end());
-    songs.insert(songs.end(), oggs.begin(), oggs.end());
-    songs.insert(songs.end(), wavs.begin(), wavs.end());
-
+    std::vector<std::wstring> songs; 
+    FindRandomAlbum(currentMusicRoot, songs);
+    
     if (songs.size() == 0)
     {
         Console::instance->PrintLine("Tried to load directory %s but it had no songs.", RGBA::RED);
@@ -748,6 +726,40 @@ void SongManager::QueueRandomSong(bool playWholeAlbum /*= false*/)
         std::wstring songPath = WStringf(L"%s\\%s", currentMusicRoot.c_str(), songs[randSong].c_str());
         Console::instance->RunCommand(WStringf(L"play \"%s\"", songPath.c_str()), true);
     }
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::FindRandomAlbum(std::wstring& currentMusicRoot, std::vector<std::wstring>& foundSongs) const
+{
+    bool foundAlbum = false;
+    do
+    {
+        std::vector<std::wstring> folders = EnumerateWideDirectories(currentMusicRoot);
+        foundAlbum = folders.size() == 0;
+
+        if (!foundAlbum)
+        {
+            unsigned int randDirectory = MathUtils::GetRandomInt(0, folders.size() - 1);
+            currentMusicRoot = WStringf(L"%s\\%s", currentMusicRoot.c_str(), folders[randDirectory].c_str());
+        }
+    } while (!foundAlbum);
+
+    std::vector<std::wstring> mp3s = EnumerateWideFiles(currentMusicRoot, L"*.mp3");
+    std::vector<std::wstring> flacs = EnumerateWideFiles(currentMusicRoot, L"*.flac");
+    std::vector<std::wstring> oggs = EnumerateWideFiles(currentMusicRoot, L"*.ogg");
+    std::vector<std::wstring> wavs = EnumerateWideFiles(currentMusicRoot, L"*.wav");
+
+    foundSongs.reserve(mp3s.size() + flacs.size() + oggs.size() + wavs.size());
+    foundSongs.insert(foundSongs.end(), mp3s.begin(), mp3s.end());
+    foundSongs.insert(foundSongs.end(), flacs.begin(), flacs.end());
+    foundSongs.insert(foundSongs.end(), oggs.begin(), oggs.end());
+    foundSongs.insert(foundSongs.end(), wavs.begin(), wavs.end());
+}
+
+//-----------------------------------------------------------------------------------
+void SongManager::QueueRandomSongsForDuration(float numMinutes)
+{
+    throw std::logic_error("The method or operation is not implemented.");
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////
@@ -1043,11 +1055,11 @@ CONSOLE_COMMAND(getmusicroot)
 }
 
 //-----------------------------------------------------------------------------------
-CONSOLE_COMMAND(playmea)
+CONSOLE_COMMAND(playme)
 {
-    if (!(args.HasArgs(1)))
+    if (!(args.HasArgs(1) || args.HasArgs(2)))
     {
-        Console::instance->PrintLine("playmea <'song' | 'album'>", RGBA::RED);
+        Console::instance->PrintLine("playme <'song' | 'album' | 'minutes'> (minutes of music to queue)", RGBA::RED);
         return;
     }
     std::string command = args.GetStringArgument(0);
@@ -1057,13 +1069,25 @@ CONSOLE_COMMAND(playmea)
     {
         SongManager::instance->QueueRandomSong(false);
     }
-    else if (command == "album" | command == "nalbum")
+    else if (command == "album")
     {
         SongManager::instance->QueueRandomSong(true);
     }
+    else if (command == "minutes")
+    {
+        if (!args.HasArgs(2))
+        {
+            Console::instance->PrintLine("playme minutes <# minutes to load>", RGBA::RED);
+            Console::instance->PrintLine("Please type in the number of minutes of music you'd like to play.", RGBA::RED);
+        }
+        else
+        {
+           SongManager::instance->QueueRandomSongsForDuration(args.GetFloatArgument(1));
+        }
+    }
     else
     {
-        Console::instance->PrintLine("playmea <'song' | 'album'>", RGBA::RED);
+        Console::instance->PrintLine("playme <'song' | 'album' | 'minutes'>", RGBA::RED);
         Console::instance->PrintLine("Please type in song or album to find a random song or album to play.", RGBA::RED);
         return;
     }
