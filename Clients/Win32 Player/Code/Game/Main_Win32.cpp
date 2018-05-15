@@ -109,6 +109,32 @@ void HandleFileDrop(WPARAM wParam)
 }
 
 //-----------------------------------------------------------------------------------
+void HandleFileAssociation(PSTR commandLineString)
+{
+    int numArgs;
+    LPWSTR* argList;
+
+    argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+
+    if (argList != NULL)
+    {
+        for (int i = 0; i < numArgs - 1; ++i)
+        {
+            if (!SongManager::instance->IsPlaying())
+            {
+                Console::instance->RunCommand(WStringf(L"play \"%s\"", argList[i+1]), true);
+            }
+            else
+            {
+                Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", argList[i+1]));
+            }
+        }
+    }
+
+    LocalFree(argList);
+}
+
+//-----------------------------------------------------------------------------------
 void HandleMouseWheel(WPARAM wParam)
 {
     short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
@@ -367,7 +393,7 @@ void RunFrame()
 
 
 //-----------------------------------------------------------------------------------------------
-void Initialize(HINSTANCE applicationInstanceHandle)
+void Initialize(HINSTANCE applicationInstanceHandle, PSTR commandLineString)
 {
     SetProcessDPIAware();
     CreateOpenGLWindow(applicationInstanceHandle);
@@ -380,6 +406,7 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     JobSystem::instance = new JobSystem(0);
     JobSystem::instance->Initialize();
     TheGame::instance = new TheGame();
+    HandleFileAssociation(commandLineString);
 }
 
 //-----------------------------------------------------------------------------------
@@ -414,11 +441,11 @@ void Shutdown()
 }
 
 //-----------------------------------------------------------------------------------------------
-int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, LPSTR commandLineString, int)
+int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandLineString, int)
 {
     UNUSED(commandLineString);
     MemoryAnalyticsStartup();
-    Initialize(applicationInstanceHandle);
+    Initialize(applicationInstanceHandle, commandLineString);
 
     while (!g_isQuitting)
     {
