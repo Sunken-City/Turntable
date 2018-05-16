@@ -26,6 +26,7 @@
 #include "ThirdParty/OpenGL/wglext.h"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
+#include <direct.h>
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -395,6 +396,9 @@ void RunFrame()
 //-----------------------------------------------------------------------------------------------
 void Initialize(HINSTANCE applicationInstanceHandle, PSTR commandLineString)
 {
+	/*char cCurrentPath[FILENAME_MAX];
+	_getcwd(cCurrentPath, sizeof(cCurrentPath));
+	ERROR_RECOVERABLE(cCurrentPath);*/
     SetProcessDPIAware();
     CreateOpenGLWindow(applicationInstanceHandle);
     Renderer::instance = new Renderer(Vector2Int(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT));
@@ -444,6 +448,13 @@ void Shutdown()
 int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandLineString, int)
 {
     UNUSED(commandLineString);
+
+	int numArgs;
+	LPWSTR* argList;
+	argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+	std::wstring path = GetFileDirectory(argList[0]);
+	SetCurrentDirectory(path.c_str());
+
     MemoryAnalyticsStartup();
     Initialize(applicationInstanceHandle, commandLineString);
 
