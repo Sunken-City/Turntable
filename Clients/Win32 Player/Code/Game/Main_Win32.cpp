@@ -110,14 +110,14 @@ void HandleFileDrop(WPARAM wParam)
 }
 
 //-----------------------------------------------------------------------------------
-void HandleFileAssociation(PSTR commandLineString)
+void HandleFileAssociation()
 {
     int numArgs;
     LPWSTR* argList;
 
     argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
-    if (argList != NULL)
+    if (numArgs > 1 && argList != NULL)
     {
         for (int i = 0; i < numArgs - 1; ++i)
         {
@@ -394,7 +394,7 @@ void RunFrame()
 
 
 //-----------------------------------------------------------------------------------------------
-void Initialize(HINSTANCE applicationInstanceHandle, PSTR commandLineString)
+void Initialize(HINSTANCE applicationInstanceHandle)
 {
     SetProcessDPIAware();
     CreateOpenGLWindow(applicationInstanceHandle);
@@ -407,7 +407,7 @@ void Initialize(HINSTANCE applicationInstanceHandle, PSTR commandLineString)
     JobSystem::instance = new JobSystem(0);
     JobSystem::instance->Initialize();
     TheGame::instance = new TheGame();
-    HandleFileAssociation(commandLineString);
+    HandleFileAssociation();
 }
 
 //-----------------------------------------------------------------------------------
@@ -457,10 +457,11 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 		argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 		std::wstring path = GetFileDirectory(argList[0]);
 		SetCurrentDirectory(path.c_str());
+        LocalFree(argList);
 	}
 
     MemoryAnalyticsStartup();
-    Initialize(applicationInstanceHandle, commandLineString);
+    Initialize(applicationInstanceHandle);
 
     while (!g_isQuitting)
     {
