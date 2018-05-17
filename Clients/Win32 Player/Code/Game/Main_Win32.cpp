@@ -396,9 +396,6 @@ void RunFrame()
 //-----------------------------------------------------------------------------------------------
 void Initialize(HINSTANCE applicationInstanceHandle, PSTR commandLineString)
 {
-	/*char cCurrentPath[FILENAME_MAX];
-	_getcwd(cCurrentPath, sizeof(cCurrentPath));
-	ERROR_RECOVERABLE(cCurrentPath);*/
     SetProcessDPIAware();
     CreateOpenGLWindow(applicationInstanceHandle);
     Renderer::instance = new Renderer(Vector2Int(WINDOW_PHYSICAL_WIDTH, WINDOW_PHYSICAL_HEIGHT));
@@ -449,11 +446,18 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 {
     UNUSED(commandLineString);
 
-	int numArgs;
-	LPWSTR* argList;
-	argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-	std::wstring path = GetFileDirectory(argList[0]);
-	SetCurrentDirectory(path.c_str());
+	TCHAR buffer[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, buffer);
+	std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
+
+	if (!FileExists(currentPath))
+	{
+		int numArgs;
+		LPWSTR* argList;
+		argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+		std::wstring path = GetFileDirectory(argList[0]);
+		SetCurrentDirectory(path.c_str());
+	}
 
     MemoryAnalyticsStartup();
     Initialize(applicationInstanceHandle, commandLineString);
