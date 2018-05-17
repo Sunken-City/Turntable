@@ -26,7 +26,6 @@
 #include "ThirdParty/OpenGL/wglext.h"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
-#include <direct.h>
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
