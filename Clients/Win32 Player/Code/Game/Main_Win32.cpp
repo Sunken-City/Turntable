@@ -116,6 +116,7 @@ void HandleFileAssociation()
 
     argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
+    //First arg is always the absolute path to Turntable, so we start at index 1
     if (numArgs > 1 && argList != NULL)
     {
         for (int i = 0; i < numArgs - 1; ++i)
