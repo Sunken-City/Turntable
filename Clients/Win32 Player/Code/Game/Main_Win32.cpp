@@ -26,6 +26,7 @@
 #include "ThirdParty/OpenGL/wglext.h"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
+#include <Objbase.h>
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -106,6 +107,21 @@ void HandleFileDrop(WPARAM wParam)
         }
     }
     DragFinish(fileDrop);
+}
+
+//-----------------------------------------------------------------------------------
+HANDLE EnsureOneInstance()
+{
+    //Try to open the mutex for Turntable. If it doesn't exist, create one.
+    HANDLE turntableHandle = OpenMutex(MUTEX_ALL_ACCESS, 0, L"TurntableMutex");
+
+    if (!turntableHandle)
+    {
+        return CreateMutex(0, 0, L"TurntableMutex");
+    }
+
+    //The mutex exists, so send a message to the open instance and close this one
+
 }
 
 //-----------------------------------------------------------------------------------
@@ -446,29 +462,97 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 {
     UNUSED(commandLineString);
 
-	TCHAR buffer[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH, buffer);
-	std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
+    //Try to create named pipe for Turntable, and if it already exists
+    HANDLE turntablePipe = CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE", 
+                                            PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE, 
+                                            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_ACCEPT_REMOTE_CLIENTS, 
+                                            1,
+                                            512,
+                                            512,
+                                            0,
+                                            NULL);
 
-	if (!FileExists(currentPath))
-	{
-		int numArgs;
-		LPWSTR* argList;
-		argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-		std::wstring path = GetFileDirectory(argList[0]);
-		SetCurrentDirectory(path.c_str());
-        LocalFree(argList);
-	}
-
-    MemoryAnalyticsStartup();
-    Initialize(applicationInstanceHandle);
-
-    while (!g_isQuitting)
+    if (GetLastError() == ERROR_ACCESS_DENIED || turntablePipe == INVALID_HANDLE_VALUE)
     {
-        RunFrame();
+        //The pipe exists, so send a message to the open instance and close this one
+        //Create an overlapped structure to pass to the async pipe connection
+        /*LPOVERLAPPED overlapped;
+        overlapped->Pointer = 0;
+        overlapped->hEvent = CreateEvent(NULL, true, false, L"TurntableEvent");
+        overlapped->Internal = 0;
+        overlapped->InternalHigh = 0;
+        overlapped->Offset = 0;
+        overlapped->OffsetHigh = 0;*/
+        //bool pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
+        LPWSTR message = L"Test message";
+        TCHAR readBuffer[512];
+        DWORD cbRead;
+
+        bool pipeConnected = TransactNamedPipe(
+            turntablePipe,                  // pipe handle 
+            message,              // message to server
+            (lstrlen(message) + 1) * sizeof(TCHAR), // message length 
+            readBuffer,              // buffer to receive reply
+            512 * sizeof(TCHAR),  // size of read buffer
+            &cbRead,                // bytes read
+            NULL);                  // not overlapped
+        /*while (!HasOverlappedIoCompleted(overlapped))
+        {
+
+        }*/
+        if (pipeConnected)
+        {
+            //Pass a message to focus the window
+
+        }
+        int numArgs;
+        LPWSTR* argList;
+
+        argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+
+        //If there was a file passed to this instance of Turntable, send it to the open one
+        if (numArgs > 1 && argList != NULL)
+        {
+            for (int i = 0; i < numArgs - 1; ++i)
+            {
+                //Find Turntable's handle in the ROT
+
+            }
+        }
+
+        LocalFree(argList);
+
+    }
+    else
+    {
+
+        TCHAR buffer[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, buffer);
+        std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
+
+        if (!FileExists(currentPath))
+        {
+            //If Turntable isn't in our working directory, change to the calling directory
+            int numArgs;
+            LPWSTR* argList;
+            argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+            std::wstring path = GetFileDirectory(argList[0]);
+            SetCurrentDirectory(path.c_str());
+            LocalFree(argList);
+        }
+
+        MemoryAnalyticsStartup();
+        Initialize(applicationInstanceHandle);
+
+        while (!g_isQuitting)
+        {
+            RunFrame();
+        }
+
+        Shutdown();
+        MemoryAnalyticsShutdown();
+        CloseHandle(turntablePipe);
     }
 
-    Shutdown();
-    MemoryAnalyticsShutdown();
     return 0;
 }
