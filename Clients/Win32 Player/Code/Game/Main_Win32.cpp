@@ -26,6 +26,7 @@
 #include "ThirdParty/OpenGL/wglext.h"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
+#include <Objbase.h>
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -106,6 +107,21 @@ void HandleFileDrop(WPARAM wParam)
         }
     }
     DragFinish(fileDrop);
+}
+
+//-----------------------------------------------------------------------------------
+HANDLE EnsureOneInstance()
+{
+    //Try to open the mutex for Turntable. If it doesn't exist, create one.
+    HANDLE turntableHandle = OpenMutex(MUTEX_ALL_ACCESS, 0, L"TurntableMutex");
+
+    if (!turntableHandle)
+    {
+        return CreateMutex(0, 0, L"TurntableMutex");
+    }
+
+    //The mutex exists, so send a message to the open instance and close this one
+
 }
 
 //-----------------------------------------------------------------------------------
@@ -446,29 +462,62 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 {
     UNUSED(commandLineString);
 
-	TCHAR buffer[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH, buffer);
-	std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
+    //Try to open the mutex for Turntable. If it doesn't exist, create one.
+    HANDLE turntableMutex = OpenMutex(MUTEX_ALL_ACCESS, 0, L"TurntableMutex");
 
-	if (!FileExists(currentPath))
-	{
-		int numArgs;
-		LPWSTR* argList;
-		argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-		std::wstring path = GetFileDirectory(argList[0]);
-		SetCurrentDirectory(path.c_str());
-        LocalFree(argList);
-	}
-
-    MemoryAnalyticsStartup();
-    Initialize(applicationInstanceHandle);
-
-    while (!g_isQuitting)
+    if (!turntableMutex)
     {
-        RunFrame();
+        turntableMutex = CreateMutex(0, 0, L"TurntableMutex");
+        LPRUNNINGOBJECTTABLE* rot;
+        GetRunningObjectTable(0, rot);
+        TCHAR buffer[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, buffer);
+        std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
+
+        if (!FileExists(currentPath))
+        {
+            //If Turntable isn't in our working directory, change to the calling directory
+            int numArgs;
+            LPWSTR* argList;
+            argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+            std::wstring path = GetFileDirectory(argList[0]);
+            SetCurrentDirectory(path.c_str());
+            LocalFree(argList);
+        }
+
+        MemoryAnalyticsStartup();
+        Initialize(applicationInstanceHandle);
+
+        while (!g_isQuitting)
+        {
+            RunFrame();
+        }
+
+        Shutdown();
+        MemoryAnalyticsShutdown();
+        ReleaseMutex(turntableMutex);
+    }
+    else
+    {
+        //The mutex exists, so send a message to the open instance and close this one
+        //WM_SETFOCUS(turntableMutex);
+        int numArgs;
+        LPWSTR* argList;
+
+        argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+
+        //If there was a file passed to this instance of Turntable, send it to the open one
+        if (numArgs > 1 && argList != NULL)
+        {
+            for (int i = 0; i < numArgs - 1; ++i)
+            {
+                //Find which thread owns this mutex
+                
+            }
+        }
+
+        LocalFree(argList);
     }
 
-    Shutdown();
-    MemoryAnalyticsShutdown();
     return 0;
 }
