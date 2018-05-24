@@ -368,6 +368,7 @@ void Update()
     float deltaSeconds = (float)( timeNow - s_timeLastFrameStarted );
     s_timeLastFrameStarted = timeNow;
     UpdateFrameRate(deltaSeconds);
+    //EnsurePipeThreadRunning();
 
     InputSystem::instance->Update(deltaSeconds);
     AudioSystem::instance->Update(deltaSeconds);
@@ -424,6 +425,7 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     JobSystem::instance->Initialize();
     TheGame::instance = new TheGame();
     HandleFileAssociation();
+    //EnsurePipeThreadRunning();
 }
 
 //-----------------------------------------------------------------------------------
@@ -463,14 +465,15 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
     UNUSED(commandLineString);
 
     //Try to create named pipe for Turntable, and if it already exists
-    HANDLE turntablePipe = CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE", 
+    HANDLE turntablePipe = CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\", 
                                             PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE, 
                                             PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_ACCEPT_REMOTE_CLIENTS, 
-                                            1,
+                                            PIPE_UNLIMITED_INSTANCES,
                                             512,
                                             512,
                                             0,
                                             NULL);
+    bool pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
 
     if (GetLastError() == ERROR_ACCESS_DENIED || turntablePipe == INVALID_HANDLE_VALUE)
     {
@@ -483,28 +486,9 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
         overlapped->InternalHigh = 0;
         overlapped->Offset = 0;
         overlapped->OffsetHigh = 0;*/
-        //bool pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
-        LPWSTR message = L"Test message";
         TCHAR readBuffer[512];
         DWORD cbRead;
 
-        bool pipeConnected = TransactNamedPipe(
-            turntablePipe,                  // pipe handle 
-            message,              // message to server
-            (lstrlen(message) + 1) * sizeof(TCHAR), // message length 
-            readBuffer,              // buffer to receive reply
-            512 * sizeof(TCHAR),  // size of read buffer
-            &cbRead,                // bytes read
-            NULL);                  // not overlapped
-        /*while (!HasOverlappedIoCompleted(overlapped))
-        {
-
-        }*/
-        if (pipeConnected)
-        {
-            //Pass a message to focus the window
-
-        }
         int numArgs;
         LPWSTR* argList;
 
@@ -515,17 +499,43 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
         {
             for (int i = 0; i < numArgs - 1; ++i)
             {
-                //Find Turntable's handle in the ROT
-
+                //Send the file to open to the first Turntable instance
+                LPWSTR message = argList[i+1];
+                pipeConnected = CallNamedPipe(
+                    L"\\\\.\\pipe\\TURNTABLE\\",                  // pipe name 
+                    message,              // message to server
+                    (lstrlen(message) + 1) * sizeof(TCHAR), // message length 
+                    readBuffer,              // buffer to receive reply
+                    512 * sizeof(TCHAR),  // size of read buffer
+                    &cbRead,                // bytes read
+                    NMPWAIT_USE_DEFAULT_WAIT);                  // timeout
             }
         }
 
         LocalFree(argList);
-
     }
     else
     {
+        TCHAR* request = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, 512 * sizeof(TCHAR));
+        LPWSTR reply = L"Success";
+        DWORD bytesRead = 0;
+        DWORD bytesWritten = 0;
 
+        pipeConnected = ReadFile(
+            turntablePipe,
+            request,
+            (MAX_PATH + 1) * sizeof(TCHAR),
+            &bytesRead,
+            NULL);
+        //DWORD error = GetLastError();
+
+        pipeConnected = WriteFile(
+            turntablePipe,        // handle to pipe 
+            reply,     // buffer to write from 
+            sizeof(reply), // number of bytes to write 
+            &bytesWritten,   // number of bytes written 
+            NULL);        // not overlapped I/O
+        //DisconnectNamedPipe(turntablePipe);
         TCHAR buffer[MAX_PATH];
         GetCurrentDirectory(MAX_PATH, buffer);
         std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
@@ -543,6 +553,7 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 
         MemoryAnalyticsStartup();
         Initialize(applicationInstanceHandle);
+        Console::instance->RunCommand(WStringf(L"play \"%s\"", request), true);
 
         while (!g_isQuitting)
         {
