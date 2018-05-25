@@ -26,7 +26,7 @@
 #include "ThirdParty/OpenGL/wglext.h"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
-#include <Objbase.h>
+//#include <Objbase.h>
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -120,8 +120,51 @@ HANDLE EnsureOneInstance()
         return CreateMutex(0, 0, L"TurntableMutex");
     }
 
-    //The mutex exists, so send a message to the open instance and close this one
+    //The mutex exists, so close this instance
+    return NULL;
+}
 
+//-----------------------------------------------------------------------------------
+void PipeThread(Job* job)
+{
+    //Try to create named pipe for Turntable
+    HANDLE turntablePipe = (HANDLE) job->data;
+    bool pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
+
+    while (pipeConnected)
+    {
+        //Wait for a user to connect and send its message
+        TCHAR* request = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, 512 * sizeof(TCHAR));
+        LPWSTR reply = L"Success";
+        DWORD bytesRead = 0;
+        DWORD bytesWritten = 0;
+
+        bool success = ReadFile(
+            turntablePipe,
+            request,
+            (MAX_PATH + 1) * sizeof(TCHAR),
+            &bytesRead,
+            NULL);
+
+        success = WriteFile(
+            turntablePipe,        // handle to pipe 
+            reply,     // buffer to write from 
+            sizeof(reply), // number of bytes to write 
+            &bytesWritten,   // number of bytes written 
+            NULL);        // not overlapped I/O
+
+        //Request is assumed to be an absolute path to a song to play
+        Console::instance->RunCommand(WStringf(L"play \"%s\"", request));
+
+        DisconnectNamedPipe(turntablePipe);
+        pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
+    }
+}
+
+//-----------------------------------------------------------------------------------
+void RunPipeThread(HANDLE pipe)
+{
+    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &PipeThread, pipe);
 }
 
 //-----------------------------------------------------------------------------------
@@ -368,7 +411,6 @@ void Update()
     float deltaSeconds = (float)( timeNow - s_timeLastFrameStarted );
     s_timeLastFrameStarted = timeNow;
     UpdateFrameRate(deltaSeconds);
-    //EnsurePipeThreadRunning();
 
     InputSystem::instance->Update(deltaSeconds);
     AudioSystem::instance->Update(deltaSeconds);
@@ -425,7 +467,6 @@ void Initialize(HINSTANCE applicationInstanceHandle)
     JobSystem::instance->Initialize();
     TheGame::instance = new TheGame();
     HandleFileAssociation();
-    //EnsurePipeThreadRunning();
 }
 
 //-----------------------------------------------------------------------------------
@@ -464,31 +505,20 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 {
     UNUSED(commandLineString);
 
-    //Try to create named pipe for Turntable, and if it already exists
-    HANDLE turntablePipe = CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\", 
-                                            PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE, 
-                                            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_ACCEPT_REMOTE_CLIENTS, 
-                                            PIPE_UNLIMITED_INSTANCES,
-                                            512,
-                                            512,
-                                            0,
-                                            NULL);
-    bool pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
+    HANDLE turntablePipe = CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\",
+        PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_ACCEPT_REMOTE_CLIENTS,
+        PIPE_UNLIMITED_INSTANCES,
+        512,
+        512,
+        0,
+        NULL);
 
     if (GetLastError() == ERROR_ACCESS_DENIED || turntablePipe == INVALID_HANDLE_VALUE)
     {
         //The pipe exists, so send a message to the open instance and close this one
-        //Create an overlapped structure to pass to the async pipe connection
-        /*LPOVERLAPPED overlapped;
-        overlapped->Pointer = 0;
-        overlapped->hEvent = CreateEvent(NULL, true, false, L"TurntableEvent");
-        overlapped->Internal = 0;
-        overlapped->InternalHigh = 0;
-        overlapped->Offset = 0;
-        overlapped->OffsetHigh = 0;*/
         TCHAR readBuffer[512];
         DWORD cbRead;
-
         int numArgs;
         LPWSTR* argList;
 
@@ -501,7 +531,7 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
             {
                 //Send the file to open to the first Turntable instance
                 LPWSTR message = argList[i+1];
-                pipeConnected = CallNamedPipe(
+                bool pipeConnected = CallNamedPipe(
                     L"\\\\.\\pipe\\TURNTABLE\\",                  // pipe name 
                     message,              // message to server
                     (lstrlen(message) + 1) * sizeof(TCHAR), // message length 
@@ -513,29 +543,10 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
         }
 
         LocalFree(argList);
+        return 0;
     }
     else
     {
-        TCHAR* request = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, 512 * sizeof(TCHAR));
-        LPWSTR reply = L"Success";
-        DWORD bytesRead = 0;
-        DWORD bytesWritten = 0;
-
-        pipeConnected = ReadFile(
-            turntablePipe,
-            request,
-            (MAX_PATH + 1) * sizeof(TCHAR),
-            &bytesRead,
-            NULL);
-        //DWORD error = GetLastError();
-
-        pipeConnected = WriteFile(
-            turntablePipe,        // handle to pipe 
-            reply,     // buffer to write from 
-            sizeof(reply), // number of bytes to write 
-            &bytesWritten,   // number of bytes written 
-            NULL);        // not overlapped I/O
-        //DisconnectNamedPipe(turntablePipe);
         TCHAR buffer[MAX_PATH];
         GetCurrentDirectory(MAX_PATH, buffer);
         std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
@@ -553,7 +564,7 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 
         MemoryAnalyticsStartup();
         Initialize(applicationInstanceHandle);
-        Console::instance->RunCommand(WStringf(L"play \"%s\"", request), true);
+        RunPipeThread(turntablePipe);
 
         while (!g_isQuitting)
         {
