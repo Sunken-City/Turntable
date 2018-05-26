@@ -26,7 +26,6 @@
 #include "ThirdParty/OpenGL/wglext.h"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
-//#include <Objbase.h>
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -129,35 +128,49 @@ void PipeThread(Job* job)
 {
     //Try to create named pipe for Turntable
     HANDLE turntablePipe = (HANDLE) job->data;
-    bool pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
+    bool pipeConnected = false;
+    OVERLAPPED overlapped;
+    overlapped.hEvent = CreateEvent(NULL, true, false, L"TurntableEvent");
+    overlapped.Internal = 0;
+    overlapped.InternalHigh = 0;
+    overlapped.Offset = 0;
+    overlapped.OffsetHigh = 0;
+    overlapped.Pointer = 0;
 
-    while (pipeConnected)
+    while (!g_isQuitting)
     {
         //Wait for a user to connect and send its message
-        TCHAR* request = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, 512 * sizeof(TCHAR));
-        LPWSTR reply = L"Success";
-        DWORD bytesRead = 0;
-        DWORD bytesWritten = 0;
+        if (GetLastError() != ERROR_PIPE_CONNECTED || pipeConnected == false)
+        {
+            pipeConnected = ConnectNamedPipe(turntablePipe, &overlapped);
+        }
+        else
+        {
+            TCHAR* request = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, 512 * sizeof(TCHAR));
+            LPWSTR reply = L"Success";
+            DWORD bytesRead = 0;
+            DWORD bytesWritten = 0;
 
-        bool success = ReadFile(
-            turntablePipe,
-            request,
-            (MAX_PATH + 1) * sizeof(TCHAR),
-            &bytesRead,
-            NULL);
+            bool success = ReadFile(
+                turntablePipe,
+                request,
+                (MAX_PATH + 1) * sizeof(TCHAR),
+                &bytesRead,
+                NULL);
 
-        success = WriteFile(
-            turntablePipe,        // handle to pipe 
-            reply,     // buffer to write from 
-            sizeof(reply), // number of bytes to write 
-            &bytesWritten,   // number of bytes written 
-            NULL);        // not overlapped I/O
+            success = WriteFile(
+                turntablePipe,        // handle to pipe 
+                reply,     // buffer to write from 
+                sizeof(reply), // number of bytes to write 
+                &bytesWritten,   // number of bytes written 
+                NULL);        // not overlapped I/O
 
-        //Request is assumed to be an absolute path to a song to play
-        Console::instance->RunCommand(WStringf(L"play \"%s\"", request));
-
-        DisconnectNamedPipe(turntablePipe);
-        pipeConnected = ConnectNamedPipe(turntablePipe, NULL);
+            //Request is assumed to be an absolute path to a song to play
+            SetFocus(GetDesktopWindow());
+            Console::instance->RunCommand(WStringf(L"play \"%s\"", request));
+            DisconnectNamedPipe(turntablePipe);
+            pipeConnected = false;
+        }
     }
 }
 
@@ -481,7 +494,7 @@ void EngineCleanup()
 void Shutdown()
 {
     delete TheGame::instance;
-    TheGame::instance = nullptr;
+    TheGame::instance = nullptr;                                            
     JobSystem::instance->Shutdown();
     delete JobSystem::instance;
     JobSystem::instance = nullptr;
@@ -506,8 +519,8 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
     UNUSED(commandLineString);
 
     HANDLE turntablePipe = CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\",
-        PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
-        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_ACCEPT_REMOTE_CLIENTS,
+        PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_NOWAIT | PIPE_ACCEPT_REMOTE_CLIENTS,
         PIPE_UNLIMITED_INSTANCES,
         512,
         512,
@@ -543,7 +556,6 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
         }
 
         LocalFree(argList);
-        return 0;
     }
     else
     {
