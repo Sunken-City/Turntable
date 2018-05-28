@@ -109,21 +109,6 @@ void HandleFileDrop(WPARAM wParam)
 }
 
 //-----------------------------------------------------------------------------------
-HANDLE EnsureOneInstance()
-{
-    //Try to open the mutex for Turntable. If it doesn't exist, create one.
-    HANDLE turntableHandle = OpenMutex(MUTEX_ALL_ACCESS, 0, L"TurntableMutex");
-
-    if (!turntableHandle)
-    {
-        return CreateMutex(0, 0, L"TurntableMutex");
-    }
-
-    //The mutex exists, so close this instance
-    return NULL;
-}
-
-//-----------------------------------------------------------------------------------
 void PipeThread(Job* job)
 {
     //Try to create named pipe for Turntable
@@ -140,7 +125,7 @@ void PipeThread(Job* job)
     while (!g_isQuitting)
     {
         //Wait for a user to connect and send its message
-        if (GetLastError() != ERROR_PIPE_CONNECTED || pipeConnected == false)
+        if (GetLastError() != ERROR_PIPE_CONNECTED)
         {
             pipeConnected = ConnectNamedPipe(turntablePipe, &overlapped);
         }
@@ -166,8 +151,16 @@ void PipeThread(Job* job)
                 NULL);        // not overlapped I/O
 
             //Request is assumed to be an absolute path to a song to play
-            SetFocus(GetDesktopWindow());
-            Console::instance->RunCommand(WStringf(L"play \"%s\"", request));
+            if (!SongManager::instance->IsPlaying())
+            {
+                Console::instance->RunCommand(WStringf(L"play \"%s\"", request));
+            }
+            else
+            {
+                Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", request));
+            }
+
+            FlushFileBuffers(turntablePipe);
             DisconnectNamedPipe(turntablePipe);
             pipeConnected = false;
         }
@@ -178,6 +171,69 @@ void PipeThread(Job* job)
 void RunPipeThread(HANDLE pipe)
 {
     JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &PipeThread, pipe);
+}
+
+//-----------------------------------------------------------------------------------------------
+HANDLE CreateTurntablePipe()
+{
+    return CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\",
+        PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_NOWAIT | PIPE_ACCEPT_REMOTE_CLIENTS,
+        PIPE_UNLIMITED_INSTANCES,
+        512,
+        512,
+        0,
+        NULL);
+}
+
+//-----------------------------------------------------------------------------------------------
+void SendArgsToOpenInstance()
+{
+    TCHAR readBuffer[512];
+    DWORD cbRead;
+    int numArgs;
+    LPWSTR* argList;
+
+    argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+
+    //If there was a file passed to this instance of Turntable, send it to the open one
+    if (numArgs > 1 && argList != NULL)
+    {
+        for (int i = 0; i < numArgs - 1; ++i)
+        {
+            //Send the file to open to the first Turntable instance
+            LPWSTR message = argList[i + 1];
+            bool pipeConnected = CallNamedPipe(
+                L"\\\\.\\pipe\\TURNTABLE\\",                  // pipe name 
+                message,              // message to server
+                (lstrlen(message) + 1) * sizeof(TCHAR), // message length 
+                readBuffer,              // buffer to receive reply
+                512 * sizeof(TCHAR),  // size of read buffer
+                &cbRead,                // bytes read
+                NMPWAIT_USE_DEFAULT_WAIT);                  // timeout
+        }
+    }
+
+    LocalFree(argList);
+}
+
+//-----------------------------------------------------------------------------------------------
+void EnsureWorkingDirectory()
+{
+    TCHAR buffer[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, buffer);
+    std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
+
+    if (!FileExists(currentPath))
+    {
+        //If Turntable isn't in our working directory, change to the calling directory
+        int numArgs;
+        LPWSTR* argList;
+        argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
+        std::wstring path = GetFileDirectory(argList[0]);
+        SetCurrentDirectory(path.c_str());
+        LocalFree(argList);
+    }
 }
 
 //-----------------------------------------------------------------------------------
@@ -454,7 +510,6 @@ void Render()
     SwapBuffers(g_displayDeviceContext);
 }
 
-
 //-----------------------------------------------------------------------------------------------
 void RunFrame()
 {
@@ -463,7 +518,6 @@ void RunFrame()
     Update();
     Render();
 }
-
 
 //-----------------------------------------------------------------------------------------------
 void Initialize(HINSTANCE applicationInstanceHandle)
@@ -518,62 +572,16 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
 {
     UNUSED(commandLineString);
 
-    HANDLE turntablePipe = CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\",
-        PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
-        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_NOWAIT | PIPE_ACCEPT_REMOTE_CLIENTS,
-        PIPE_UNLIMITED_INSTANCES,
-        512,
-        512,
-        0,
-        NULL);
+    HANDLE turntablePipe = CreateTurntablePipe();
 
     if (GetLastError() == ERROR_ACCESS_DENIED || turntablePipe == INVALID_HANDLE_VALUE)
     {
         //The pipe exists, so send a message to the open instance and close this one
-        TCHAR readBuffer[512];
-        DWORD cbRead;
-        int numArgs;
-        LPWSTR* argList;
-
-        argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-
-        //If there was a file passed to this instance of Turntable, send it to the open one
-        if (numArgs > 1 && argList != NULL)
-        {
-            for (int i = 0; i < numArgs - 1; ++i)
-            {
-                //Send the file to open to the first Turntable instance
-                LPWSTR message = argList[i+1];
-                bool pipeConnected = CallNamedPipe(
-                    L"\\\\.\\pipe\\TURNTABLE\\",                  // pipe name 
-                    message,              // message to server
-                    (lstrlen(message) + 1) * sizeof(TCHAR), // message length 
-                    readBuffer,              // buffer to receive reply
-                    512 * sizeof(TCHAR),  // size of read buffer
-                    &cbRead,                // bytes read
-                    NMPWAIT_USE_DEFAULT_WAIT);                  // timeout
-            }
-        }
-
-        LocalFree(argList);
+        SendArgsToOpenInstance();
     }
     else
     {
-        TCHAR buffer[MAX_PATH];
-        GetCurrentDirectory(MAX_PATH, buffer);
-        std::wstring currentPath = std::wstring(buffer) + L"\\Turntable.exe";
-
-        if (!FileExists(currentPath))
-        {
-            //If Turntable isn't in our working directory, change to the calling directory
-            int numArgs;
-            LPWSTR* argList;
-            argList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-            std::wstring path = GetFileDirectory(argList[0]);
-            SetCurrentDirectory(path.c_str());
-            LocalFree(argList);
-        }
-
+        EnsureWorkingDirectory();
         MemoryAnalyticsStartup();
         Initialize(applicationInstanceHandle);
         RunPipeThread(turntablePipe);
