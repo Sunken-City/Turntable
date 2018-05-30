@@ -959,7 +959,7 @@ CONSOLE_COMMAND(equalizer)
 {
     if (!(args.HasArgs(3)))
     {
-        Console::instance->PrintLine("equalizer <frequency 20-22000> <range 1-5> <volume +/-dB>", RGBA::RED);
+        Console::instance->PrintLine("equalizer <frequency 20-22000> <range 0.2-5.0> <volume +/-dB -30-30>", RGBA::RED);
         return;
     }
     float freq = args.GetFloatArgument(0);
@@ -968,12 +968,24 @@ CONSOLE_COMMAND(equalizer)
     
     if (SongManager::instance->m_activeSong && SongManager::instance->m_activeSong->m_audioChannelHandle)
     {
+        for (std::list<DSPConnection*>::iterator i = SongManager::instance->m_dspConnection.begin(); i != SongManager::instance->m_dspConnection.end(); ++i)
+        {
+            FMOD::DSP* input = nullptr;
+            if (SongManager::instance->m_dspConnection.front() && SongManager::instance->m_dspConnection.front()->getInput(&input) == FMOD_OK)
+            {
+                //if (input->getParameterInfo(FMOD_DSP_PARAMEQ_CENTER, ) == FMOD_OK)
+            }
+        }
         FMOD::Channel* channel = (FMOD::Channel*) SongManager::instance->m_activeSong->m_audioChannelHandle;
-        AudioSystem::instance->CreateDSPByType(FMOD_DSP_TYPE_PARAMEQ, &SongManager::instance->m_dsp);
-        channel->addDSP(SongManager::instance->m_dsp, &SongManager::instance->m_dspConnection);
-        SongManager::instance->m_dsp->setParameter(0, freq);
-        SongManager::instance->m_dsp->setParameter(1, range);
-        SongManager::instance->m_dsp->setParameter(2, vol);
+        DSPHandle* newDSP = nullptr;
+        AudioSystem::instance->CreateDSPByType(FMOD_DSP_TYPE_PARAMEQ, &newDSP);
+        SongManager::instance->m_dsp.push_back(newDSP);
+        DSPConnection* newConnection = nullptr;
+        channel->addDSP(newDSP, &newConnection);
+        SongManager::instance->m_dspConnection.push_back(newConnection);
+        newDSP->setParameter(FMOD_DSP_PARAMEQ_CENTER, freq);
+        newDSP->setParameter(FMOD_DSP_PARAMEQ_BANDWIDTH, range);
+        newDSP->setParameter(FMOD_DSP_PARAMEQ_GAIN, vol);
         return;
     }
 

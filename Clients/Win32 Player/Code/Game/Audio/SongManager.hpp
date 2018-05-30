@@ -1,5 +1,6 @@
 #pragma once
 #include <deque>
+#include <list>
 #include "Engine\Core\Events\Event.hpp"
 #include "Engine\Core\Events\NamedProperties.hpp"
 #include "SongCache.hpp"
@@ -67,8 +68,8 @@ public:
     SoundID m_needleDropSound;
     SoundID m_recordCracklesSound;
     AudioChannelHandle m_recordCracklesHandle = nullptr;
-	DSPHandle* m_dsp = nullptr;
-    DSPConnection* m_dspConnection = nullptr;
+	std::list<DSPHandle*> m_dsp;
+    std::list<DSPConnection*> m_dspConnection;
     float m_currentRPM = 0.0f;
     float m_lastRPM = 0.0f; //Cached value of previous rpm before pausing
     float m_wiggleDelta = 1.0f;
