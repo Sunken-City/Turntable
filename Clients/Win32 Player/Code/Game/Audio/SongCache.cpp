@@ -122,3 +122,37 @@ SongResourceInfo::~SongResourceInfo()
 {
     AudioSystem::instance->ReleaseRawSong(m_songData);
 }
+
+//-----------------------------------------------------------------------------------
+SongID SongCache::FindLeastAccessedSong()
+{
+    double lowestAccessTime = -1;
+    SongID leastAccessedSong = -1;
+    for (int i = 0; i < m_songCache.size(); ++i)
+    {
+        SongResourceInfo info = m_songCache.at(i);
+        if (info.m_timeLastAccessedMS < lowestAccessTime || lowestAccessTime == -1)
+        {
+            lowestAccessTime = info.m_timeLastAccessedMS;
+            leastAccessedSong = info.m_songID;
+        }
+    }
+
+    return leastAccessedSong;
+}
+
+//-----------------------------------------------------------------------------------
+void SongCache::RemoveFromCache(const SongID songID)
+{
+    std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
+    if (found != m_songCache.end())
+    {
+        SongResourceInfo& info = found->second;
+        delete info.m_songData;
+        info.m_songData = nullptr;
+    }
+    else
+    {
+        ASSERT_RECOVERABLE(found == m_songCache.end(), "Could not remove song from cache.\n");
+    }
+}

@@ -33,6 +33,8 @@ public:
 
 private:
     SongID CalculateSongID(const std::wstring& filePath);
+    SongID FindLeastAccessedSong();
+    void RemoveFromCache(const SongID songID);
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)1e9; //1 GB
