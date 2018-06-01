@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Engine/Audio/Audio.hpp"
+#include "Engine/Input/InputOutputUtils.hpp"
 
 typedef size_t SongID;
 
@@ -41,4 +42,5 @@ private:
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::map<SongID, SongResourceInfo> m_songCache;
+    unsigned int m_cacheSizeBytes = 0;
 };

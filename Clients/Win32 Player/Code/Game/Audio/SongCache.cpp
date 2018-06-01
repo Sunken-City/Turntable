@@ -18,7 +18,13 @@ void LoadSongJob(Job* job)
     while (song == nullptr)
     {
         song = AudioSystem::instance->LoadRawSound(songResource->m_filePath, errorValue);
-        if (errorValue == 43)
+        //while ((GetFileSizeBytes()) errorValue == 43)
+        //{
+            //Out of memory so try to delete from the cache
+            //if ()
+            //song = AudioSystem::instance->LoadRawSound(songResource->m_filePath, errorValue);
+       // }
+       if (errorValue == 43)
         {
             Console::instance->PrintLine("ERROR: OUT OF MEMORY, CAN'T LOAD SONG", RGBA::RED);
             return;
@@ -48,6 +54,12 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     SongID songID = SongCache::CalculateSongID(filePath);
     std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
     SongResourceInfo* songResourceInfo = nullptr;
+
+    while (m_songCache.size() > 1 && GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD)
+    {
+        //Remove the least accessed songs until enough memory is available
+        RemoveFromCache(FindLeastAccessedSong());
+    }
 
     if (found != m_songCache.end())
     {
