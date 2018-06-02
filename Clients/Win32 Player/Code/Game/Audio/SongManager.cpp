@@ -266,6 +266,8 @@ void SongManager::OnSongBeginPlay()
 
     IncrementPlaycount(m_activeSong->m_filePath);
     ++m_activeSong->m_playcount;
+    m_songCache.UpdateLastAccessedTime(m_activeSong->m_songID);
+    m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
     AchievementManager::instance->IncrementLifetimePlaycount();
 }
 
@@ -275,6 +277,7 @@ void SongManager::StopSong()
     AudioSystem::instance->StopChannel(m_activeSong->m_audioChannelHandle);
     if (m_activeSong)
     {
+        m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         delete m_activeSong;
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr); //Set to default values.

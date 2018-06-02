@@ -14,6 +14,7 @@ struct SongResourceInfo
     RawSoundHandle m_songData = nullptr;
     double m_timeLastAccessedMS = -1.0f;
     int m_loadErrorCode = 0;
+    bool m_isPlaying = false;
 
     bool IsValid() { return m_loadErrorCode == 0; };
 };
@@ -31,6 +32,8 @@ public:
     bool IsValid(const SongID songID);
     void PrintErrorInConsole(const SongID songID);
     void Flush();
+    void UpdateLastAccessedTime(const SongID songID);
+    void TogglePlayingStatus(const SongID songID);
 
 private:
     SongID CalculateSongID(const std::wstring& filePath);

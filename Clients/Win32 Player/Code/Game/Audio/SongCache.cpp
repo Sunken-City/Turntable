@@ -18,12 +18,7 @@ void LoadSongJob(Job* job)
     while (song == nullptr)
     {
         song = AudioSystem::instance->LoadRawSound(songResource->m_filePath, errorValue);
-        //while ((GetFileSizeBytes()) errorValue == 43)
-        //{
-            //Out of memory so try to delete from the cache
-            //if ()
-            //song = AudioSystem::instance->LoadRawSound(songResource->m_filePath, errorValue);
-       // }
+
        if (errorValue == 43)
         {
             Console::instance->PrintLine("ERROR: OUT OF MEMORY, CAN'T LOAD SONG", RGBA::RED);
@@ -33,7 +28,6 @@ void LoadSongJob(Job* job)
     }
 
     songResource->m_songData = (void*)song;
-    songResource->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
 }
 
 //-----------------------------------------------------------------------------------
@@ -55,7 +49,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
     SongResourceInfo* songResourceInfo = nullptr;
 
-    while (m_songCache.size() > 1 && GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD)
+    while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
     {
         //Remove the least accessed songs until enough memory is available
         RemoveFromCache(FindLeastAccessedSong());
@@ -64,13 +58,18 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     if (found != m_songCache.end())
     {
         songResourceInfo = &found->second;
-        songResourceInfo->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
+        if (songResourceInfo->m_timeLastAccessedMS > -1 && !songResourceInfo->m_songData)
+        {
+            m_cacheSizeBytes += GetFileSizeBytes(filePath);
+        }
+        //songResourceInfo->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
     }
     else
     {
         m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
         songResourceInfo = &m_songCache[songID];
         songResourceInfo->m_filePath = filePath;
+        m_cacheSizeBytes += GetFileSizeBytes(filePath);
     }
 
     JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
@@ -140,10 +139,12 @@ SongID SongCache::FindLeastAccessedSong()
 {
     double lowestAccessTime = -1;
     SongID leastAccessedSong = -1;
-    for (int i = 0; i < m_songCache.size(); ++i)
+
+    for (std::map<SongID, SongResourceInfo>::iterator i = m_songCache.begin(); i != m_songCache.end(); ++i)
     {
-        SongResourceInfo info = m_songCache.at(i);
-        if (info.m_timeLastAccessedMS < lowestAccessTime || lowestAccessTime == -1)
+        SongResourceInfo info = i->second;
+        //Has this song been loaded yet? Has it been loaded and not played? Is the last load time less than what we have?
+        if (((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == -1) && info.m_timeLastAccessedMS != -1 && info.m_songData && !info.m_isPlaying)
         {
             lowestAccessTime = info.m_timeLastAccessedMS;
             leastAccessedSong = info.m_songID;
@@ -160,11 +161,38 @@ void SongCache::RemoveFromCache(const SongID songID)
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
+        //If song is the one currently playing, don't delete it
+        m_cacheSizeBytes -= GetFileSizeBytes(info.m_filePath);
         delete info.m_songData;
         info.m_songData = nullptr;
     }
     else
     {
         ASSERT_RECOVERABLE(found == m_songCache.end(), "Could not remove song from cache.\n");
+    }
+}
+
+//-----------------------------------------------------------------------------------
+void SongCache::UpdateLastAccessedTime(const SongID songID)
+{
+    SongResourceInfo info = m_songCache.at[songID];
+    info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
+}
+
+//-----------------------------------------------------------------------------------
+void SongCache::TogglePlayingStatus(const SongID songID)
+{
+    std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
+    if (found != m_songCache.end())
+    {
+        SongResourceInfo& info = found->second;
+        if (!info.m_isPlaying)
+        {
+            info.m_isPlaying = true;
+        }
+        else
+        {
+            info.m_isPlaying = false;
+        }
     }
 }
