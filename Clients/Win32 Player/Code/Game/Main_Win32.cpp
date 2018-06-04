@@ -40,6 +40,7 @@ const float VIEW_BOTTOM = 0.0;
 const float VIEW_TOP = VIEW_RIGHT * static_cast<float>(WINDOW_PHYSICAL_HEIGHT) / static_cast<float>(WINDOW_PHYSICAL_WIDTH);
 const Vector2 BOTTOM_LEFT = Vector2(VIEW_LEFT, VIEW_BOTTOM);
 const Vector2 TOP_RIGHT = Vector2(VIEW_RIGHT, VIEW_TOP);
+const unsigned int MAX_MESSAGE_SIZE = MAX_PATH + 1;
 
 bool g_isQuitting = false;
 bool g_isFullscreen = false;
@@ -109,7 +110,7 @@ void HandleFileDrop(WPARAM wParam)
 }
 
 //-----------------------------------------------------------------------------------
-void PipeThread(Job* job)
+void PollForMessageJob(Job* job)
 {
     //Try to create named pipe for Turntable
     HANDLE turntablePipe = (HANDLE) job->data;
@@ -131,19 +132,19 @@ void PipeThread(Job* job)
         }
         else
         {
-            TCHAR* request = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, 512 * sizeof(TCHAR));
+            TCHAR* request = (TCHAR*)HeapAlloc(GetProcessHeap(), 0, MAX_MESSAGE_SIZE * sizeof(TCHAR));
             LPWSTR reply = L"Success";
             DWORD bytesRead = 0;
             DWORD bytesWritten = 0;
 
-            bool success = ReadFile(
-                turntablePipe,
-                request,
-                (MAX_PATH + 1) * sizeof(TCHAR),
-                &bytesRead,
-                NULL);
+            ReadFile(
+                turntablePipe,      //Handle to pipe
+                request,        //Buffer to read from
+                MAX_MESSAGE_SIZE * sizeof(TCHAR),       //Max size of buffer
+                &bytesRead,     //Number of bytes read
+                NULL);      //Not overlapped I/O
 
-            success = WriteFile(
+            WriteFile(
                 turntablePipe,        // handle to pipe 
                 reply,     // buffer to write from 
                 sizeof(reply), // number of bytes to write 
@@ -160,6 +161,7 @@ void PipeThread(Job* job)
                 Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", request));
             }
 
+            //We flush the file buffer here in case the pipe is not in a clean state
             FlushFileBuffers(turntablePipe);
             DisconnectNamedPipe(turntablePipe);
             pipeConnected = false;
@@ -168,28 +170,28 @@ void PipeThread(Job* job)
 }
 
 //-----------------------------------------------------------------------------------
-void RunPipeThread(HANDLE pipe)
+void DispatchPollForMessageJob(HANDLE pipe)
 {
-    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &PipeThread, pipe);
+    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &PollForMessageJob, pipe);
 }
 
 //-----------------------------------------------------------------------------------------------
 HANDLE CreateTurntablePipe()
 {
-    return CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\",
-        PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
-        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_NOWAIT | PIPE_ACCEPT_REMOTE_CLIENTS,
-        PIPE_UNLIMITED_INSTANCES,
-        512,
-        512,
-        0,
-        NULL);
+    return CreateNamedPipe(L"\\\\.\\pipe\\TURNTABLE\\",                             //Name
+        PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,  //Open mode (bidirectional, one instance created only, threaded)
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_NOWAIT | PIPE_ACCEPT_REMOTE_CLIENTS, //Pipe mode (Write and read as messages, nonblocking, connections accepted from other turntable instances)
+        PIPE_UNLIMITED_INSTANCES,                   //Number of max instances
+        MAX_MESSAGE_SIZE * sizeof(TCHAR),           //Output buffer size
+        MAX_MESSAGE_SIZE * sizeof(TCHAR),           //Input buffer size
+        0,                                          //Default timeout (50 ms)
+        NULL);                                      //Default security attributes
 }
 
 //-----------------------------------------------------------------------------------------------
 void SendArgsToOpenInstance()
 {
-    TCHAR readBuffer[512];
+    TCHAR readBuffer[MAX_MESSAGE_SIZE];
     DWORD cbRead;
     int numArgs;
     LPWSTR* argList;
@@ -199,16 +201,16 @@ void SendArgsToOpenInstance()
     //If there was a file passed to this instance of Turntable, send it to the open one
     if (numArgs > 1 && argList != NULL)
     {
-        for (int i = 0; i < numArgs - 1; ++i)
+        for (int i = 1; i < numArgs; ++i)
         {
             //Send the file to open to the first Turntable instance
-            LPWSTR message = argList[i + 1];
-            bool pipeConnected = CallNamedPipe(
+            LPWSTR message = argList[i];
+            CallNamedPipe(
                 L"\\\\.\\pipe\\TURNTABLE\\",                  // pipe name 
                 message,              // message to server
                 (lstrlen(message) + 1) * sizeof(TCHAR), // message length 
                 readBuffer,              // buffer to receive reply
-                512 * sizeof(TCHAR),  // size of read buffer
+                MAX_MESSAGE_SIZE * sizeof(TCHAR),  // size of read buffer
                 &cbRead,                // bytes read
                 NMPWAIT_USE_DEFAULT_WAIT);                  // timeout
         }
@@ -218,7 +220,7 @@ void SendArgsToOpenInstance()
 }
 
 //-----------------------------------------------------------------------------------------------
-void EnsureWorkingDirectory()
+void EnsureCorrectWorkingDirectory()
 {
     TCHAR buffer[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, buffer);
@@ -581,19 +583,19 @@ int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandL
     }
     else
     {
-        EnsureWorkingDirectory();
+        EnsureCorrectWorkingDirectory();
         MemoryAnalyticsStartup();
         Initialize(applicationInstanceHandle);
-        RunPipeThread(turntablePipe);
+        DispatchPollForMessageJob(turntablePipe);
 
         while (!g_isQuitting)
         {
             RunFrame();
         }
 
+        CloseHandle(turntablePipe);
         Shutdown();
         MemoryAnalyticsShutdown();
-        CloseHandle(turntablePipe);
     }
 
     return 0;
