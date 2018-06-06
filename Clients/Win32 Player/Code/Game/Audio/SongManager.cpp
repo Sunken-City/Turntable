@@ -149,6 +149,15 @@ void SongManager::Play(Song* songToPlay)
     m_activeSong = songToPlay;
     m_baseFrequency = (float)m_activeSong->m_samplerate;
 
+    if (!(m_activeSong->m_songHandle))
+    {
+        m_songCache.EnsureSongLoad(songToPlay->m_filePath);
+    }
+    while (!(m_activeSong->m_songHandle))
+    {
+        Sleep(100);
+    }
+
     m_activeSong->m_audioChannelHandle = AudioSystem::instance->PlayRawSong(m_activeSong->m_songHandle, m_songVolume);
     AudioSystem::instance->SetLooping(m_activeSong->m_audioChannelHandle, false);
 
@@ -227,6 +236,7 @@ void SongManager::OnSongPlaybackFinished()
     }
     else
     {
+        m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         StopSong();
         if (m_songQueue.size() == 0)
         {
@@ -660,7 +670,8 @@ CONSOLE_COMMAND(play)
         Console::instance->PrintLine("Could not find file.", RGBA::RED);
         return;
     }
-    SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
+    SongID songID = SongManager::instance->m_songCache.EnsureSongLoad(filepath);
+    //SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
 
     SongManager::instance->StartLoadingSound();
     Song* newSong = new Song(filepath, songID);

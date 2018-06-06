@@ -28,6 +28,7 @@ public:
 
     //FUNCTIONS/////////////////////////////////////////////////////////////////////
     SongID RequestSongLoad(const std::wstring& filePath);
+    SongID EnsureSongLoad(const std::wstring& filePath);
     RawSoundHandle RequestSoundHandle(const SongID songID);
     bool IsValid(const SongID songID);
     void PrintErrorInConsole(const SongID songID);
