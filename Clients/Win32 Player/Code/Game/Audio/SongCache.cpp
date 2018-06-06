@@ -45,15 +45,51 @@ SongCache::~SongCache()
 //-----------------------------------------------------------------------------------
 SongID SongCache::RequestSongLoad(const std::wstring& filePath)
 {
+    //Load the song into memory completely if it can, otherwise we create the placeholders and load later
     SongID songID = SongCache::CalculateSongID(filePath);
     std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
     SongResourceInfo* songResourceInfo = nullptr;
 
-    while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
+    if (found != m_songCache.end())
     {
-        //Remove the least accessed songs until enough memory is available
-        RemoveFromCache(FindLeastAccessedSong());
+        songResourceInfo = &found->second;
+        if (songResourceInfo->m_timeLastAccessedMS > -1 && !songResourceInfo->m_songData)
+        {
+            //If the track has been loaded and played before, and then unloaded, increase the cache size and load again
+            m_cacheSizeBytes += GetFileSizeBytes(filePath);
+        }
+        else if (songResourceInfo->m_songData)
+        {
+            //The song ID is in the cache and the song is loaded, so we're able to play
+            return songID;
+        }
     }
+    else
+    {
+        //Song ID wasn't found, so we need to either load the song if we have the space, or create a placeholder and load later
+        m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
+        songResourceInfo = &m_songCache[songID];
+        songResourceInfo->m_filePath = filePath;
+        m_cacheSizeBytes += GetFileSizeBytes(filePath);
+
+        //We want to make the placeholders for the song if we're over the memory threshhold. 
+        if (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
+        {
+            return songID;
+        }
+    }
+
+    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
+    return songID;
+}
+
+//-----------------------------------------------------------------------------------
+SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
+{
+    //We need to load the song now, so we delete from the cache if necessary
+    SongID songID = SongCache::CalculateSongID(filePath);
+    std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
+    SongResourceInfo* songResourceInfo = nullptr;
 
     if (found != m_songCache.end())
     {
@@ -62,18 +98,26 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         {
             m_cacheSizeBytes += GetFileSizeBytes(filePath);
         }
-        //songResourceInfo->m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
+        else if (songResourceInfo->m_songData)
+        {
+            return songID;
+        }
     }
     else
     {
+        //We want to make the placeholders for the song if we're over the memory threshhold. 
+        while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
+        {
+            //Remove the least accessed songs until enough memory is available
+            RemoveFromCache(FindLeastAccessedSong());
+        }
         m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
         songResourceInfo = &m_songCache[songID];
         songResourceInfo->m_filePath = filePath;
         m_cacheSizeBytes += GetFileSizeBytes(filePath);
     }
-
-    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
-    return songID;
+        JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
+        return songID;
 }
 
 //-----------------------------------------------------------------------------------
@@ -138,15 +182,20 @@ SongResourceInfo::~SongResourceInfo()
 SongID SongCache::FindLeastAccessedSong()
 {
     double lowestAccessTime = -1;
-    SongID leastAccessedSong = -1;
+    SongID leastAccessedSong = 0;
 
+    //Try to find a song that is loaded in and has been played. Otherwise find one that has been loaded
     for (std::map<SongID, SongResourceInfo>::iterator i = m_songCache.begin(); i != m_songCache.end(); ++i)
     {
-        SongResourceInfo info = i->second;
+        SongResourceInfo& info = i->second;
         //Has this song been loaded yet? Has it been loaded and not played? Is the last load time less than what we have?
         if (((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == -1) && info.m_timeLastAccessedMS != -1 && info.m_songData && !info.m_isPlaying)
         {
             lowestAccessTime = info.m_timeLastAccessedMS;
+            leastAccessedSong = info.m_songID;
+        }
+        else if (info.m_songData && !info.m_isPlaying && leastAccessedSong == -1)
+        {
             leastAccessedSong = info.m_songID;
         }
     }
@@ -157,6 +206,11 @@ SongID SongCache::FindLeastAccessedSong()
 //-----------------------------------------------------------------------------------
 void SongCache::RemoveFromCache(const SongID songID)
 {
+    if (songID == 0)
+    {
+        return;
+    }
+
     std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
     if (found != m_songCache.end())
     {
@@ -175,7 +229,7 @@ void SongCache::RemoveFromCache(const SongID songID)
 //-----------------------------------------------------------------------------------
 void SongCache::UpdateLastAccessedTime(const SongID songID)
 {
-    SongResourceInfo info = m_songCache.at[songID];
+    SongResourceInfo& info = m_songCache.at(songID);
     info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
 }
 
