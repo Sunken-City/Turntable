@@ -106,6 +106,10 @@ void SongManager::Update(float deltaSeconds)
     {
         Song* nextSongInQueue = m_songQueue[0];
         Song::State initialState = nextSongInQueue->m_state;
+        if (initialState == Song::NOT_LOADED)
+        {
+            m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
+        }
         nextSongInQueue->RequestSongHandle();
 
         if (nextSongInQueue->m_state == Song::READY_TO_PLAY)
@@ -287,7 +291,7 @@ void SongManager::StopSong()
     AudioSystem::instance->StopChannel(m_activeSong->m_audioChannelHandle);
     if (m_activeSong)
     {
-        m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
+        //m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         delete m_activeSong;
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr); //Set to default values.

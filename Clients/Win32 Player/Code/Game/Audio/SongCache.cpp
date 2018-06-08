@@ -28,6 +28,7 @@ void LoadSongJob(Job* job)
     }
 
     songResource->m_songData = (void*)song;
+    songResource->m_status = LOADED;
 }
 
 //-----------------------------------------------------------------------------------
@@ -70,7 +71,6 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
         songResourceInfo = &m_songCache[songID];
         songResourceInfo->m_filePath = filePath;
-        m_cacheSizeBytes += GetFileSizeBytes(filePath);
 
         //We want to make the placeholders for the song if we're over the memory threshhold. 
         if (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
@@ -79,6 +79,8 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         }
     }
 
+    m_cacheSizeBytes += GetFileSizeBytes(filePath);
+    songResourceInfo->m_status = LOADING;
     JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
     return songID;
 }
@@ -94,13 +96,23 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
     if (found != m_songCache.end())
     {
         songResourceInfo = &found->second;
-        if (songResourceInfo->m_timeLastAccessedMS > -1 && !songResourceInfo->m_songData)
+
+        if (songResourceInfo->m_songData || songResourceInfo->m_status == LOADING)
+        {
+            return songID;
+        }
+        
+        //The song has been loaded before but is now unloaded, so we add this file size back to the cache
+        if (songResourceInfo->m_timeLastAccessedMS > -1) 
         {
             m_cacheSizeBytes += GetFileSizeBytes(filePath);
         }
-        else if (songResourceInfo->m_songData)
+
+        //The song data is not loaded in yet, so remove from the cache until we can load 
+        while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
         {
-            return songID;
+            //Remove the least accessed songs until enough memory is available
+            RemoveFromCache(FindLeastAccessedSong());
         }
     }
     else
@@ -114,10 +126,12 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
         m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
         songResourceInfo = &m_songCache[songID];
         songResourceInfo->m_filePath = filePath;
-        m_cacheSizeBytes += GetFileSizeBytes(filePath);
     }
-        JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
-        return songID;
+
+    m_cacheSizeBytes += GetFileSizeBytes(filePath);
+    songResourceInfo->m_status = LOADING;
+    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
+    return songID;
 }
 
 //-----------------------------------------------------------------------------------
@@ -189,12 +203,12 @@ SongID SongCache::FindLeastAccessedSong()
     {
         SongResourceInfo& info = i->second;
         //Has this song been loaded yet? Has it been loaded and not played? Is the last load time less than what we have?
-        if (((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == -1) && info.m_timeLastAccessedMS != -1 && info.m_songData && !info.m_isPlaying)
+        if (((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == -1) && info.m_timeLastAccessedMS != -1 && info.m_songData && info.m_status != PLAYING)
         {
             lowestAccessTime = info.m_timeLastAccessedMS;
             leastAccessedSong = info.m_songID;
         }
-        else if (info.m_songData && !info.m_isPlaying && leastAccessedSong == -1)
+        else if (info.m_songData && info.m_status != PLAYING && leastAccessedSong == -1)
         {
             leastAccessedSong = info.m_songID;
         }
@@ -219,6 +233,7 @@ void SongCache::RemoveFromCache(const SongID songID)
         m_cacheSizeBytes -= GetFileSizeBytes(info.m_filePath);
         delete info.m_songData;
         info.m_songData = nullptr;
+        info.m_status = UNLOADED;
     }
     else
     {
@@ -240,13 +255,20 @@ void SongCache::TogglePlayingStatus(const SongID songID)
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
-        if (!info.m_isPlaying)
+        if (info.m_status != PLAYING)
         {
-            info.m_isPlaying = true;
+            info.m_status = PLAYING;
         }
         else
         {
-            info.m_isPlaying = false;
+            info.m_status = LOADED;
         }
     }
 }
+
+//-----------------------------------------------------------------------------------
+//unsigned int SongCache::GetCurrentMemoryUsage()
+//{
+    //PROCESS_MEMORY_COUNTERS memoryStruct;
+    //GetProcessMemoryInfo(GetCurrentProcess(), &memoryStruct, memoryStruct.cb);
+//}
