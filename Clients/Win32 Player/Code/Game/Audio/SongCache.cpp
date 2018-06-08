@@ -231,7 +231,7 @@ void SongCache::RemoveFromCache(const SongID songID)
         SongResourceInfo& info = found->second;
         //If song is the one currently playing, don't delete it
         m_cacheSizeBytes -= GetFileSizeBytes(info.m_filePath);
-        delete info.m_songData;
+        AudioSystem::instance->ReleaseRawSong(info.m_songData);
         info.m_songData = nullptr;
         info.m_status = UNLOADED;
     }
