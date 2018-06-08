@@ -55,7 +55,7 @@ private:
     void RemoveFromCache(const SongID songID);
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
-    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)5e8; //500 MB
+    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //400 MB
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::map<SongID, SongResourceInfo> m_songCache;
