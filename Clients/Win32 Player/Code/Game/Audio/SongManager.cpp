@@ -104,6 +104,17 @@ void SongManager::Update(float deltaSeconds)
     }
     else if (m_songQueue.size() > 0)
     {
+        if (m_songQueue.size() > 1)
+        {
+            //Ensure the next song is loaded before we get to it
+            Song* nextSongToLoad = m_songQueue[1];
+            Song::State initialState = nextSongToLoad->m_state;
+            if (initialState == Song::NOT_LOADED)
+            {
+                m_songCache.EnsureSongLoad(nextSongToLoad->m_filePath);
+            }
+        }
+
         Song* nextSongInQueue = m_songQueue[0];
         Song::State initialState = nextSongInQueue->m_state;
         if (initialState == Song::NOT_LOADED)
@@ -996,4 +1007,32 @@ CONSOLE_COMMAND(equalizer)
     }
 
     Console::instance->PrintLine("Equalizer can only be applied while a song is playing.", RGBA::RED);
+}
+
+//-----------------------------------------------------------------------------------
+CONSOLE_COMMAND(printqueuedebug)
+{
+    UNUSED(args)
+    Console::instance->PrintLine("----====Current Queue====----", RGBA::ORANGE);
+
+    unsigned int index = 0;
+    for (Song* song : SongManager::instance->m_songQueue)
+    {
+        RGBA lineColor;
+        if (SongManager::instance->m_songCache.IsLoaded(song->m_songID))
+        {
+            lineColor = RGBA::EARTHBOUND_GREEN;
+        }
+        else
+        {
+            lineColor = RGBA::RED;
+        }
+        
+        //RGBA lineColor = ++index % 2 == 0 ? RGBA::EARTHBOUND_GREEN : RGBA::EARTHBOUND_BLUE;
+        Console::instance->PrintLine(Stringf("[%i] %s", index, song->m_title.c_str()), lineColor);
+    }
+    if (index == 0)
+    {
+        Console::instance->PrintLine("<EMPTY>", RGBA::RED);
+    }
 }
