@@ -47,6 +47,7 @@ public:
     void Flush();
     void UpdateLastAccessedTime(const SongID songID);
     void TogglePlayingStatus(const SongID songID);
+    bool IsLoaded(const SongID songID);
     //unsigned int GetCurrentMemoryUsage();
 
 private:

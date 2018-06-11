@@ -272,3 +272,19 @@ void SongCache::TogglePlayingStatus(const SongID songID)
     //PROCESS_MEMORY_COUNTERS memoryStruct;
     //GetProcessMemoryInfo(GetCurrentProcess(), &memoryStruct, memoryStruct.cb);
 //}
+
+//-----------------------------------------------------------------------------------
+bool SongCache::IsLoaded(const SongID songID)
+{
+    std::map<SongID, SongResourceInfo>::iterator found = m_songCache.find(songID);
+    if (found != m_songCache.end())
+    {
+        SongResourceInfo& info = found->second;
+        if (info.m_status == PLAYING || info.m_status == LOADED)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
