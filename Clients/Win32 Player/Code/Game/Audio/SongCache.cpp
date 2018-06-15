@@ -72,7 +72,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         songResourceInfo = &m_songCache[songID];
         songResourceInfo->m_filePath = filePath;
 
-        //We want to make the placeholders for the song if we're over the memory threshhold. 
+        //We want to make the placeholders for the song if we're going to be over the memory threshold. 
         if (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
         {
             return songID;
@@ -117,7 +117,6 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
     }
     else
     {
-        //We want to make the placeholders for the song if we're over the memory threshhold. 
         while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
         {
             //Remove the least accessed songs until enough memory is available
@@ -229,7 +228,6 @@ void SongCache::RemoveFromCache(const SongID songID)
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
-        //If song is the one currently playing, don't delete it
         m_cacheSizeBytes -= GetFileSizeBytes(info.m_filePath);
         AudioSystem::instance->ReleaseRawSong(info.m_songData);
         info.m_songData = nullptr;
@@ -265,13 +263,6 @@ void SongCache::TogglePlayingStatus(const SongID songID)
         }
     }
 }
-
-//-----------------------------------------------------------------------------------
-//unsigned int SongCache::GetCurrentMemoryUsage()
-//{
-    //PROCESS_MEMORY_COUNTERS memoryStruct;
-    //GetProcessMemoryInfo(GetCurrentProcess(), &memoryStruct, memoryStruct.cb);
-//}
 
 //-----------------------------------------------------------------------------------
 bool SongCache::IsLoaded(const SongID songID)
