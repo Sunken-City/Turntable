@@ -107,6 +107,7 @@ void SongManager::Update(float deltaSeconds)
         if (m_songQueue.size() > 1)
         {
             //Ensure the next song is loaded before we get to it
+            //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
             Song* nextSongToLoad = m_songQueue[1];
             Song::State initialState = nextSongToLoad->m_state;
             if (initialState == Song::NOT_LOADED)
@@ -1028,7 +1029,7 @@ CONSOLE_COMMAND(printqueuedebug)
             lineColor = RGBA::RED;
         }
         
-        //RGBA lineColor = ++index % 2 == 0 ? RGBA::EARTHBOUND_GREEN : RGBA::EARTHBOUND_BLUE;
+        ++index;
         Console::instance->PrintLine(Stringf("[%i] %s", index, song->m_title.c_str()), lineColor);
     }
     if (index == 0)
