@@ -18,8 +18,7 @@ void LoadSongJob(Job* job)
     while (song == nullptr)
     {
         song = AudioSystem::instance->LoadRawSound(songResource->m_filePath, errorValue);
-
-       if (errorValue == 43)
+        if (errorValue == 43)
         {
             Console::instance->PrintLine("ERROR: OUT OF MEMORY, CAN'T LOAD SONG", RGBA::RED);
             return;
@@ -54,7 +53,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     if (found != m_songCache.end())
     {
         songResourceInfo = &found->second;
-        if (songResourceInfo->m_timeLastAccessedMS > -1 && !songResourceInfo->m_songData)
+        if (songResourceInfo->m_timeLastAccessedMS != SONG_NEVER_ACCESSED && !songResourceInfo->m_songData)
         {
             //If the track has been loaded and played before, and then unloaded, increase the cache size and load again
             m_cacheSizeBytes += GetFileSizeBytes(filePath);
@@ -96,40 +95,38 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
     if (found != m_songCache.end())
     {
         songResourceInfo = &found->second;
-
+        //If the song is loading or is loaded, return its id
         if (songResourceInfo->m_songData || songResourceInfo->m_status == LOADING)
         {
             return songID;
         }
-        
-        //The song has been loaded before but is now unloaded, so we add this file size back to the cache
-        if (songResourceInfo->m_timeLastAccessedMS > -1) 
-        {
-            m_cacheSizeBytes += GetFileSizeBytes(filePath);
-        }
-
-        //The song data is not loaded in yet, so remove from the cache until we can load 
-        while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
-        {
-            //Remove the least accessed songs until enough memory is available
-            RemoveFromCache(FindLeastAccessedSong());
-        }
     }
     else
     {
-        while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
-        {
-            //Remove the least accessed songs until enough memory is available
-            RemoveFromCache(FindLeastAccessedSong());
-        }
         m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
         songResourceInfo = &m_songCache[songID];
         songResourceInfo->m_filePath = filePath;
     }
 
-    m_cacheSizeBytes += GetFileSizeBytes(filePath);
-    songResourceInfo->m_status = LOADING;
-    JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
+    while (GetFileSizeBytes(filePath) + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
+    {
+        //Remove the least accessed songs until enough memory is available
+        RemoveFromCache(FindLeastAccessedSong());
+    }
+
+    if (GetFileSizeBytes(filePath) >= MAX_MEMORY_THRESHOLD)
+    {
+        //File is too large to load into memory, so we stream it
+        songResourceInfo->m_status = CANT_LOAD;
+        //SoundID id = AudioSystem::instance->CreateOrGetSound(filePath);
+    }
+    else
+    {
+        m_cacheSizeBytes += GetFileSizeBytes(filePath);
+        songResourceInfo->m_status = LOADING;
+        JobSystem::instance->CreateAndDispatchJob(GENERIC_SLOW, &LoadSongJob, songResourceInfo);
+    }
+
     return songID;
 }
 
@@ -194,7 +191,7 @@ SongResourceInfo::~SongResourceInfo()
 //-----------------------------------------------------------------------------------
 SongID SongCache::FindLeastAccessedSong()
 {
-    double lowestAccessTime = -1;
+    float lowestAccessTime = SONG_NEVER_ACCESSED;
     SongID leastAccessedSong = 0;
 
     //Try to find a song that is loaded in and has been played. Otherwise find one that has been loaded
@@ -202,12 +199,12 @@ SongID SongCache::FindLeastAccessedSong()
     {
         SongResourceInfo& info = i->second;
         //Has this song been loaded yet? Has it been loaded and not played? Is the last load time less than what we have?
-        if (((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == -1) && info.m_timeLastAccessedMS != -1 && info.m_songData && info.m_status != PLAYING)
+        if (((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == SONG_NEVER_ACCESSED) && info.m_timeLastAccessedMS != SONG_NEVER_ACCESSED && info.m_songData && info.m_status != PLAYING)
         {
             lowestAccessTime = info.m_timeLastAccessedMS;
             leastAccessedSong = info.m_songID;
         }
-        else if (info.m_songData && info.m_status != PLAYING && leastAccessedSong == -1)
+        else if (info.m_songData && info.m_status != PLAYING && leastAccessedSong == SONG_NEVER_ACCESSED)
         {
             leastAccessedSong = info.m_songID;
         }
