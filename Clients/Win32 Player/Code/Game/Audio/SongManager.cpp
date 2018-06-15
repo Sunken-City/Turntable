@@ -534,7 +534,7 @@ void SongManager::LoadAlbumArt(Song* songToPlay)
 {
     if (!songToPlay->m_albumArt && m_loadAlbumArt)
     {
-        songToPlay->m_albumArt = GetImageFromFileMetadata(songToPlay->m_filePath);
+        songToPlay->m_albumArt = GetImageFromFileMetadata(songToPlay->m_filePath, songToPlay->m_fileName);
     }
 
     //If we failed to load album art, generate some instead.
