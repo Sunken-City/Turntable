@@ -37,7 +37,7 @@ Song::Song(const std::wstring& fullPathToFile, SongID songID)
 //-----------------------------------------------------------------------------------
 Song::~Song()
 {
-
+    Texture::CleanUpTexture(m_fileName);
 }
 
 //-----------------------------------------------------------------------------------
@@ -217,6 +217,7 @@ void Song::GenerateProceduralAlbumArt()
     delete albumArtBuffer;
 
     //This registers the texture for cleanup later on when we shut down the game.
+    std::string strFileName = m_fileName;
     Texture::RegisterTexture(Stringf("AlbumArt:%i", hashedSongInfo), currentColorTargets[0]); 
     m_albumArt = currentColorTargets[0];
 }
