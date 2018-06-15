@@ -10,6 +10,7 @@ enum Status
     NOT_LOADED,
     LOADING,
     LOADED,
+    CANT_LOAD,
     PLAYING,
     UNLOADED
 };
@@ -54,6 +55,7 @@ private:
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //400 MB
+    const float SONG_NEVER_ACCESSED = -1.0f;
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::map<SongID, SongResourceInfo> m_songCache;
