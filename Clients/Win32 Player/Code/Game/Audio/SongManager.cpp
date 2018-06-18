@@ -109,22 +109,22 @@ void SongManager::Update(float deltaSeconds)
             //Ensure the next song is loaded before we get to it
             //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
             Song* nextSongToLoad = m_songQueue[1];
-            Song::State initialState = nextSongToLoad->m_state;
-            if (initialState == Song::NOT_LOADED)
+            SongState::State initialState = nextSongToLoad->m_state;
+            if (initialState == SongState::NOT_LOADED)
             {
                 m_songCache.EnsureSongLoad(nextSongToLoad->m_filePath);
             }
         }
 
         Song* nextSongInQueue = m_songQueue[0];
-        Song::State initialState = nextSongInQueue->m_state;
-        if (initialState == Song::NOT_LOADED)
+        SongState::State initialState = nextSongInQueue->m_state;
+        if (initialState == SongState::NOT_LOADED)
         {
             m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
         }
         nextSongInQueue->RequestSongHandle();
 
-        if (nextSongInQueue->m_state == Song::READY_TO_PLAY)
+        if (nextSongInQueue->m_state == SongState::LOADED || nextSongInQueue->m_state == SongState::CANT_LOAD || nextSongInQueue->m_state == SongState::INVALID_STATE)
         {
             m_songQueue.pop_front();
             if (m_songCache.IsValid(nextSongInQueue->m_songID))
@@ -139,11 +139,10 @@ void SongManager::Update(float deltaSeconds)
                 delete nextSongInQueue;
             }
         }
-        else if (initialState == Song::State::NOT_LOADED && !m_recordCracklesHandle)
+        else if (initialState == SongState::NOT_LOADED && !m_recordCracklesHandle)
         {
             StartLoadingSound();
         }
-        
     }
 }
 
@@ -303,7 +302,6 @@ void SongManager::StopSong()
     AudioSystem::instance->StopChannel(m_activeSong->m_audioChannelHandle);
     if (m_activeSong)
     {
-        //m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         delete m_activeSong;
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr); //Set to default values.
@@ -687,7 +685,6 @@ CONSOLE_COMMAND(play)
         return;
     }
     SongID songID = SongManager::instance->m_songCache.EnsureSongLoad(filepath);
-    //SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
 
     SongManager::instance->StartLoadingSound();
     Song* newSong = new Song(filepath, songID);
@@ -770,6 +767,7 @@ CONSOLE_COMMAND(printqueue)
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(printplaylists)
 {
+    UNUSED(args)
     std::string filePath = Stringf("%s\\Turntable\\Playlists\\", GetAppDataDirectory().c_str());
     std::vector<std::string> playlists = EnumerateFiles(filePath, "*.xml");
     if (playlists.size() == 0)
@@ -920,6 +918,7 @@ CONSOLE_COMMAND(wigglerpm)
 //-----------------------------------------------------------------------------------
 CONSOLE_COMMAND(togglealbumart)
 {
+    UNUSED(args)
     SongManager::instance->m_loadAlbumArt = !SongManager::instance->m_loadAlbumArt;
     if (SongManager::instance->m_loadAlbumArt)
     {

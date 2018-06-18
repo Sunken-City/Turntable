@@ -5,17 +5,19 @@
 #include <string>
 #include "Engine/Audio/Audio.hpp"
 #include "Game/Audio/SongCache.hpp"
+#include "Game/Audio/SongCache.hpp"
+#include "Game/Audio/SongState.hpp"
 
 class Song
 {
 public:
-    enum State
-    {
-        NOT_LOADED,
-        LOADING,
-        READY_TO_PLAY,
-        NUM_STATES
-    };
+    //enum State
+    //{
+    //    NOT_LOADED,
+    //    LOADING,
+    //    READY_TO_PLAY,
+    //    NUM_STATES
+    //};
 
     //CONSTRUCTORS/////////////////////////////////////////////////////////////////////
     Song(const std::wstring& fullPathToFile, SongID songID);
@@ -51,5 +53,5 @@ public:
     AudioChannelHandle m_audioChannelHandle = nullptr;
     RawSoundHandle m_songHandle = nullptr;
     SongID m_songID = 0;
-    State m_state = NOT_LOADED;
+    SongState::State m_state = SongState::State::NOT_LOADED;
 };

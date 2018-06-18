@@ -2,18 +2,19 @@
 #include <string>
 #include "Engine/Audio/Audio.hpp"
 #include "Engine/Input/InputOutputUtils.hpp"
+#include "Game/Audio/SongState.hpp"
 
 typedef size_t SongID;
 
-enum Status
-{
-    NOT_LOADED,
-    LOADING,
-    LOADED,
-    CANT_LOAD,
-    PLAYING,
-    UNLOADED
-};
+//enum Status
+//{
+//    NOT_LOADED,
+//    LOADING,
+//    LOADED,
+//    CANT_LOAD,
+//    PLAYING,
+//    UNLOADED
+//};
 
 struct SongResourceInfo
 {
@@ -24,7 +25,7 @@ struct SongResourceInfo
     RawSoundHandle m_songData = nullptr;
     double m_timeLastAccessedMS = -1.0f;
     int m_loadErrorCode = 0;
-    Status m_status = NOT_LOADED;
+    SongState::State m_status = SongState::NOT_LOADED;
 
     bool IsValid() { return m_loadErrorCode == 0; };
 };
@@ -46,6 +47,7 @@ public:
     void UpdateLastAccessedTime(const SongID songID);
     void TogglePlayingStatus(const SongID songID);
     bool IsLoaded(const SongID songID);
+    SongState::State GetState(const SongID songID);
     //unsigned int GetCurrentMemoryUsage();
 
 private:
@@ -55,9 +57,10 @@ private:
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //400 MB
-    const float SONG_NEVER_ACCESSED = -1.0f;
+    const double SONG_NEVER_ACCESSED = -1.0;
+    const SongID INVALID_SONG_ID = 0;
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::map<SongID, SongResourceInfo> m_songCache;
-    unsigned int m_cacheSizeBytes = 0;
+    unsigned __int64 m_cacheSizeBytes = 0;
 };
