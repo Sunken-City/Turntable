@@ -163,14 +163,15 @@ void Song::Update(float deltaSeconds)
 void Song::RequestSongHandle()
 {
     m_songHandle = SongManager::instance->m_songCache.RequestSoundHandle(m_songID);
-    if (m_songHandle)
-    {
-        m_state = READY_TO_PLAY;
-    }
-    else
-    {
-        m_state = LOADING;
-    }
+    m_state = SongManager::instance->m_songCache.GetState(m_songID);
+    //if (m_songHandle)
+    //{
+    //    m_state = SongState::LOADED;
+    //}
+    //else
+    //{
+    //    m_state = SongState::LOADING;
+    //}
 }
 
 //-----------------------------------------------------------------------------------
