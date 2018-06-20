@@ -24,9 +24,10 @@
 #include "ThirdParty/taglib/include/taglib/vorbisfile.h"
 
 //-----------------------------------------------------------------------------------
-Song::Song(const std::wstring& fullPathToFile, SongID songID)
+Song::Song(const std::wstring& fullPathToFile, SongID songID, SongState::State songState)
     : m_filePath(fullPathToFile)
     , m_songID(songID)
+    , m_state(songState)
 {
     std::string strFilePath = std::string(fullPathToFile.begin(), fullPathToFile.end());
     m_fileExtension = GetFileExtension(strFilePath);

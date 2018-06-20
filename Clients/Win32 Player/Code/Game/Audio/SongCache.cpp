@@ -23,6 +23,7 @@ void LoadSongJob(Job* job)
         if (errorValue == 43)
         {
             Console::instance->PrintLine("ERROR: OUT OF MEMORY, CAN'T LOAD SONG", RGBA::RED);
+            songResource->m_status = SongState::CANT_LOAD;
             return;
         }
         ASSERT_RECOVERABLE(errorValue == 0 || errorValue == 19, "Hit an unexpected error code while loading a file");
@@ -181,6 +182,7 @@ size_t SongCache::CalculateSongID(const std::wstring& filePath)
 void SongCache::Flush()
 {
     m_songCache.clear();
+    m_cacheSizeBytes = 0;
 }
 
 //-----------------------------------------------------------------------------------
@@ -202,13 +204,14 @@ SongID SongCache::FindLeastAccessedSong()
         bool accessTimeIsLower = ((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == SONG_NEVER_ACCESSED) ? true : false;
         bool hasBeenAccessed = info.m_timeLastAccessedMS != SONG_NEVER_ACCESSED ? true : false;
         bool isNotPlaying = info.m_status != SongState::PLAYING ? true : false;
+        bool isNotUnloaded = info.m_status != SongState::UNLOADED ? true : false;
 
         if (info.m_songData && isNotPlaying && hasBeenAccessed && accessTimeIsLower)
         {
             lowestAccessTime = info.m_timeLastAccessedMS;
             leastAccessedSong = info.m_songID;
         }
-        else if (info.m_songData && isNotPlaying && leastAccessedSong == SONG_NEVER_ACCESSED)
+        else if (info.m_songData && isNotPlaying && leastAccessedSong == INVALID_SONG_ID)
         {
             leastAccessedSong = info.m_songID;
         }
@@ -231,7 +234,7 @@ void SongCache::RemoveFromCache(const SongID songID)
     }
     else
     {
-        ASSERT_OR_DIE(found == m_songCache.end(), "Could not remove song from cache.\n");
+        ASSERT_OR_DIE(found != m_songCache.end(), "Could not remove song from cache.\n");
     }
 }
 

@@ -110,7 +110,7 @@ void SongManager::Update(float deltaSeconds)
             //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
             Song* nextSongToLoad = m_songQueue[1];
             SongState::State initialState = nextSongToLoad->m_state;
-            if (initialState == SongState::NOT_LOADED)
+            if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
             {
                 m_songCache.EnsureSongLoad(nextSongToLoad->m_filePath);
             }
@@ -118,7 +118,7 @@ void SongManager::Update(float deltaSeconds)
 
         Song* nextSongInQueue = m_songQueue[0];
         SongState::State initialState = nextSongInQueue->m_state;
-        if (initialState == SongState::NOT_LOADED)
+        if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
         {
             m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
         }
@@ -164,14 +164,14 @@ void SongManager::Play(Song* songToPlay)
     m_activeSong = songToPlay;
     m_baseFrequency = (float)m_activeSong->m_samplerate;
 
-    if (!(m_activeSong->m_songHandle))
-    {
-        m_songCache.EnsureSongLoad(songToPlay->m_filePath);
-    }
-    while (!(m_activeSong->m_songHandle))
-    {
-        Sleep(100);
-    }
+    //if (!(m_activeSong->m_songHandle))
+    //{
+    //    m_songCache.EnsureSongLoad(songToPlay->m_filePath);
+    //}
+    //while (!(m_activeSong->m_songHandle))
+    //{
+    //    Sleep(100);
+    //}
 
     m_activeSong->m_audioChannelHandle = AudioSystem::instance->PlayRawSong(m_activeSong->m_songHandle, m_songVolume);
     AudioSystem::instance->SetLooping(m_activeSong->m_audioChannelHandle, false);
@@ -685,9 +685,10 @@ CONSOLE_COMMAND(play)
         return;
     }
     SongID songID = SongManager::instance->m_songCache.EnsureSongLoad(filepath);
+    SongState::State songStatus = SongManager::instance->m_songCache.GetState(songID);
 
     SongManager::instance->StartLoadingSound();
-    Song* newSong = new Song(filepath, songID);
+    Song* newSong = new Song(filepath, songID, songStatus);
     SongManager::instance->FlushSongQueue();
     SongManager::instance->AddToQueue(newSong);
     SongManager::instance->m_baseFrequency = (float)newSong->m_samplerate;
@@ -718,8 +719,9 @@ CONSOLE_COMMAND(addtoqueue)
         return;
     }
     SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
+    SongState::State songState = SongManager::instance->m_songCache.GetState(songID);
 
-    Song* newSong = new Song(filepath, songID);
+    Song* newSong = new Song(filepath, songID, songState);
     SongManager::instance->AddToQueue(newSong);
 
     Console::instance->PrintLine(Stringf("Added %s to the queue at position %i.", newSong->m_title.c_str(), SongManager::instance->GetQueueLength()));
@@ -740,8 +742,9 @@ CONSOLE_COMMAND(playnext)
         return;
     }
     SongID songID = SongManager::instance->m_songCache.RequestSongLoad(filepath);
+    SongState::State songState = SongManager::instance->m_songCache.GetState(songID);
 
-    Song* newSong = new Song(filepath, songID);
+    Song* newSong = new Song(filepath, songID, songState);
     SongManager::instance->PlayNext(newSong);
     Console::instance->PrintLine(Stringf("Added %s to the top of the queue.", newSong->m_title.c_str()));
 }
