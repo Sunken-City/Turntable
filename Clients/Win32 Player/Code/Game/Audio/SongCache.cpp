@@ -57,7 +57,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     if (found != m_songCache.end())
     {
         songResourceInfo = &found->second;
-        if (songResourceInfo->m_songData)
+        if (songResourceInfo->m_songData || songResourceInfo->m_status == SongState::LOADING)
         {
             //The song ID is in the cache and the song is loaded, so we're able to play
             return songID;
@@ -69,12 +69,18 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         m_songCache[songID].m_songID = songID; //Forcibly create a struct of info for the cache
         songResourceInfo = &m_songCache[songID];
         songResourceInfo->m_filePath = filePath;
+    }
 
-        //We want to make the placeholders for the song if we're going to be over the memory threshold. 
-        if (fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD)
-        {
-            return songID;
-        }
+    bool canRemove = true;
+    while (canRemove && fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
+    {
+        //Try to remove already played songs if we can
+        canRemove = RemoveFromCache(FindLeastAccessedSong());
+    }
+    //We want to make the placeholders for the song if we're going to be over the memory threshold. 
+    if (fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD)
+    {
+        return songID;
     }
 
     m_cacheSizeBytes += fileSize;
@@ -95,7 +101,7 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
     {
         songResourceInfo = &found->second;
         //If the song is already loaded, return its id
-        if (songResourceInfo->m_songData)
+        if (songResourceInfo->m_songData || songResourceInfo->m_status == SongState::LOADING)
         {
             return songID;
         }
@@ -108,13 +114,14 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
     }
 
     long long fileSize = GetFileSizeBytes(filePath);
-    while (fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && m_songCache.size() > 1)
+    bool canRemove = true;
+    while (canRemove && fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
     {
         //Remove the least accessed songs until enough memory is available
-        RemoveFromCache(FindLeastAccessedSong());
+        canRemove = RemoveFromCache(FindSongToDelete());
     }
 
-    if (fileSize >= MAX_MEMORY_THRESHOLD)
+    if (fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD)
     {
         //File is too large to load into memory
         songResourceInfo->m_status = SongState::CANT_LOAD;
@@ -197,14 +204,37 @@ SongID SongCache::FindLeastAccessedSong()
     double lowestAccessTime = SONG_NEVER_ACCESSED;
     SongID leastAccessedSong = INVALID_SONG_ID;
 
-    //Try to find a song that is loaded in and has been played. Otherwise find one that has been loaded
+    //Try to find a song that is loaded in and has been played.
     for (SongCacheIterator i = m_songCache.begin(); i != m_songCache.end(); ++i)
     {
         SongResourceInfo& info = i->second;
         bool accessTimeIsLower = ((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == SONG_NEVER_ACCESSED) ? true : false;
         bool hasBeenAccessed = info.m_timeLastAccessedMS != SONG_NEVER_ACCESSED ? true : false;
         bool isNotPlaying = info.m_status != SongState::PLAYING ? true : false;
-        bool isNotUnloaded = info.m_status != SongState::UNLOADED ? true : false;
+
+        if (info.m_songData && isNotPlaying && hasBeenAccessed && accessTimeIsLower)
+        {
+            lowestAccessTime = info.m_timeLastAccessedMS;
+            leastAccessedSong = info.m_songID;
+        }
+    }
+
+    return leastAccessedSong;
+}
+
+//-----------------------------------------------------------------------------------
+SongID SongCache::FindSongToDelete()
+{
+    double lowestAccessTime = SONG_NEVER_ACCESSED;
+    SongID leastAccessedSong = INVALID_SONG_ID;
+
+    //Find a song that is loaded in and has been played. Otherwise find one that has been loaded
+    for (SongCacheIterator i = m_songCache.begin(); i != m_songCache.end(); ++i)
+    {
+        SongResourceInfo& info = i->second;
+        bool accessTimeIsLower = ((info.m_timeLastAccessedMS < lowestAccessTime) || lowestAccessTime == SONG_NEVER_ACCESSED) ? true : false;
+        bool hasBeenAccessed = info.m_timeLastAccessedMS != SONG_NEVER_ACCESSED ? true : false;
+        bool isNotPlaying = info.m_status != SongState::PLAYING ? true : false;
 
         if (info.m_songData && isNotPlaying && hasBeenAccessed && accessTimeIsLower)
         {
@@ -221,7 +251,7 @@ SongID SongCache::FindLeastAccessedSong()
 }
 
 //-----------------------------------------------------------------------------------
-void SongCache::RemoveFromCache(const SongID songID)
+bool SongCache::RemoveFromCache(const SongID songID)
 {
     SongCacheIterator found = m_songCache.find(songID);
     if (found != m_songCache.end())
@@ -231,11 +261,11 @@ void SongCache::RemoveFromCache(const SongID songID)
         AudioSystem::instance->ReleaseRawSong(info.m_songData);
         info.m_songData = nullptr;
         info.m_status = SongState::UNLOADED;
+        return true;
     }
-    else
-    {
-        ASSERT_OR_DIE(found != m_songCache.end(), "Could not remove song from cache.\n");
-    }
+
+    return false;
+        //ASSERT_OR_DIE(found != m_songCache.end(), "Could not remove song from cache.\n");
 }
 
 //-----------------------------------------------------------------------------------
@@ -282,4 +312,21 @@ SongState::State SongCache::GetState(const SongID songID)
     }
 
     return SongState::INVALID_STATE;
+}
+
+//-----------------------------------------------------------------------------------
+unsigned int SongCache::GetNumLoadedSongs()
+{
+    //Count if a song is loaded, playing, or loading
+    unsigned int numLoadedSongs = 0;
+    for (SongCacheIterator i = m_songCache.begin(); i != m_songCache.end(); ++i)
+    {
+        SongState::State& status = i->second.m_status;
+        if (status == SongState::LOADED || status == SongState::LOADING || status == SongState::PLAYING)
+        {
+            ++numLoadedSongs;
+        }
+    }
+
+    return numLoadedSongs;
 }
