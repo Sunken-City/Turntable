@@ -104,6 +104,13 @@ void SongManager::Update(float deltaSeconds)
     }
     else if (m_songQueue.size() > 0)
     {
+        Song* nextSongInQueue = m_songQueue[0];
+        SongState::State initialState = nextSongInQueue->m_state;
+        if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
+        {
+            m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
+        }
+
         if (m_songQueue.size() > 1)
         {
             //Ensure the next song is loaded before we get to it
@@ -112,16 +119,10 @@ void SongManager::Update(float deltaSeconds)
             SongState::State initialState = nextSongToLoad->m_state;
             if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
             {
-                m_songCache.EnsureSongLoad(nextSongToLoad->m_filePath);
+                m_songCache.RequestSongLoad(nextSongToLoad->m_filePath);
             }
         }
 
-        Song* nextSongInQueue = m_songQueue[0];
-        SongState::State initialState = nextSongInQueue->m_state;
-        if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
-        {
-            m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
-        }
         nextSongInQueue->RequestSongHandle();
 
         if (nextSongInQueue->m_state == SongState::LOADED || nextSongInQueue->m_state == SongState::CANT_LOAD || nextSongInQueue->m_state == SongState::INVALID_STATE)

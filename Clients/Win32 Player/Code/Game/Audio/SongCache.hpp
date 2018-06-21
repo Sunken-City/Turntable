@@ -6,16 +6,6 @@
 
 typedef size_t SongID;
 
-//enum Status
-//{
-//    NOT_LOADED,
-//    LOADING,
-//    LOADED,
-//    CANT_LOAD,
-//    PLAYING,
-//    UNLOADED
-//};
-
 struct SongResourceInfo
 {
     ~SongResourceInfo();
@@ -53,7 +43,9 @@ public:
 private:
     SongID CalculateSongID(const std::wstring& filePath);
     SongID FindLeastAccessedSong();
-    void RemoveFromCache(const SongID songID);
+    SongID FindSongToDelete();
+    bool RemoveFromCache(const SongID songID);
+    unsigned int GetNumLoadedSongs();
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //400 MB
