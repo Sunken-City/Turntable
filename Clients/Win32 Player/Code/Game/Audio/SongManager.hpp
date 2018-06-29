@@ -1,11 +1,13 @@
 #pragma once
-#include <deque>
+#include <list>
 #include "Engine\Core\Events\Event.hpp"
 #include "Engine\Core\Events\NamedProperties.hpp"
 #include "SongCache.hpp"
 
 class Song;
 struct XMLNode;
+//typedef std::_List_iterator<std::_List_val<std::_List_simple_types<Song*>>> SongIterator;
+typedef std::list<Song*>::iterator SongIterator;
 
 class SongManager
 {
@@ -59,7 +61,9 @@ public:
     static SongManager* instance;
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
-    std::deque<Song*> m_songQueue;
+    std::list<Song*> m_songQueue;
+    SongIterator m_songPositionInQueue;
+    //std::deque<Song*> m_songQueue;
     SongCache m_songCache;
     Event<> m_eventSongFinished;
     Event<> m_eventSongBeginPlay;
