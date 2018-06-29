@@ -1047,7 +1047,16 @@ CONSOLE_COMMAND(printqueuedebug)
     for (Song* song : SongManager::instance->m_songQueue)
     {
         RGBA lineColor;
-        if (SongManager::instance->m_songCache.IsLoaded(song->m_songID))
+        SongState::State songState = SongManager::instance->m_songCache.GetState(song->m_songID);
+        if (songState == SongState::PLAYING)
+        {
+            lineColor = RGBA::CERULEAN;
+        }
+        else if (songState == SongState::UNLOADED)
+        {
+            lineColor = RGBA::ORANGE;
+        }
+        else if (songState == SongState::LOADED)
         {
             lineColor = RGBA::EARTHBOUND_GREEN;
         }
