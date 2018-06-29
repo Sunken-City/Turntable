@@ -18,6 +18,7 @@
 #include "Engine/Time/Time.hpp"
 
 SongManager* SongManager::instance = nullptr;
+const unsigned int SKIP_BACK_THRESHOLD_MS = 5000;
 
 //-----------------------------------------------------------------------------------
 SongManager::SongManager()
@@ -102,32 +103,31 @@ void SongManager::Update(float deltaSeconds)
             m_eventSongFinished.Trigger();
         }
     }
-    else if (m_songQueue.size() > 0)
+    else if (m_songQueue.size() > 0 && (*m_songPositionInQueue)->m_state != SongState::LOADING)
     {
-        Song* nextSongInQueue = m_songQueue[0];
+        Song* nextSongInQueue = *m_songPositionInQueue;
         SongState::State initialState = nextSongInQueue->m_state;
         if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
         {
             m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
         }
 
-        if (m_songQueue.size() > 1)
+        if (std::next(m_songPositionInQueue) != m_songQueue.end())
         {
             //Ensure the next song is loaded before we get to it
             //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
-            Song* nextSongToLoad = m_songQueue[1];
+            Song* nextSongToLoad = *(std::next(m_songPositionInQueue));
             SongState::State initialState = nextSongToLoad->m_state;
             if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
             {
                 m_songCache.RequestSongLoad(nextSongToLoad->m_filePath);
             }
         }
-
         nextSongInQueue->RequestSongHandle();
 
         if (nextSongInQueue->m_state == SongState::LOADED || nextSongInQueue->m_state == SongState::CANT_LOAD || nextSongInQueue->m_state == SongState::INVALID_STATE)
         {
-            m_songQueue.pop_front();
+            //m_songQueue.pop_front();
             if (m_songCache.IsValid(nextSongInQueue->m_songID))
             {
                 Play(nextSongInQueue);
@@ -144,6 +144,10 @@ void SongManager::Update(float deltaSeconds)
         {
             StartLoadingSound();
         }
+    }
+    else if (m_songQueue.size() > 0 && (*m_songPositionInQueue)->m_state == SongState::LOADING)
+    {
+        (*m_songPositionInQueue)->RequestSongHandle();
     }
 }
 
@@ -163,16 +167,13 @@ void SongManager::Play(Song* songToPlay)
         StopSong();
     }
     m_activeSong = songToPlay;
+    //Add song to the end of the queue if the queue is empty
+    if (SongManager::instance->GetQueueLength() < 1)
+    {
+        m_songQueue.emplace_back(m_activeSong);
+        m_songPositionInQueue = std::prev(m_songQueue.end());
+    }
     m_baseFrequency = (float)m_activeSong->m_samplerate;
-
-    //if (!(m_activeSong->m_songHandle))
-    //{
-    //    m_songCache.EnsureSongLoad(songToPlay->m_filePath);
-    //}
-    //while (!(m_activeSong->m_songHandle))
-    //{
-    //    Sleep(100);
-    //}
 
     m_activeSong->m_audioChannelHandle = AudioSystem::instance->PlayRawSong(m_activeSong->m_songHandle, m_songVolume);
     AudioSystem::instance->SetLooping(m_activeSong->m_audioChannelHandle, false);
@@ -221,13 +222,20 @@ bool SongManager::IsPlaying()
 //-----------------------------------------------------------------------------------
 void SongManager::AddToQueue(Song* newSong)
 {
-    m_songQueue.push_back(newSong);
+    //m_songQueue.push_back(newSong);
+    m_songQueue.emplace_back(newSong);
+    if (SongManager::instance->GetQueueLength() == 1)
+    {
+        m_songPositionInQueue = m_songQueue.begin();
+    }
 }
 
 //-----------------------------------------------------------------------------------
 void SongManager::PlayNext(Song* newSong)
 {
-    m_songQueue.push_front(newSong);
+    //m_songQueue.push_front(newSong);
+    //m_songQueue.emplace_front(newSong);
+    m_songQueue.insert(std::next(m_songPositionInQueue), newSong);
 }
 
 //-----------------------------------------------------------------------------------
@@ -252,9 +260,10 @@ void SongManager::OnSongPlaybackFinished()
     }
     else
     {
-        m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
+        //m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         StopSong();
-        if (m_songQueue.size() == 0)
+        m_songPositionInQueue = std::next(m_songPositionInQueue);
+        if (m_songQueue.size() == 0 || m_songPositionInQueue == m_songQueue.end())
         {
             StopAll();
         }
@@ -303,7 +312,8 @@ void SongManager::StopSong()
     AudioSystem::instance->StopChannel(m_activeSong->m_audioChannelHandle);
     if (m_activeSong)
     {
-        delete m_activeSong;
+        //delete m_activeSong;
+        m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr); //Set to default values.
     }
@@ -438,9 +448,9 @@ void SongManager::SavePlaylist(const std::string& name)
         XMLNode playlist = OpenPlaylist(name);
 
         AddToPlaylist(playlist, m_activeSong);
-        for (unsigned int i = 0; i < m_songQueue.size(); ++i)
+        for (SongIterator i = m_songQueue.begin(); i != m_songQueue.end(); ++i)
         {
-            AddToPlaylist(playlist, m_songQueue.at(i));
+            AddToPlaylist(playlist, *i);
         }
 
         playlist.writeToFile(savePath.c_str());
@@ -570,8 +580,22 @@ void OnSkipBack(NamedProperties& params)
     {
         return;
     }
-    SongManager::instance->AwardExpForSongProgress();
-    AudioSystem::instance->SetPlaybackPositionMS(SongManager::instance->m_activeSong->m_audioChannelHandle, 0);
+    AudioChannelHandle audioChannelHandle = SongManager::instance->m_activeSong->m_audioChannelHandle;
+    bool firstSongInQueue = SongManager::instance->m_songPositionInQueue == SongManager::instance->m_songQueue.begin() ? true : false;
+    bool songProgressWithinThreshold = AudioSystem::instance->GetPlaybackPositionMS(audioChannelHandle) < SKIP_BACK_THRESHOLD_MS ? true : false;
+    if (!firstSongInQueue && songProgressWithinThreshold)
+    {
+        //Play the previous song
+        SongIterator previousSong = std::prev(SongManager::instance->m_songPositionInQueue);
+        SongManager::instance->AwardExpForSongProgress();
+        SongManager::instance->StopSong();
+        SongManager::instance->m_songPositionInQueue = previousSong;
+    }
+    else
+    {
+        SongManager::instance->AwardExpForSongProgress();
+        AudioSystem::instance->SetPlaybackPositionMS(audioChannelHandle, 0);
+    }
 }
 
 //-----------------------------------------------------------------------------------
