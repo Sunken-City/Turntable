@@ -103,7 +103,7 @@ void SongManager::Update(float deltaSeconds)
             m_eventSongFinished.Trigger();
         }
     }
-    else if (m_songQueue.size() > 0 && (*m_songPositionInQueue)->m_state != SongState::LOADING)
+    else if (GetQueueLength() > 0 && (*m_songPositionInQueue)->m_state != SongState::LOADING)
     {
         Song* nextSongInQueue = *m_songPositionInQueue;
         SongState::State initialState = nextSongInQueue->m_state;
@@ -112,11 +112,14 @@ void SongManager::Update(float deltaSeconds)
             m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
         }
 
-        if (std::next(m_songPositionInQueue) != m_songQueue.end())
+        Song* nextSongToLoad = GetNextUnloadedSong();
+        int songPosition = GetSongPositionInQueue(nextSongToLoad);
+        int songLoadThreshold = m_songCache.GetNumLoadedSongs() / 2; //New songs will start loading once the playing track in in the middle of the already loaded tracks
+        //TODO: Get song's position within the block of loaded songs
+        if (nextSongToLoad && songPosition > songLoadThreshold)
         {
             //Ensure the next song is loaded before we get to it
             //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
-            Song* nextSongToLoad = *(std::next(m_songPositionInQueue));
             SongState::State initialState = nextSongToLoad->m_state;
             if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
             {
@@ -202,7 +205,7 @@ void SongManager::StopAll()
     FlushSongQueue();
     if (m_activeSong)
     {
-        delete m_activeSong;
+        //delete m_activeSong;
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr);
     }
@@ -553,6 +556,36 @@ void SongManager::LoadAlbumArt(Song* songToPlay)
     }
     TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(songToPlay->m_albumArt);
     TheGame::instance->m_fboMaterial->SetNormalTexture(songToPlay->m_albumArt);
+}
+
+//-----------------------------------------------------------------------------------
+Song* SongManager::GetNextUnloadedSong()
+{
+    for (Song* song : m_songQueue)
+    {
+        SongState::State songState = song->m_state;
+        if (songState == SongState::UNLOADED || songState == SongState::NOT_LOADED)
+        {
+            return song;
+        }
+    }
+
+    return nullptr;
+}
+
+//-----------------------------------------------------------------------------------
+int SongManager::GetSongPositionInQueue(Song* song)
+{
+    int count = -1;
+    for (Song* currentSong : m_songQueue)
+    {
+        if (currentSong == song)
+        {
+            ++count;
+            return count;
+        }
+    }
+    return count;
 }
 
 //UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////

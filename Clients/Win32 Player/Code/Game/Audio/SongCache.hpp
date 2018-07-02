@@ -38,6 +38,7 @@ public:
     void TogglePlayingStatus(const SongID songID);
     bool IsLoaded(const SongID songID);
     SongState::State GetState(const SongID songID);
+    unsigned int GetNumLoadedSongs();
     //unsigned int GetCurrentMemoryUsage();
 
 private:
@@ -45,7 +46,6 @@ private:
     SongID FindLeastAccessedSong();
     SongID FindSongToDelete();
     bool RemoveFromCache(const SongID songID);
-    unsigned int GetNumLoadedSongs();
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //400 MB
