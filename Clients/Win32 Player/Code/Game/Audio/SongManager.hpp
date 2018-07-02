@@ -49,6 +49,8 @@ public:
     void StartLoadingSound();
     void QueueRandomSong(bool playWholeAlbum = false);
     void LoadAlbumArt(Song* songToPlay);
+    Song* GetNextUnloadedSong();
+    int GetSongPositionInQueue(Song* song);
 
     //EVENTS/////////////////////////////////////////////////////////////////////
     void OnSongPlaybackFinished();
