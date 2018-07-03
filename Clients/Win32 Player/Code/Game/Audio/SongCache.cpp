@@ -146,7 +146,7 @@ RawSoundHandle SongCache::RequestSoundHandle(const SongID songID)
     {
         SongResourceInfo& info = found->second;
         song = info.m_songData;
-        info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
+        //info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
     }
 
     return song;

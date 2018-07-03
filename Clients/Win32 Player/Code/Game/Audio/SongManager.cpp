@@ -141,11 +141,10 @@ void SongManager::Update(float deltaSeconds)
                 //Something happened while loading this song. Log it and continue.
                 Console::instance->PrintLine(Stringf("Error while loading song %s. Skipping to next song in queue. Reason:", nextSongInQueue->m_fileName.c_str()), RGBA::RED);
                 m_songCache.PrintErrorInConsole(nextSongInQueue->m_songID);
-                if (std::next(m_songPositionInQueue) != m_songQueue.end())
-                {
-                    m_songPositionInQueue = std::next(m_songPositionInQueue);
-                }
+                int currentPosition = GetSongPositionInQueue(nextSongInQueue);
+                delete nextSongInQueue;
                 m_songQueue.remove(nextSongInQueue);
+                m_songPositionInQueue = std::next(m_songQueue.begin(), currentPosition);
             }
         }
         else if (initialState == SongState::NOT_LOADED && !m_recordCracklesHandle)
@@ -584,9 +583,9 @@ int SongManager::GetSongPositionInQueue(Song* song)
     int count = -1;
     for (Song* currentSong : m_songQueue)
     {
+        ++count;
         if (currentSong == song)
         {
-            ++count;
             return count;
         }
     }
