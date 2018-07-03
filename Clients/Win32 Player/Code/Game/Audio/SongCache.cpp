@@ -72,13 +72,13 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     }
 
     bool canRemove = true;
-    while (canRemove && fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
+    while (canRemove && (fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
     {
         //Try to remove already played songs if we can
         canRemove = RemoveFromCache(FindLeastAccessedSong());
     }
     //We want to make the placeholders for the song if we're going to be over the memory threshold. 
-    if (fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD)
+    if ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD)
     {
         return songID;
     }
@@ -115,13 +115,13 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
 
     long long fileSize = GetFileSizeBytes(filePath);
     bool canRemove = true;
-    while (canRemove && fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
+    while (canRemove && (fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
     {
         //Remove the least accessed songs until enough memory is available
         canRemove = RemoveFromCache(FindSongToDelete());
     }
 
-    if (fileSize + m_cacheSizeBytes >= MAX_MEMORY_THRESHOLD)
+    if ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD)
     {
         //File is too large to load into memory
         songResourceInfo->m_status = SongState::CANT_LOAD;
@@ -322,7 +322,7 @@ unsigned int SongCache::GetNumLoadedSongs()
     for (SongCacheIterator i = m_songCache.begin(); i != m_songCache.end(); ++i)
     {
         SongState::State& status = i->second.m_status;
-        if (status == SongState::LOADED || status == SongState::LOADING || status == SongState::PLAYING)
+        if (status == SongState::LOADED || status == SongState::PLAYING)
         {
             ++numLoadedSongs;
         }

@@ -48,7 +48,7 @@ private:
     bool RemoveFromCache(const SongID songID);
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
-    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //400 MB
+    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e6; //400 MB
     const double SONG_NEVER_ACCESSED = -1.0;
     const SongID INVALID_SONG_ID = 0;
 
