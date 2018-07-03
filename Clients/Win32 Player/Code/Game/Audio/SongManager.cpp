@@ -115,7 +115,7 @@ void SongManager::Update(float deltaSeconds)
 
         Song* nextSongToLoad = GetNextUnloadedSong();
         int songPosition = GetSongPositionInQueue(nextSongToLoad);
-        int songLoadThreshold = m_songCache.GetNumLoadedSongs() / 2; //New songs will start loading once the playing track in in the middle of the already loaded tracks
+        int songLoadThreshold = m_songCache.GetSongsInMemoryCount() / 2; //New songs will start loading once the playing track in in the middle of the already loaded tracks
         //TODO: Get song's position within the block of loaded songs
         if (nextSongToLoad && songPosition > songLoadThreshold)
         {
@@ -131,7 +131,6 @@ void SongManager::Update(float deltaSeconds)
 
         if (nextSongInQueue->m_state == SongState::LOADED || nextSongInQueue->m_state == SongState::CANT_LOAD || nextSongInQueue->m_state == SongState::INVALID_STATE)
         {
-            //m_songQueue.pop_front();
             if (m_songCache.IsValid(nextSongInQueue->m_songID))
             {
                 Play(nextSongInQueue);
@@ -209,7 +208,6 @@ void SongManager::StopAll()
     FlushSongQueue();
     if (m_activeSong)
     {
-        //delete m_activeSong;
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr);
     }
@@ -229,7 +227,6 @@ bool SongManager::IsPlaying()
 //-----------------------------------------------------------------------------------
 void SongManager::AddToQueue(Song* newSong)
 {
-    //m_songQueue.push_back(newSong);
     m_songQueue.emplace_back(newSong);
     if (SongManager::instance->GetQueueLength() == 1)
     {
@@ -240,8 +237,6 @@ void SongManager::AddToQueue(Song* newSong)
 //-----------------------------------------------------------------------------------
 void SongManager::PlayNext(Song* newSong)
 {
-    //m_songQueue.push_front(newSong);
-    //m_songQueue.emplace_front(newSong);
     m_songQueue.insert(std::next(m_songPositionInQueue), newSong);
 }
 
@@ -267,7 +262,6 @@ void SongManager::OnSongPlaybackFinished()
     }
     else
     {
-        //m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         StopSong();
         m_songPositionInQueue = std::next(m_songPositionInQueue);
         if (m_songQueue.size() == 0 || m_songPositionInQueue == m_songQueue.end())
@@ -299,7 +293,6 @@ void SongManager::OnSongBeginPlay()
 {
     float songLengthMultiplier = (float)m_activeSong->m_lengthInSeconds / 60.0f;
     unsigned int level = AchievementManager::instance->m_currentProfile->m_level;
-    //float levelMultiplier = (float)level / 100.0f;
 
     if (m_activeSong->m_playcount == 0)
     {
@@ -319,7 +312,6 @@ void SongManager::StopSong()
     AudioSystem::instance->StopChannel(m_activeSong->m_audioChannelHandle);
     if (m_activeSong)
     {
-        //delete m_activeSong;
         m_songCache.TogglePlayingStatus(m_activeSong->m_songID);
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr); //Set to default values.

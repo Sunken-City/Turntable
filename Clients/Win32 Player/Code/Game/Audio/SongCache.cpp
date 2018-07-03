@@ -72,7 +72,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     }
 
     bool canRemove = true;
-    while (canRemove && (fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
+    while (canRemove && ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD) && (GetSongsInMemoryCount() > 1))
     {
         //Try to remove already played songs if we can
         canRemove = RemoveFromCache(FindLeastAccessedSong());
@@ -115,7 +115,7 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
 
     long long fileSize = GetFileSizeBytes(filePath);
     bool canRemove = true;
-    while (canRemove && (fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD && GetNumLoadedSongs() > 1)
+    while (canRemove && ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD) && (GetSongsInMemoryCount() > 1))
     {
         //Remove the least accessed songs until enough memory is available
         canRemove = RemoveFromCache(FindSongToDelete());
@@ -146,7 +146,6 @@ RawSoundHandle SongCache::RequestSoundHandle(const SongID songID)
     {
         SongResourceInfo& info = found->second;
         song = info.m_songData;
-        //info.m_timeLastAccessedMS = GetCurrentTimeMilliseconds();
     }
 
     return song;
@@ -263,9 +262,7 @@ bool SongCache::RemoveFromCache(const SongID songID)
         info.m_status = SongState::UNLOADED;
         return true;
     }
-
     return false;
-        //ASSERT_OR_DIE(found != m_songCache.end(), "Could not remove song from cache.\n");
 }
 
 //-----------------------------------------------------------------------------------
@@ -315,7 +312,7 @@ SongState::State SongCache::GetState(const SongID songID)
 }
 
 //-----------------------------------------------------------------------------------
-unsigned int SongCache::GetNumLoadedSongs()
+unsigned int SongCache::GetSongsInMemoryCount()
 {
     //Count if a song is loaded, playing, or loading
     unsigned int numLoadedSongs = 0;

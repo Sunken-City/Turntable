@@ -38,8 +38,7 @@ public:
     void TogglePlayingStatus(const SongID songID);
     bool IsLoaded(const SongID songID);
     SongState::State GetState(const SongID songID);
-    unsigned int GetNumLoadedSongs();
-    //unsigned int GetCurrentMemoryUsage();
+    unsigned int GetSongsInMemoryCount();
 
 private:
     SongID CalculateSongID(const std::wstring& filePath);
