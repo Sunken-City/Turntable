@@ -165,14 +165,6 @@ void Song::RequestSongHandle()
 {
     m_songHandle = SongManager::instance->m_songCache.RequestSoundHandle(m_songID);
     m_state = SongManager::instance->m_songCache.GetState(m_songID);
-    //if (m_songHandle)
-    //{
-    //    m_state = SongState::LOADED;
-    //}
-    //else
-    //{
-    //    m_state = SongState::LOADING;
-    //}
 }
 
 //-----------------------------------------------------------------------------------
