@@ -24,6 +24,7 @@ const unsigned int SKIP_BACK_THRESHOLD_MS = 5000;
 SongManager::SongManager()
     : m_needleDropSound(AudioSystem::instance->CreateOrGetSound("Data/SFX/needleDrop.ogg"))
     , m_recordCracklesSound(AudioSystem::instance->CreateOrGetSound("Data/SFX/crackles.ogg"))
+    , m_songPositionInQueue(m_songQueue.end())
 {
     m_eventSongFinished.RegisterMethod(this, &SongManager::OnSongPlaybackFinished);
     m_eventSongBeginPlay.RegisterMethod(this, &SongManager::OnSongBeginPlay);
@@ -140,7 +141,11 @@ void SongManager::Update(float deltaSeconds)
                 //Something happened while loading this song. Log it and continue.
                 Console::instance->PrintLine(Stringf("Error while loading song %s. Skipping to next song in queue. Reason:", nextSongInQueue->m_fileName.c_str()), RGBA::RED);
                 m_songCache.PrintErrorInConsole(nextSongInQueue->m_songID);
-                delete nextSongInQueue;
+                if (std::next(m_songPositionInQueue) != m_songQueue.end())
+                {
+                    m_songPositionInQueue = std::next(m_songPositionInQueue);
+                }
+                m_songQueue.remove(nextSongInQueue);
             }
         }
         else if (initialState == SongState::NOT_LOADED && !m_recordCracklesHandle)
