@@ -104,7 +104,11 @@ void SongManager::Update(float deltaSeconds)
             m_eventSongFinished.Trigger();
         }
     }
-    else if (GetQueueLength() > 0 && (*m_songPositionInQueue)->m_state != SongState::LOADING)
+    else if (m_songPositionInQueue == m_songQueue.end())
+    {
+        StopAll();
+    }
+    else if ((GetQueueLength()) > 0 && ((*m_songPositionInQueue)->m_state != SongState::LOADING))
     {
         Song* nextSongInQueue = *m_songPositionInQueue;
         SongState::State initialState = nextSongInQueue->m_state;
@@ -143,7 +147,14 @@ void SongManager::Update(float deltaSeconds)
                 int currentPosition = GetSongPositionInQueue(nextSongInQueue);
                 delete nextSongInQueue;
                 m_songQueue.remove(nextSongInQueue);
-                m_songPositionInQueue = std::next(m_songQueue.begin(), currentPosition);
+                if ((currentPosition + 1) < m_songQueue.size())
+                {
+                    m_songPositionInQueue = std::next(m_songQueue.begin(), currentPosition);
+                }
+                else
+                {
+                    m_songPositionInQueue = m_songQueue.end();
+                }
             }
         }
         else if (initialState == SongState::NOT_LOADED && !m_recordCracklesHandle)
@@ -151,10 +162,11 @@ void SongManager::Update(float deltaSeconds)
             StartLoadingSound();
         }
     }
-    else if (m_songQueue.size() > 0 && (*m_songPositionInQueue)->m_state == SongState::LOADING)
+    else if ((GetQueueLength() > 0) && ((*m_songPositionInQueue)->m_state == SongState::LOADING))
     {
         (*m_songPositionInQueue)->RequestSongHandle();
     }
+
 }
 
 //-----------------------------------------------------------------------------------
