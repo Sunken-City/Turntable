@@ -104,11 +104,7 @@ void SongManager::Update(float deltaSeconds)
             m_eventSongFinished.Trigger();
         }
     }
-    else if (m_songPositionInQueue == m_songQueue.end())
-    {
-        StopAll();
-    }
-    else if ((GetQueueLength()) > 0 && ((*m_songPositionInQueue)->m_state != SongState::LOADING))
+    else if ((GetQueueLength() > 0) && (m_songPositionInQueue != m_songQueue.end()) && ((*m_songPositionInQueue)->m_state != SongState::LOADING))
     {
         Song* nextSongInQueue = *m_songPositionInQueue;
         SongState::State initialState = nextSongInQueue->m_state;
@@ -162,7 +158,7 @@ void SongManager::Update(float deltaSeconds)
             StartLoadingSound();
         }
     }
-    else if ((GetQueueLength() > 0) && ((*m_songPositionInQueue)->m_state == SongState::LOADING))
+    else if ((GetQueueLength() > 0) && (m_songPositionInQueue != m_songQueue.end()) && ((*m_songPositionInQueue)->m_state == SongState::LOADING))
     {
         (*m_songPositionInQueue)->RequestSongHandle();
     }

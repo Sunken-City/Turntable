@@ -7,6 +7,7 @@
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/JobSystem.hpp"
 #include "../TheGame.hpp"
+#include <Psapi.h>
 
 typedef std::map<SongID, SongResourceInfo>::iterator SongCacheIterator;
 
@@ -36,7 +37,7 @@ void LoadSongJob(Job* job)
 //-----------------------------------------------------------------------------------
 SongCache::SongCache()
 {
-
+    //m_cacheSizeBytes = GetProcessMemoryBytes();
 }
 
 //-----------------------------------------------------------------------------------
@@ -326,4 +327,15 @@ unsigned int SongCache::GetSongsInMemoryCount()
     }
 
     return numLoadedSongs;
+}
+
+//-----------------------------------------------------------------------------------
+unsigned __int64 SongCache::GetProcessMemoryBytes()
+{
+    PROCESS_MEMORY_COUNTERS memoryCounters;
+    HANDLE currentProcess = GetCurrentProcess();
+    GetProcessMemoryInfo(currentProcess, &memoryCounters, sizeof(memoryCounters));
+    unsigned __int64 memoryCount = memoryCounters.PagefileUsage;
+
+    return memoryCount;
 }

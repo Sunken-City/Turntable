@@ -45,11 +45,12 @@ private:
     SongID FindLeastAccessedSong();
     SongID FindSongToDelete();
     bool RemoveFromCache(const SongID songID);
+    unsigned __int64 GetProcessMemoryBytes();
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////
-    const static unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //400 MB
     const double SONG_NEVER_ACCESSED = -1.0;
     const SongID INVALID_SONG_ID = 0;
+    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //1 GB limit for win32
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::map<SongID, SongResourceInfo> m_songCache;
