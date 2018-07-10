@@ -384,7 +384,7 @@ void CreateOpenGLWindow(HINSTANCE applicationInstanceHandle)
     float right = left + windowSize.x;
 
     RECT windowRect = { (int)left, (int)top, (int)right, (int)bottom };
-    DWORD windowStyleFlags = WS_CAPTION | WS_BORDER | WS_THICKFRAME | WS_SYSMENU | WS_OVERLAPPED;
+    DWORD windowStyleFlags = WS_CAPTION | WS_BORDER | WS_THICKFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_OVERLAPPED;
     DWORD windowStyleExFlags = WS_EX_APPWINDOW;
     if (g_isFullscreen)
     {
