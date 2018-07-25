@@ -7,6 +7,7 @@
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/JobSystem.hpp"
 #include "../TheGame.hpp"
+#include "Engine/Audio/AudioMetadataUtils.hpp"
 #include <Psapi.h>
 
 typedef std::map<SongID, SongResourceInfo>::iterator SongCacheIterator;
@@ -37,7 +38,7 @@ void LoadSongJob(Job* job)
 //-----------------------------------------------------------------------------------
 SongCache::SongCache()
 {
-    //m_cacheSizeBytes = GetProcessMemoryBytes();
+
 }
 
 //-----------------------------------------------------------------------------------
@@ -53,7 +54,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     SongID songID = SongCache::CalculateSongID(filePath);
     SongCacheIterator found = m_songCache.find(songID);
     SongResourceInfo* songResourceInfo = nullptr;
-    long long fileSize = GetFileSizeBytes(filePath);
+    unsigned int fileSize = GetUncompressedFilesize(filePath);
 
     if (found != m_songCache.end())
     {
@@ -114,7 +115,7 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
         songResourceInfo->m_filePath = filePath;
     }
 
-    long long fileSize = GetFileSizeBytes(filePath);
+    unsigned int fileSize = GetUncompressedFilesize(filePath);
     bool canRemove = true;
     while (canRemove && ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD) && (GetSongsInMemoryCount() > 1))
     {
@@ -257,7 +258,7 @@ bool SongCache::RemoveFromCache(const SongID songID)
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
-        m_cacheSizeBytes -= GetFileSizeBytes(info.m_filePath);
+        m_cacheSizeBytes -= GetUncompressedFilesize(info.m_filePath);
         AudioSystem::instance->ReleaseRawSong(info.m_songData);
         info.m_songData = nullptr;
         info.m_status = SongState::UNLOADED;

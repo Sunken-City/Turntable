@@ -117,7 +117,7 @@ void SongManager::Update(float deltaSeconds)
         int songPosition = GetSongPositionInQueue(nextSongToLoad);
         int songLoadThreshold = m_songCache.GetSongsInMemoryCount() / 2; //New songs will start loading once the playing track in in the middle of the already loaded tracks
         //TODO: Get song's position within the block of loaded songs
-        if (nextSongToLoad && songPosition > songLoadThreshold)
+        if (nextSongToLoad && (songPosition > songLoadThreshold))
         {
             //Ensure the next song is loaded before we get to it
             //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
