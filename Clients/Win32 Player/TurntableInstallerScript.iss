@@ -18,7 +18,6 @@ Source: "vc_redist.x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall
 
 [Tasks]
 Name: desktopicon; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Flags: checkedonce
-Name: quicklaunchicon; Description: "Create a &Quick Launch icon"; GroupDescription: "Additional icons:"; Flags: unchecked checkedonce
 Name: associate; Description: "&Associate files"; GroupDescription: "Other tasks:"; Flags: unchecked
 Name: associate\mp3; Description: ".mp3"; GroupDescription: "Other tasks"; Flags: unchecked
 Name: associate\flac; Description: ".flac"; GroupDescription: "Other tasks"; Flags: unchecked
@@ -31,7 +30,6 @@ Filename: {tmp}\vc_redist.x86.exe; Parameters: "/install /passive /norestart"; S
 [Icons]
 Name: "{group}\Turntable"; Filename: "{app}\Turntable.exe"
 Name: "{userdesktop}\Turntable"; Filename: "{app}\Turntable.exe"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Turntable"; Filename: "{app}\Turntable.exe"; Tasks: quicklaunchicon
 
 [Registry]
 Root: HKCR; Subkey: "Applications\Turntable.exe"; ValueType: string; ValueName: ""; ValueData: "Program Turntable"; Flags: uninsdeletekey
