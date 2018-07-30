@@ -50,7 +50,7 @@ private:
     //CONSTANTS/////////////////////////////////////////////////////////////////////
     const double SONG_NEVER_ACCESSED = -1.0;
     const SongID INVALID_SONG_ID = 0;
-    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)4e8; //1 GB limit for win32
+    const unsigned int MAX_MEMORY_THRESHOLD = (unsigned int)8e8; //1 GB limit for win32
 
     //MEMBER VARIABLES/////////////////////////////////////////////////////////////////////
     std::map<SongID, SongResourceInfo> m_songCache;

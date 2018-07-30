@@ -79,6 +79,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         //Try to remove already played songs if we can
         canRemove = RemoveFromCache(FindLeastAccessedSong());
     }
+
     //We want to make the placeholders for the song if we're going to be over the memory threshold. 
     if ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD)
     {

@@ -50,6 +50,7 @@ public:
     void LoadAlbumArt(Song* songToPlay);
     Song* GetNextUnloadedSong();
     int GetSongPositionInQueue(Song* song);
+    Song* GetFirstLoadedSongInQueue();
 
     //EVENTS/////////////////////////////////////////////////////////////////////
     void OnSongPlaybackFinished();

@@ -90,6 +90,26 @@ void SongManager::Update(float deltaSeconds)
             AudioSystem::instance->SetFrequency(m_activeSong->m_audioChannelHandle, m_currentFrequency);
         }
 
+        //Start loading in the next track if the song we're playing is within the threshold
+        Song* nextSongToLoad = GetNextUnloadedSong();
+        Song* firstLoadedSongInQueue = GetFirstLoadedSongInQueue();
+        int playingSongPosition = GetSongPositionInQueue(m_activeSong);
+        int nextUnloadedSongPosition = GetSongPositionInQueue(nextSongToLoad);
+        int firstLoadedSongPosition = GetSongPositionInQueue(firstLoadedSongInQueue);
+        int songLoadThreshold = (nextUnloadedSongPosition - firstLoadedSongPosition) / 2; //New songs will start loading once the playing track in in the middle of the already loaded tracks
+
+        if (playingSongPosition > songLoadThreshold)
+        {
+            //Ensure the next song is loaded before we get to it
+            SongState::State initialState = nextSongToLoad->m_state;
+            if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
+            {
+                m_songCache.RequestSongLoad(nextSongToLoad->m_filePath);
+            }
+            nextSongToLoad->RequestSongHandle();
+            m_activeSong->RequestSongHandle();
+        }
+
         CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
         UpdateUIWidgetText();
 
@@ -113,20 +133,6 @@ void SongManager::Update(float deltaSeconds)
             m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
         }
 
-        Song* nextSongToLoad = GetNextUnloadedSong();
-        int songPosition = GetSongPositionInQueue(nextSongToLoad);
-        int songLoadThreshold = m_songCache.GetSongsInMemoryCount() / 2; //New songs will start loading once the playing track in in the middle of the already loaded tracks
-        //TODO: Get song's position within the block of loaded songs
-        if (nextSongToLoad && (songPosition > songLoadThreshold))
-        {
-            //Ensure the next song is loaded before we get to it
-            //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
-            SongState::State initialState = nextSongToLoad->m_state;
-            if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
-            {
-                m_songCache.RequestSongLoad(nextSongToLoad->m_filePath);
-            }
-        }
         nextSongInQueue->RequestSongHandle();
 
         if (nextSongInQueue->m_state == SongState::LOADED || nextSongInQueue->m_state == SongState::CANT_LOAD || nextSongInQueue->m_state == SongState::INVALID_STATE)
@@ -162,7 +168,6 @@ void SongManager::Update(float deltaSeconds)
     {
         (*m_songPositionInQueue)->RequestSongHandle();
     }
-
 }
 
 //-----------------------------------------------------------------------------------
@@ -589,7 +594,22 @@ int SongManager::GetSongPositionInQueue(Song* song)
             return count;
         }
     }
-    return count;
+    return -1;
+}
+
+//-----------------------------------------------------------------------------------
+Song* SongManager::GetFirstLoadedSongInQueue()
+{
+    for (Song* currentSong : m_songQueue)
+    {
+        SongState::State songState = currentSong->m_state;
+        if (songState == SongState::LOADED || songState == SongState::PLAYING)
+        {
+            return currentSong;
+        }
+    }
+
+    return nullptr;
 }
 
 //UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////
