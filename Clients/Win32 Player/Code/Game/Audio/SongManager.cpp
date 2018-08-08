@@ -98,7 +98,7 @@ void SongManager::Update(float deltaSeconds)
         int firstLoadedSongPosition = GetSongPositionInQueue(firstLoadedSongInQueue);
         int songLoadThreshold = (nextUnloadedSongPosition / 2) + firstLoadedSongPosition; //New songs will start loading once the playing track in in the middle of the already loaded tracks
 
-        if (playingSongPosition > songLoadThreshold)
+        if (nextSongToLoad && (playingSongPosition > songLoadThreshold))
         {
             //Ensure the next song is loaded before we get to it
             SongState::State initialState = nextSongToLoad->m_state;
