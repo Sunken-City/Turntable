@@ -17,6 +17,7 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include "Engine/Renderer/OpenGLExtensions.hpp"
+#include "Engine/Renderer/Texture.hpp"
 
 extern int WINDOW_PHYSICAL_WIDTH;
 extern int WINDOW_PHYSICAL_HEIGHT;
@@ -34,6 +35,7 @@ const char* ShaderBootstrapper::shaderHeader =
 "uniform float iSampleRate;"
 "uniform vec3 iChannelResolution[4];"
 "uniform sampler2D iChannel0;"
+"uniform sampler2D iChannel1;"
 "in vec2 passUV0;"
 "out vec4 outColor;\n";
 
@@ -90,6 +92,19 @@ void ShaderBootstrapper::initializeUniforms(Material* material)
         glBindTexture(GL_TEXTURE_2D, TheGame::instance->m_currentRecord->m_innerMaterial->m_diffuseID);
         glBindSampler(4, material->m_samplerID);
         program->SetIntUniform("iChannel0", 4);
+
+        float spectrum[AudioSystem::SPECTRUM_SIZE * 2];
+        memset(spectrum, 0, AudioSystem::SPECTRUM_SIZE * 2);
+        if (SongManager::instance && SongManager::instance->IsPlaying())
+        {
+            AudioSystem::instance->GetWaveAndSpectrumData(SongManager::instance->m_activeSong->m_audioChannelHandle, spectrum, spectrum + AudioSystem::SPECTRUM_SIZE);
+        }
+        Texture* audioTexture = Texture::CreateTextureFromData("spectrum", (unsigned char*)spectrum, 1, Vector2Int(AudioSystem::SPECTRUM_SIZE, 2));
+
+        glActiveTexture(GL_TEXTURE0 + 5);
+        glBindTexture(GL_TEXTURE_2D, audioTexture->m_openglTextureID);
+        glBindSampler(5, material->m_samplerID);
+        program->SetIntUniform("iChannel1", 5);
     }
 }
 
@@ -136,4 +151,18 @@ void ShaderBootstrapper::updateUniforms(Material* material, float deltaSeconds)
     glBindTexture(GL_TEXTURE_2D, TheGame::instance->m_currentRecord->m_innerMaterial->m_diffuseID);
     glBindSampler(4, material->m_samplerID);
     program->SetIntUniform("iChannel0", 4);
+
+    Texture::CleanUpTexture("spectrum");
+    float spectrum[AudioSystem::SPECTRUM_SIZE * 2];
+    memset(spectrum, 0, AudioSystem::SPECTRUM_SIZE * 2);
+    if (SongManager::instance && SongManager::instance->IsPlaying())
+    {
+        AudioSystem::instance->GetWaveAndSpectrumData(SongManager::instance->m_activeSong->m_audioChannelHandle, spectrum, spectrum + AudioSystem::SPECTRUM_SIZE);
+    }
+    Texture* audioTexture = Texture::CreateTextureFromData("spectrum", (unsigned char*)spectrum, 1, Vector2Int(AudioSystem::SPECTRUM_SIZE, 2));
+
+    glActiveTexture(GL_TEXTURE0 + 5);
+    glBindTexture(GL_TEXTURE_2D, audioTexture->m_openglTextureID);
+    glBindSampler(5, material->m_samplerID);
+    program->SetIntUniform("iChannel1", 5);
 }
