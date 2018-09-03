@@ -316,6 +316,7 @@ void SongManager::StopSong()
         m_activeSong = nullptr;
         SetNowPlayingTextFromMetadata(nullptr); //Set to default values.
     }
+    TheGame::instance->m_currentRecord->SetAlbumTexture(nullptr);
 }
 
 //-----------------------------------------------------------------------------------
@@ -550,8 +551,7 @@ void SongManager::LoadAlbumArt(Song* songToPlay)
     {
         songToPlay->GenerateProceduralAlbumArt();
     }
-    TheGame::instance->m_currentRecord->m_innerMaterial->SetDiffuseTexture(songToPlay->m_albumArt);
-    TheGame::instance->m_fboMaterial->SetNormalTexture(songToPlay->m_albumArt);
+    TheGame::instance->m_currentRecord->SetAlbumTexture(songToPlay->m_albumArt);
 }
 
 //-----------------------------------------------------------------------------------

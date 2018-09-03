@@ -1,4 +1,5 @@
 #include "Game/Renderables/VinylRecord.hpp"
+#include "Game/TheGame.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Renderer/MeshBuilder.hpp"
 #include "Engine/Renderer/ShaderProgram.hpp"
@@ -10,6 +11,7 @@
 #include "Engine/Renderer/3D/Camera3D.hpp"
 #include "Engine/Time/Time.hpp"
 #include "Engine/Renderer/MeshRenderer.hpp"
+#include "Engine/Renderer/Texture.hpp"
 
 const Vector3 VinylRecord::VINYL_SPAWN_POSITION = Vector3(30.0f, 0.0f, 30.0f);
 
@@ -245,4 +247,15 @@ void VinylRecord::UpdateVinylJacket()
 
     Vector3 currentPosition = MathUtils::Lerp(0.1f, m_sleeve->m_transform.GetLocalPosition(), desiredJacketPosition);
     m_sleeve->m_transform.SetPosition(currentPosition);
+}
+
+//-----------------------------------------------------------------------------------
+void VinylRecord::SetAlbumTexture(Texture* texture)
+{
+    if (!texture)
+    {
+        texture = Texture::CreateOrGetTexture("Data/Images/LabelTextures/33RPMLabel.tga");
+    }
+    m_innerMaterial->SetDiffuseTexture(texture);
+    TheGame::instance->m_fboMaterial->SetNormalTexture(texture);
 }

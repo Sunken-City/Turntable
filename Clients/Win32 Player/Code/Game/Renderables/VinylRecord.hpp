@@ -4,6 +4,7 @@ class Renderable3D;
 class Material;
 class Scene3D;
 class Vector3;
+class Texture;
 
 class VinylRecord
 {
@@ -28,6 +29,7 @@ public:
     void Update(float deltaSeconds);
     void AddToScene(Scene3D* scene);
     void RemoveFromScene(Scene3D* scene);
+    void SetAlbumTexture(Texture* texture);
     Vector3 GetPosition() const;
 
 private:
