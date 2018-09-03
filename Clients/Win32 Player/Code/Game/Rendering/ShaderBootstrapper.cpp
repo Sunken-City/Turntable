@@ -22,7 +22,7 @@
 extern int WINDOW_PHYSICAL_WIDTH;
 extern int WINDOW_PHYSICAL_HEIGHT;
 
-const char* ShaderBootstrapper::shaderHeader =
+const char* ShaderBootstrapper::s_shaderHeader =
 "#version 410 core\n"
 "uniform vec3 iResolution;"
 "uniform float iTime;"
@@ -39,7 +39,7 @@ const char* ShaderBootstrapper::shaderHeader =
 "in vec2 passUV0;"
 "out vec4 outColor;\n";
 
-const char* ShaderBootstrapper::mainFunction =
+const char* ShaderBootstrapper::s_mainFunction =
 "void main()"
 "{"
 "    vec4 fragColor = vec4(0);"
@@ -48,14 +48,17 @@ const char* ShaderBootstrapper::mainFunction =
 "    outColor = fragColor;"
 "}";
 
+const Texture* ShaderBootstrapper::s_defaultAudioTexture = nullptr;
+const Texture* ShaderBootstrapper::s_currentAudioTexture = nullptr;
+
 //-----------------------------------------------------------------------------------
 ShaderProgram* ShaderBootstrapper::compileShader(const char* vertexShaderPath, const char* fragmentShaderPath)
 {
     char* vertexBuffer = FileReadIntoNewBuffer(vertexShaderPath);
     char* fragShader = FileReadIntoNewBuffer(fragmentShaderPath);
-    std::string fragmentBuffer = shaderHeader;
+    std::string fragmentBuffer = s_shaderHeader;
     fragmentBuffer.append(fragShader);
-    fragmentBuffer.append(mainFunction);
+    fragmentBuffer.append(s_mainFunction);
 
     ShaderProgram* shader = ShaderProgram::CreateFromShaderStrings(vertexBuffer, fragmentBuffer.c_str());
 
@@ -86,6 +89,11 @@ void ShaderBootstrapper::initializeUniforms(Material* material)
     program->SetFloatUniform("iSampleRate", 0.0f);
     program->SetVec3Uniform("iChannelResolution", iChannelResolution, 4);
 
+    float audioData[AudioSystem::SPECTRUM_SIZE * 2];
+    memset(audioData, 0, AudioSystem::SPECTRUM_SIZE * 2);
+    s_defaultAudioTexture = new Texture(AudioSystem::SPECTRUM_SIZE, 2, Texture::TextureFormat::R32UI, audioData);
+    s_currentAudioTexture = s_defaultAudioTexture;
+
     if (TheGame::instance)
     {
         glActiveTexture(GL_TEXTURE0 + 4);
@@ -93,16 +101,15 @@ void ShaderBootstrapper::initializeUniforms(Material* material)
         glBindSampler(4, material->m_samplerID);
         program->SetIntUniform("iChannel0", 4);
 
-        float spectrum[AudioSystem::SPECTRUM_SIZE * 2];
-        memset(spectrum, 0, AudioSystem::SPECTRUM_SIZE * 2);
         if (SongManager::instance && SongManager::instance->IsPlaying())
         {
-            AudioSystem::instance->GetWaveAndSpectrumData(SongManager::instance->m_activeSong->m_audioChannelHandle, spectrum, spectrum + AudioSystem::SPECTRUM_SIZE);
+            AudioSystem::instance->GetSpectrumData(SongManager::instance->m_activeSong->m_audioChannelHandle, audioData);
+            AudioSystem::instance->GetWaveData(SongManager::instance->m_activeSong->m_audioChannelHandle, audioData + AudioSystem::SPECTRUM_SIZE);
+            s_currentAudioTexture = new Texture(AudioSystem::SPECTRUM_SIZE, 2, Texture::TextureFormat::R32UI, audioData);
         }
-        Texture* audioTexture = Texture::CreateTextureFromData("spectrum", (unsigned char*)spectrum, 1, Vector2Int(AudioSystem::SPECTRUM_SIZE, 2));
 
         glActiveTexture(GL_TEXTURE0 + 5);
-        glBindTexture(GL_TEXTURE_2D, audioTexture->m_openglTextureID);
+        glBindTexture(GL_TEXTURE_2D, s_currentAudioTexture->m_openglTextureID);
         glBindSampler(5, material->m_samplerID);
         program->SetIntUniform("iChannel1", 5);
     }
@@ -152,17 +159,26 @@ void ShaderBootstrapper::updateUniforms(Material* material, float deltaSeconds)
     glBindSampler(4, material->m_samplerID);
     program->SetIntUniform("iChannel0", 4);
 
-    Texture::CleanUpTexture("spectrum");
-    float spectrum[AudioSystem::SPECTRUM_SIZE * 2];
-    memset(spectrum, 0, AudioSystem::SPECTRUM_SIZE * 2);
+    float audioData[AudioSystem::SPECTRUM_SIZE * 2];
+    memset(audioData, 0, AudioSystem::SPECTRUM_SIZE * 2);
     if (SongManager::instance && SongManager::instance->IsPlaying())
     {
-        AudioSystem::instance->GetWaveAndSpectrumData(SongManager::instance->m_activeSong->m_audioChannelHandle, spectrum, spectrum + AudioSystem::SPECTRUM_SIZE);
+        if (s_currentAudioTexture && s_currentAudioTexture != s_defaultAudioTexture)
+        {
+            delete s_currentAudioTexture;
+        }
+        AudioSystem::instance->GetSpectrumData(SongManager::instance->m_activeSong->m_audioChannelHandle, audioData);
+        AudioSystem::instance->GetWaveData(SongManager::instance->m_activeSong->m_audioChannelHandle, audioData + AudioSystem::SPECTRUM_SIZE);
+        s_currentAudioTexture = new Texture(AudioSystem::SPECTRUM_SIZE, 2, Texture::TextureFormat::R32UI, audioData);
     }
-    Texture* audioTexture = Texture::CreateTextureFromData("spectrum", (unsigned char*)spectrum, 1, Vector2Int(AudioSystem::SPECTRUM_SIZE, 2));
+    else
+    {
+        s_currentAudioTexture = s_defaultAudioTexture;
+    }
 
     glActiveTexture(GL_TEXTURE0 + 5);
-    glBindTexture(GL_TEXTURE_2D, audioTexture->m_openglTextureID);
+    glBindTexture(GL_TEXTURE_2D, s_currentAudioTexture->m_openglTextureID);
     glBindSampler(5, material->m_samplerID);
     program->SetIntUniform("iChannel1", 5);
+    
 }
