@@ -45,15 +45,15 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Temporary\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temporary\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\include;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\lib;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\lib\vs2015\$(PlatformShortName)\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)../../Engine/Code/ThirdParty/CEF;$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\include;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)../../Engine/Code/ThirdParty/CEF;$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\lib;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\lib\vs2015\$(PlatformShortName)\debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Temporary\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temporary\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\include;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\lib;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\lib\vs2015\$(PlatformShortName)\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)../../Engine/Code/ThirdParty/CEF;$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\include;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)../../Engine/Code/ThirdParty/CEF;$(SolutionDir)..\..\Engine\Code\ThirdParty\taglib\lib;$(SolutionDir)..\..\Engine\Code\ThirdParty\FBX\lib\vs2015\$(PlatformShortName)\debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -62,7 +62,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;TAGLIB_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../../Engine/Code/;$(SolutionDir)Code/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../Engine/Code/;$(SolutionDir)Code/; $(SolutionDir)../../Engine/Code/ThirdParty/CEF;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -85,7 +85,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;TAGLIB_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../../Engine/Code/;$(SolutionDir)Code/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../Engine/Code/;$(SolutionDir)Code/; $(SolutionDir)../../Engine/Code/ThirdParty/CEF;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

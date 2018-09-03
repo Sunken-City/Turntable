@@ -26,6 +26,12 @@
 #include "ThirdParty/OpenGL/wglext.h"
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
+#include "ThirdParty/CEF/tests/cefsimple/simple_app.h"
+#include "ThirdParty/CEF/include/cef_app.h"
+#include "ThirdParty/CEF/include/internal/cef_types_wrappers.h"
+#include "ThirdParty/CEF/include/cef_sandbox_win.h"
+
+#pragma comment( lib, "ThirdParty/CEF/libcef_dll_wrapper" )
 
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
@@ -570,9 +576,27 @@ void Shutdown()
 }
 
 //-----------------------------------------------------------------------------------------------
-int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE, PSTR commandLineString, int)
+int WINAPI WinMain(HINSTANCE applicationInstanceHandle, HINSTANCE hInstance, PSTR commandLineString, int)
 {
-    UNUSED(commandLineString);
+    CefMainArgs main_args(hInstance);
+    UNUSED(commandLineString); 
+    CefRefPtr<SimpleApp> app(new SimpleApp());
+// 
+//     // Specify CEF global settings here.
+//     CefSettings settings;
+//     void* sandbox_info = NULL;
+//     settings.no_sandbox = true;
+// 
+//     // Initialize CEF.
+//     CefInitialize(main_args, settings, app.get(), sandbox_info);
+// 
+//     // Run the CEF message loop. This will block until CefQuitMessageLoop() is
+//     // called.
+//     CefRunMessageLoop();
+// 
+//     // Shut down CEF.
+//     CefShutdown();
+    
 
     HANDLE turntablePipe = CreateTurntablePipe();
 
