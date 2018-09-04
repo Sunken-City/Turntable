@@ -39,12 +39,12 @@ public:
     bool IsLoaded(const SongID songID);
     SongState::State GetState(const SongID songID);
     unsigned int GetSongsInMemoryCount();
+    bool RemoveFromCache(const SongID songID);
 
 private:
     SongID CalculateSongID(const std::wstring& filePath);
     SongID FindLeastAccessedSong();
     SongID FindSongToDelete();
-    bool RemoveFromCache(const SongID songID);
     unsigned __int64 GetProcessMemoryBytes();
 
     //CONSTANTS/////////////////////////////////////////////////////////////////////

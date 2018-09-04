@@ -44,6 +44,7 @@ void SongManager::FlushSongQueue()
 {
     for (Song* song : m_songQueue)
     {
+        m_songCache.RemoveFromCache(song->m_songID);
         delete song;
     }
     m_songQueue.clear();
