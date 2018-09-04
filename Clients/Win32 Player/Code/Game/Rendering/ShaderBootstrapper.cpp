@@ -90,7 +90,7 @@ void ShaderBootstrapper::initializeUniforms(Material* material)
     program->SetVec3Uniform("iChannelResolution", iChannelResolution, 4);
 
     float audioData[AudioSystem::SPECTRUM_SIZE * 2];
-    memset(audioData, 0, AudioSystem::SPECTRUM_SIZE * 2);
+    memset(audioData, 0, AudioSystem::SPECTRUM_SIZE * 2 * sizeof(float));
     s_defaultAudioTexture = new Texture(AudioSystem::SPECTRUM_SIZE, 2, Texture::TextureFormat::R32UI, audioData);
     s_currentAudioTexture = s_defaultAudioTexture;
 
@@ -160,7 +160,7 @@ void ShaderBootstrapper::updateUniforms(Material* material, float deltaSeconds)
     program->SetIntUniform("iChannel0", 4);
 
     float audioData[AudioSystem::SPECTRUM_SIZE * 2];
-    memset(audioData, 0, AudioSystem::SPECTRUM_SIZE * 2);
+    memset(audioData, 0, AudioSystem::SPECTRUM_SIZE * 2 * sizeof(float));
     if (SongManager::instance && SongManager::instance->IsPlaying())
     {
         if (s_currentAudioTexture && s_currentAudioTexture != s_defaultAudioTexture)
