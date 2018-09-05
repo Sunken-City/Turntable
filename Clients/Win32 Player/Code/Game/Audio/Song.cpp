@@ -151,6 +151,7 @@ void Song::SetMetadataFromFile(const std::wstring& fileName)
         m_samplerate = file.audioProperties()->sampleRate();
         m_bitrate = file.audioProperties()->bitrate();
         m_numChannels = file.audioProperties()->channels();
+        m_uncompressedFileSizeBytes = (m_lengthInSeconds * m_samplerate * m_bitdepth * m_numChannels) / 8; //Divide by 8 to get bytes instead of bits
     }
 }
 

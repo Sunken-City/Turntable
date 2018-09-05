@@ -44,6 +44,7 @@ void SongManager::FlushSongQueue()
 {
     for (Song* song : m_songQueue)
     {
+        m_songCache.RemoveFromCache(song->m_songID);
         delete song;
     }
     m_songQueue.clear();
@@ -90,6 +91,26 @@ void SongManager::Update(float deltaSeconds)
             AudioSystem::instance->SetFrequency(m_activeSong->m_audioChannelHandle, m_currentFrequency);
         }
 
+        //Start loading in the next track if the song we're playing is within the threshold
+        Song* nextSongToLoad = GetNextUnloadedSong();
+        Song* firstLoadedSongInQueue = GetFirstLoadedSongInQueue();
+        int playingSongPosition = GetSongPositionInQueue(m_activeSong);
+        int nextUnloadedSongPosition = GetSongPositionInQueue(nextSongToLoad);
+        int firstLoadedSongPosition = GetSongPositionInQueue(firstLoadedSongInQueue);
+        int songLoadThreshold = (nextUnloadedSongPosition / 2) + firstLoadedSongPosition; //New songs will start loading once the playing track in in the middle of the already loaded tracks
+
+        if (nextSongToLoad && (playingSongPosition > songLoadThreshold))
+        {
+            //Ensure the next song is loaded before we get to it
+            SongState::State initialState = nextSongToLoad->m_state;
+            if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
+            {
+                m_songCache.RequestSongLoad(nextSongToLoad->m_filePath);
+            }
+            nextSongToLoad->RequestSongHandle();
+            m_activeSong->RequestSongHandle();
+        }
+
         CheckForHotkeys(); //This could technically end the song we're playing, so we have to keep validating we have an active song.
         UpdateUIWidgetText();
 
@@ -104,7 +125,7 @@ void SongManager::Update(float deltaSeconds)
             m_eventSongFinished.Trigger();
         }
     }
-    else if (GetQueueLength() > 0 && (*m_songPositionInQueue)->m_state != SongState::LOADING)
+    else if ((GetQueueLength() > 0) && (m_songPositionInQueue != m_songQueue.end()) && ((*m_songPositionInQueue)->m_state != SongState::LOADING))
     {
         Song* nextSongInQueue = *m_songPositionInQueue;
         SongState::State initialState = nextSongInQueue->m_state;
@@ -113,20 +134,6 @@ void SongManager::Update(float deltaSeconds)
             m_songCache.EnsureSongLoad(nextSongInQueue->m_filePath);
         }
 
-        Song* nextSongToLoad = GetNextUnloadedSong();
-        int songPosition = GetSongPositionInQueue(nextSongToLoad);
-        int songLoadThreshold = m_songCache.GetSongsInMemoryCount() / 2; //New songs will start loading once the playing track in in the middle of the already loaded tracks
-        //TODO: Get song's position within the block of loaded songs
-        if (nextSongToLoad && songPosition > songLoadThreshold)
-        {
-            //Ensure the next song is loaded before we get to it
-            //Potential bug when ensuring the load of the next song deletes the current song before it is set to playing status
-            SongState::State initialState = nextSongToLoad->m_state;
-            if (initialState == SongState::NOT_LOADED || initialState == SongState::UNLOADED)
-            {
-                m_songCache.RequestSongLoad(nextSongToLoad->m_filePath);
-            }
-        }
         nextSongInQueue->RequestSongHandle();
 
         if (nextSongInQueue->m_state == SongState::LOADED || nextSongInQueue->m_state == SongState::CANT_LOAD || nextSongInQueue->m_state == SongState::INVALID_STATE)
@@ -143,7 +150,14 @@ void SongManager::Update(float deltaSeconds)
                 int currentPosition = GetSongPositionInQueue(nextSongInQueue);
                 delete nextSongInQueue;
                 m_songQueue.remove(nextSongInQueue);
-                m_songPositionInQueue = std::next(m_songQueue.begin(), currentPosition);
+                if ((currentPosition + 1) < m_songQueue.size())
+                {
+                    m_songPositionInQueue = std::next(m_songQueue.begin(), currentPosition);
+                }
+                else
+                {
+                    m_songPositionInQueue = m_songQueue.end();
+                }
             }
         }
         else if (initialState == SongState::NOT_LOADED && !m_recordCracklesHandle)
@@ -151,7 +165,7 @@ void SongManager::Update(float deltaSeconds)
             StartLoadingSound();
         }
     }
-    else if (m_songQueue.size() > 0 && (*m_songPositionInQueue)->m_state == SongState::LOADING)
+    else if ((GetQueueLength() > 0) && (m_songPositionInQueue != m_songQueue.end()) && ((*m_songPositionInQueue)->m_state == SongState::LOADING))
     {
         (*m_songPositionInQueue)->RequestSongHandle();
     }
@@ -581,7 +595,22 @@ int SongManager::GetSongPositionInQueue(Song* song)
             return count;
         }
     }
-    return count;
+    return -1;
+}
+
+//-----------------------------------------------------------------------------------
+Song* SongManager::GetFirstLoadedSongInQueue()
+{
+    for (Song* currentSong : m_songQueue)
+    {
+        SongState::State songState = SongManager::instance->m_songCache.GetState(currentSong->m_songID);
+        if (songState == SongState::LOADED || songState == SongState::PLAYING)
+        {
+            return currentSong;
+        }
+    }
+
+    return nullptr;
 }
 
 //UI EVENT FUNCTIONS/////////////////////////////////////////////////////////////////////

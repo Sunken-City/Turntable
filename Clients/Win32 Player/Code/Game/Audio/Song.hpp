@@ -38,6 +38,7 @@ public:
     int m_samplerate;
     int m_bitrate;
     int m_numChannels;
+    int m_uncompressedFileSizeBytes;
     bool m_ignoresFrequency = false; //MIDI's can't have frequency set on them without failing to play.
 
     //Variables

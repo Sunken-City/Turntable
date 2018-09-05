@@ -7,6 +7,8 @@
 #include "Engine/Input/Console.hpp"
 #include "Engine/Core/JobSystem.hpp"
 #include "../TheGame.hpp"
+#include "Engine/Audio/AudioMetadataUtils.hpp"
+#include <Psapi.h>
 
 typedef std::map<SongID, SongResourceInfo>::iterator SongCacheIterator;
 
@@ -52,7 +54,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
     SongID songID = SongCache::CalculateSongID(filePath);
     SongCacheIterator found = m_songCache.find(songID);
     SongResourceInfo* songResourceInfo = nullptr;
-    long long fileSize = GetFileSizeBytes(filePath);
+    unsigned int fileSize = GetUncompressedFilesize(filePath);
 
     if (found != m_songCache.end())
     {
@@ -77,6 +79,7 @@ SongID SongCache::RequestSongLoad(const std::wstring& filePath)
         //Try to remove already played songs if we can
         canRemove = RemoveFromCache(FindLeastAccessedSong());
     }
+
     //We want to make the placeholders for the song if we're going to be over the memory threshold. 
     if ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD)
     {
@@ -113,7 +116,7 @@ SongID SongCache::EnsureSongLoad(const std::wstring& filePath)
         songResourceInfo->m_filePath = filePath;
     }
 
-    long long fileSize = GetFileSizeBytes(filePath);
+    unsigned int fileSize = GetUncompressedFilesize(filePath);
     bool canRemove = true;
     while (canRemove && ((fileSize + m_cacheSizeBytes) >= MAX_MEMORY_THRESHOLD) && (GetSongsInMemoryCount() > 1))
     {
@@ -256,7 +259,7 @@ bool SongCache::RemoveFromCache(const SongID songID)
     if (found != m_songCache.end())
     {
         SongResourceInfo& info = found->second;
-        m_cacheSizeBytes -= GetFileSizeBytes(info.m_filePath);
+        m_cacheSizeBytes -= GetUncompressedFilesize(info.m_filePath);
         AudioSystem::instance->ReleaseRawSong(info.m_songData);
         info.m_songData = nullptr;
         info.m_status = SongState::UNLOADED;
@@ -326,4 +329,15 @@ unsigned int SongCache::GetSongsInMemoryCount()
     }
 
     return numLoadedSongs;
+}
+
+//-----------------------------------------------------------------------------------
+unsigned __int64 SongCache::GetProcessMemoryBytes()
+{
+    PROCESS_MEMORY_COUNTERS memoryCounters;
+    HANDLE currentProcess = GetCurrentProcess();
+    GetProcessMemoryInfo(currentProcess, &memoryCounters, sizeof(memoryCounters));
+    unsigned __int64 memoryCount = memoryCounters.PagefileUsage;
+
+    return memoryCount;
 }
