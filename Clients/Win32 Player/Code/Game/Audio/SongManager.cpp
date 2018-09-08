@@ -757,9 +757,65 @@ void SongManager::FindRandomAlbum(std::wstring& currentMusicRoot, std::vector<st
 }
 
 //-----------------------------------------------------------------------------------
-void SongManager::QueueRandomSongsForDuration(float numMinutes)
+void SongManager::QueueRandomSongsForDuration(float numMinutesMax)
 {
-    throw std::logic_error("The method or operation is not implemented.");
+    static const int MAX_ITERATIONS = 100;
+    float currentRuntimeMinutes = 0.0f;
+    std::vector<std::wstring> selectedSongs;
+
+    std::string& musicRoot = AchievementManager::instance->m_currentProfile->m_musicRootPath;
+    std::wstring currentMusicRoot = std::wstring(musicRoot.begin(), musicRoot.end());
+    if (currentMusicRoot.empty())
+    {
+        Console::instance->PrintLine("Please set a root music directory with setmusicroot first.", RGBA::RED);
+        return;
+    }
+
+    for (int i = 0; i < MAX_ITERATIONS; ++i)
+    {
+        std::vector<std::wstring> songs;
+
+        std::wstring songPath = currentMusicRoot;
+        FindRandomAlbum(songPath, songs);
+
+        if (songs.size() == 0)
+        {
+            continue;
+            //Console::instance->PrintLine("Could not find any music in the selected music root.", RGBA::RED);
+            //return;
+        }
+
+        unsigned int randSong = MathUtils::GetRandomInt(0, songs.size() - 1);
+        std::wstring proposedSong = WStringf(L"%s\\%s", songPath.c_str(), songs[randSong].c_str());
+        float proposedSongLengthMinutes = static_cast<float>(GetSongDurationSeconds(proposedSong)) / 60.0f;
+
+        if ((currentRuntimeMinutes + proposedSongLengthMinutes) > numMinutesMax)
+        {
+            continue;
+        }
+
+        selectedSongs.push_back(proposedSong);
+        currentRuntimeMinutes += proposedSongLengthMinutes;
+
+        if (fabs(numMinutesMax - currentRuntimeMinutes) < 0.5f)
+        {
+            break;
+        }
+    }
+
+    bool isPlaying = SongManager::instance->IsPlaying();
+    for (std::wstring& song : selectedSongs)
+    {
+        if (!isPlaying)
+        {
+            Console::instance->RunCommand(WStringf(L"play \"%s\"", song.c_str()), true);
+            isPlaying = true;
+        }
+        else
+        {
+            Console::instance->RunCommand(WStringf(L"addtoqueue \"%s\"", song.c_str()), true);
+        }
+    }
 }
 
 //CONSOLE COMMANDS/////////////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
 #include "Engine/Input/InputOutputUtils.hpp"
 #include "Engine/Audio/AudioMetadataUtils.hpp"
 
+//Suppressing all the PDB linker warnings
+#pragma warning(suppress: 4099)
+
 //-----------------------------------------------------------------------------------------------
 #define UNUSED(x) (void)(x);
 
