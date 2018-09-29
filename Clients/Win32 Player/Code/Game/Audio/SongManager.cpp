@@ -781,8 +781,6 @@ void SongManager::QueueRandomSongsForDuration(float numMinutesMax)
         if (songs.size() == 0)
         {
             continue;
-            //Console::instance->PrintLine("Could not find any music in the selected music root.", RGBA::RED);
-            //return;
         }
 
         unsigned int randSong = MathUtils::GetRandomInt(0, songs.size() - 1);
