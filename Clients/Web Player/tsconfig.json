@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "allowJs": false,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": true,
+        "alwaysStrict": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "jsx": "react",
+        "module": "esnext",
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "node",
+        "noErrorTruncation": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "strict": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "target": "es6",
+    },
+    "compileOnSave": true
+}

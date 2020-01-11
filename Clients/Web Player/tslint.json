@@ -1,0 +1,22 @@
+{
+    "defaultSeverity": "warning",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "member-ordering": false,
+        "one-line": false,
+        "max-classes-per-file": false,
+        "no-console": false,
+        "no-bitwise": false,
+        "no-unused-expression": true,
+        "no-unused-variable": true,
+        "typedef": [
+            true,
+            "call-signature",
+            "property-declaration"
+        ]
+    },
+    "rulesDirectory": []
+}
