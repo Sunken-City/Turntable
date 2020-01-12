@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { App } from "./app";
 
 // this magic prevents right clicking everywhere
 document.oncontextmenu = (e) => {
@@ -17,6 +18,7 @@ window.onload = () => {
     document.body.style.background = "black";
     document.body.style.fontFamily = "sans-serif";
     document.body.style.color = "white";
+    document.body.style.overflow = "hidden";
 
     // why does body have a margin for some reason?
     document.body.style.margin = "0px";
@@ -25,9 +27,7 @@ window.onload = () => {
     const reactDiv = document.createElement("div");
 
     ReactDOM.render(
-        <div>
-            Hello World uwu
-        </div>,
+        <App />,
         document.body.appendChild(reactDiv),
     );
 };

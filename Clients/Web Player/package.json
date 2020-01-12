@@ -32,6 +32,7 @@
   "dependencies": {
     "react": "16.11.x",
     "react-dom": "16.11.x",
-    "styled-components": "4.3.x"
+    "styled-components": "4.3.x",
+    "three": "^0.112.1"
   }
 }
