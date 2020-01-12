@@ -10,6 +10,7 @@
         "max-classes-per-file": false,
         "no-console": false,
         "no-bitwise": false,
+        "ordered-imports": false,
         "no-unused-expression": true,
         "no-unused-variable": true,
         "typedef": [
