@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const GitRevisionPlugin = require('git-revision-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 const gitRevisionPlugin = new GitRevisionPlugin()
@@ -60,6 +61,9 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             'COMMITHASH': JSON.stringify(gitRevisionPlugin.commithash().substring(0, 6)),
-        })
+        }),
+        new CopyPlugin([
+            { from: "images/loader_images", to: "images/loader_images" }
+        ])
     ]
 };

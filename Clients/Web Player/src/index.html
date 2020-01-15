@@ -1,100 +1,121 @@
 <!DOCTYPE html>
 <html>
 
-    <head>
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-        <title>
-            <%= htmlWebpackPlugin.options.title %>
-            </title>
-        </head>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <title>
+        <%= htmlWebpackPlugin.options.title %>
+    </title>
+</head>
 
-        <body>
-            <style>
-                body {
-                    background: #000000;
-                }
+<body>
+    <style>
+        body {
+            background: #000000;
+        }
 
-                .loader-container {
-                    /* make centered horizontally */
-                    left:0;
-                    right:0;
-                    margin-left: auto;
-                    margin-right: auto;
-                    margin-top: 60px;
-                    
-                    font-family: monospace;
+        .loader-container {
+            /* make centered horizontally */
+            left: 0;
+            right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 60px;
 
-                    padding: 20px;
-                    background: grey;
-                    border-radius: 10px;
-                    width: 300px;
-                    text-align: center;
-                    color:white;
-                }
+            font-family: monospace;
 
-                .loader,
-                .loader:before,
-                .loader:after {
-                    border-radius: 50%;
-                    width: 2.5em;
-                    height: 2.5em;
-                    -webkit-animation-fill-mode: both;
-                    animation-fill-mode: both;
-                    -webkit-animation: load7 1.8s infinite ease-in-out;
-                    animation: load7 1.8s infinite ease-in-out;
-                }
-                .loader {
-                    color: #ffffff;
-                    font-size: 10px;
-                    margin: 80px auto;
-                    position: relative;
-                    text-indent: -9999em;
-                    -webkit-transform: translateZ(0);
-                    -ms-transform: translateZ(0);
-                    transform: translateZ(0);
-                    -webkit-animation-delay: -0.16s;
-                    animation-delay: -0.16s;
-                }
-                .loader:before,
-                .loader:after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                }
-                .loader:before {
-                    left: -3.5em;
-                    -webkit-animation-delay: -0.32s;
-                    animation-delay: -0.32s;
-                }
-                .loader:after {
-                    left: 3.5em;
-                }
-                @-webkit-keyframes load7 {
-                0%,
-                80%,
-                100% {
-                    box-shadow: 0 2.5em 0 -1.3em;
-                }
-                40% {
-                    box-shadow: 0 2.5em 0 0;
-                }
-                }
-                @keyframes load7 {
-                0%,
-                80%,
-                100% {
-                    box-shadow: 0 2.5em 0 -1.3em;
-                }
-                40% {
-                    box-shadow: 0 2.5em 0 0;
-                }
-                }
-            </style>
-            <div class="loader-container">
-                <div><i>loading resources</i></div>
-                <div class="loader"></div>
-            </div>
+            padding: 20px;
+            padding-left: 100px;
+            padding-right: 100px;
+            background: grey;
+            border-radius: 10px;
+            max-width: 300px;
+            text-align: center;
+            color: white;
+        }
 
-        </body>
+        .loader-image {
+            /* make centered horizontally */
+            width: 100%;
+            height: auto;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-    </html>
+        .loader,
+        .loader:before,
+        .loader:after {
+            border-radius: 50%;
+            width: 2.5em;
+            height: 2.5em;
+            -webkit-animation-fill-mode: both;
+            animation-fill-mode: both;
+            -webkit-animation: load7 1.8s infinite ease-in-out;
+            animation: load7 1.8s infinite ease-in-out;
+        }
+
+        .loader {
+            color: #ffffff;
+            font-size: 10px;
+            margin: 80px auto;
+            position: relative;
+            text-indent: -9999em;
+            -webkit-transform: translateZ(0);
+            -ms-transform: translateZ(0);
+            transform: translateZ(0);
+            -webkit-animation-delay: -0.16s;
+            animation-delay: -0.16s;
+        }
+
+        .loader:before,
+        .loader:after {
+            content: '';
+            position: absolute;
+            top: 0;
+        }
+
+        .loader:before {
+            left: -3.5em;
+            -webkit-animation-delay: -0.32s;
+            animation-delay: -0.32s;
+        }
+
+        .loader:after {
+            left: 3.5em;
+        }
+
+        @-webkit-keyframes load7 {
+
+            0%,
+            80%,
+            100% {
+                box-shadow: 0 2.5em 0 -1.3em;
+            }
+
+            40% {
+                box-shadow: 0 2.5em 0 0;
+            }
+        }
+
+        @keyframes load7 {
+
+            0%,
+            80%,
+            100% {
+                box-shadow: 0 2.5em 0 -1.3em;
+            }
+
+            40% {
+                box-shadow: 0 2.5em 0 0;
+            }
+        }
+    </style>
+    <div class="loader-container">
+        <img class="loader-image" src="./images/loader_images/turntable_splash.png"></img>
+        <div><i>loading resources</i></div>
+        <div class="loader"></div>
+    </div>
+
+</body>
+
+</html>
