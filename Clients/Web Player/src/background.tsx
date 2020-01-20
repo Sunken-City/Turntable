@@ -30,7 +30,27 @@ export class Background extends React.PureComponent {
         if (this.canvasRef.current) {
             const canvas = this.canvasRef.current;
 
-            this.renderer = new THREE.WebGLRenderer({ canvas });
+            const attrs = {
+                alpha: false,
+                antialias: false,
+                canvas,
+                context: undefined,
+                depth: true,
+                failIfMajorPerformanceCaveat: true,
+                powerPreference: "high-performance",
+                preserveDrawingBuffer: false,
+            };
+
+            const context = canvas.getContext("webgl2", attrs);
+            if (context) {
+                console.log("WebGl2 is available");
+
+                // force a WebGL2 context
+                // @ts-ignore
+                attrs.context = context;
+            }
+
+            this.renderer = new THREE.WebGLRenderer(attrs);
 
             this.updateMount(this.canvasRef.current);
 
