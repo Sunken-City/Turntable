@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
 export class TurntableScene {
+    public totalTime = 0;
     public scene = new THREE.Scene();
     private material = new THREE.MeshStandardMaterial({
 
@@ -8,6 +9,7 @@ export class TurntableScene {
 
     private fboVertexShader = `
         uniform vec4 size;
+        uniform float iTime;
 
         void main() {
             vec2 transformedPos = position.xy * size.xy - vec2(1.0, -1.0) + vec2( size.x ,  -size.y ) + vec2( size.w , - size.z ) * 2.;
@@ -16,39 +18,52 @@ export class TurntableScene {
         }
     `;
 
-    private fboFragmentShader = `
-    void main() {
-        float gTime = 1.0;
+    private fboFragmentShaderHeader = `
+    uniform float iTime;
+    uniform vec3 iResolution;
+    `;
 
-        vec4 earthboundBlue = vec4(0.407, 0.659, 0.847, 1.0);
-        vec4 earthboundGreen = vec4(0.500, 0.847, 0.565, 1.0);
-        vec2 aspectRatio = vec2(16, 9) * 3.0;
-        float timeFactor = gTime / 20.0;
+    private fragmentShader = `
 
-        vec2 uv = (vec2(1.0, 1.0) + vec2(timeFactor, timeFactor));
-        uv = uv * aspectRatio; //Multiply by the aspect ratio to make our checkerboard squares square
-
-        int xCoordinate = int(round(uv.x));
-        int yCoordinate = int(round(uv.y));
-        int squareNumber = xCoordinate + (int(aspectRatio.x) * yCoordinate);
-
-        squareNumber += yCoordinate % 2; //Change the colors every other row
-        float interpolator = float(squareNumber % 2);
-        gl_FragColor = mix(earthboundBlue, earthboundGreen, interpolator);
+    void mainImage( out vec4 fragColor, in vec2 fragCoord )
+    {
+      vec2 passUV = fragCoord/iResolution.xy;
+      vec4 lightBlue = vec4(0.49, 0.796, 0.745, 1.0);
+      vec4 darkBlue = vec4(0.0, 0.224, 0.431, 1.0);
+      float timeFactor = iTime / 20.0f;
+      vec2 uv = (passUV + vec2(timeFactor, timeFactor)) * vec2(16, 9);
+      if(abs(fract(uv.y) - fract(uv.x)) < 0.1f)
+      {
+        fragColor = lightBlue;
+      }
+      else
+      {
+        fragColor = darkBlue;
+      }
     }
     `;
 
-    private fbo = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 1, 1), new THREE.ShaderMaterial({
-        uniforms: {
-            size: {
-                type: "v4",
-                value: new THREE.Vector4(1, 1, 0, 0),
-            }
+    private fboFragmentShaderFooter = `
+    void main() {
+        mainImage(gl_FragColor, gl_FragCoord.xy);
+    }`;
+
+    private fboUniforms = {
+        iTime: { value: 0 },
+        size: {
+            value: new THREE.Vector4(1, 1, 0, 0),
         },
+        iResolution: {
+            value: new THREE.Vector3(1, 1, 1),
+        },
+    };
+
+    private fbo = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 1, 1), new THREE.ShaderMaterial({
+        uniforms: this.fboUniforms,
 
         vertexShader: this.fboVertexShader,
 
-        fragmentShader: this.fboFragmentShader,
+        fragmentShader: this.fboFragmentShaderHeader + this.fragmentShader + this.fboFragmentShaderFooter,
 
         depthWrite: false,
     }));
@@ -79,6 +94,9 @@ export class TurntableScene {
 
         this.scene.add(sunLight);
 
+        this.fbo.frustumCulled = false;
+        this.fbo.renderOrder = -1;
+
         this.scene.add(this.disc);
         this.scene.add(this.fbo);
     }
@@ -86,10 +104,15 @@ export class TurntableScene {
     public onResize(w: number, h: number): void {
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
+        this.fboUniforms.size.value.x = w;
+        this.fboUniforms.size.value.y = h;
+        this.fboUniforms.iResolution.value.set(w, h, 1);
     }
 
     public update(dt: number): void {
+        this.totalTime += dt;
         this.disc.rotateY(1 * dt);
+        this.fboUniforms.iTime.value = this.totalTime;
     }
 
     public render(renderer: THREE.WebGLRenderer): void {
